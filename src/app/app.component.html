@@ -1,1 +1,10 @@
-<router-outlet></router-outlet>
+<mat-toolbar color="primary">
+  <span>MTG Deck Tech</span>
+</mat-toolbar>
+<div fxLayout="row wrap" fxLayoutAlign="center center" class="layout-wrapper">
+  <div fxFlex="80%" fxFlex.lt-md="100%" class="flex-wrapper">
+    <div style="padding-top: 1em; padding-bottom: 1em;">
+      <router-outlet></router-outlet>
+    </div>
+  </div>
+</div>

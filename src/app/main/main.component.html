@@ -1,0 +1,34 @@
+<mat-accordion>
+  <mat-expansion-panel [expanded]="true">
+    <mat-expansion-panel-header>
+      <mat-panel-title>
+        Input Decklist
+      </mat-panel-title>
+    </mat-expansion-panel-header>
+    <mat-form-field>
+      <textarea matInput [(ngModel)]="decklist" placeholder="Decklist (Simple Format)" rows="10"></textarea>
+    </mat-form-field>
+    <mat-action-row>
+      <button mat-button color="primary" (click)="submitDecklist()">Submit</button>
+    </mat-action-row>
+  </mat-expansion-panel>
+  <mat-expansion-panel [expanded]="isCardsByTypeReady">
+    <mat-expansion-panel-header>
+      <mat-panel-title>
+        Parsed Decklist
+      </mat-panel-title>
+    </mat-expansion-panel-header>
+    <ng-container *ngIf="isCardsByTypeReady">
+      <div *ngFor="let item of cardsByType">
+        <h1>{{item[0] | uppercase}} ({{item[2]}})</h1>
+        <ul>
+          <li *ngFor="let card of item[1]">
+            {{card.count}}x {{card.name}}
+          </li>
+        </ul>
+      </div>
+    </ng-container>
+    <mat-action-row>
+    </mat-action-row>
+  </mat-expansion-panel>
+</mat-accordion>
