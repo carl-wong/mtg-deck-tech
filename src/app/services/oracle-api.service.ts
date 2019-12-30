@@ -16,6 +16,21 @@ export class OracleApiService {
 	) {
 	}
 
+	public getTransform(): Observable<OracleCard[]> {
+		let params: HttpParams = new HttpParams()
+			.set('layout', 'transform');
+
+		return this.http.get(this.apiUrl + '/Cards', {
+			params: params
+		})
+			.pipe(
+				map(res => {
+					res['payload'] = res;
+					return res['payload'];
+				})
+			); 
+	}
+
 	// API: GET /Oracles
 	public getByNames(names: string[]): Observable<OracleCard[]> {
 		let params: HttpParams = new HttpParams();
@@ -28,7 +43,6 @@ export class OracleApiService {
 			params: params
 		})
 			.pipe(
-				tap(() => console.log('successfully got cards')),
 				map(res => {
 					res['payload'] = res;
 					return res['payload'];
