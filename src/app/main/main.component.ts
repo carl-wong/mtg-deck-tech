@@ -1,8 +1,14 @@
 import { Component, Input, OnInit } from '@angular/core';
 import { CardReference } from '../classes/card-reference';
+import { CardTagLink } from '../classes/card-tag-link';
 import { OracleCard } from '../classes/oracle-card';
 import { SleepHelper } from '../classes/sleep-helper';
 import { OracleApiService } from '../services/oracle-api.service';
+import { LocalApiService } from '../services/local-api.service';
+import { DialogAddTagComponent } from '../dialog-add-tag/dialog-add-tag.component';
+import { MatDialog, MatDialogConfig } from '@angular/material/dialog';
+
+
 
 @Component({
 	selector: 'app-main',
@@ -18,9 +24,12 @@ export class MainComponent implements OnInit {
 
 	isCardsByTypeReady = false;
 	cardsByType: [string, CardReference[], number][];
+	cardsByOracleId: { [oracle_id: string]: CardReference } = {};
 
 	constructor(
 		private oracle: OracleApiService,
+		private service: LocalApiService,
+		private dialog: MatDialog,
 	) { }
 
 	ngOnInit() {
@@ -32,23 +41,29 @@ export class MainComponent implements OnInit {
 				});
 				this.isTransformCardsCacheReady = true;
 			} else {
-				console.log('Could not load transform cards');
+				alert('Could not load transform cards, is the oracle service running?');
 			}
 		});
 	}
 
-	processOracleCards(cards: OracleCard[]) {
-		cards.forEach(card => {
-			let entry = this.deck.find(m => m.name === card.name);
-			if (entry) {
-				entry.OracleCard = card;
+	processOracleCards(oCards: OracleCard[]) {
+		oCards.forEach(oCard => {
+			let dCard = this.deck.find(m => m.name === oCard.name);
+			if (dCard) {
+				dCard.OracleCard = oCard;
+				this.cardsByOracleId[oCard.oracle_id] = dCard;
 			}
 		});
 
-		const oracle_ids = cards.map(a => a.oracle_id);
-
-		//TODO: fetch any/all tags attached to each oracle_id
-
+		const oracle_ids = oCards.map(a => a.oracle_id);
+		this.service.getCardTagLinks(oracle_ids).subscribe(links => {
+			links.forEach(link => {
+				let dCard = this.cardsByOracleId[link.oracle_id];
+				if (dCard) {
+					dCard.CardTagLinks ? dCard.CardTagLinks.push(link) : dCard.CardTagLinks = [link];
+				}
+			});
+		});
 	}
 
 	resetFlags() {
@@ -140,5 +155,39 @@ export class MainComponent implements OnInit {
 			}
 		});
 		this.isCardsByTypeReady = true;
+	}
+
+	openDialogAddTag(card: CardReference) {
+		const dConfig = new MatDialogConfig();
+
+		dConfig.disableClose = false;
+		dConfig.autoFocus = false;
+
+		const dRef = this.dialog.open(DialogAddTagComponent, dConfig);
+		dRef.afterClosed().subscribe(tagId => {
+			if (tagId) {
+				const newLink = new CardTagLink();
+				newLink.oracle_id = card.OracleCard.oracle_id;
+				newLink.TagId = tagId;
+
+				this.service.createCardTagLink(newLink).subscribe(res => {
+					if (res) {
+						this.service.getTag(res.TagId).subscribe(tag => {
+							if (tag) {
+							res.Tag = tag;
+							}
+						});
+						card.CardTagLinks ? card.CardTagLinks.push(res) : card.CardTagLinks = [res];
+					}
+				});
+			}
+		});
+	}
+
+	removeCardTagLink(link: CardTagLink) {
+		this.service.deleteCardTagLink(link.id).subscribe(() => {
+			let links = this.cardsByOracleId[link.oracle_id].CardTagLinks;
+			links.splice(links.findIndex(m => m.TagId === link.TagId), 1);
+		});
 	}
 }

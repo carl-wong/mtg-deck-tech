@@ -10,7 +10,7 @@ import { Tag } from '../classes/tag';
 	providedIn: 'root'
 })
 export class LocalApiService {
-	apiUrl = 'http://localhost:3000';
+	apiUrl = 'http://localhost:3001';
 
 	httpOptions = {
 		headers: new HttpHeaders({
@@ -21,6 +21,10 @@ export class LocalApiService {
 	constructor(
 		private http: HttpClient,
 	) {
+	}
+
+	public getTag(id: number): Observable<Tag> {
+		return this.http.get<Tag>(this.apiUrl + '/Tags/' + id);
 	}
 
 	public getTags(): Observable<Tag[]> {
@@ -34,7 +38,7 @@ export class LocalApiService {
 	}
 
 	public getCardTagLinks(oracle_ids: string[]): Observable<CardTagLink[]> {
-		let params = new HttpParams().set('expand', 'Tag');
+		let params = new HttpParams().set('_expand', 'Tag');
 
 		oracle_ids.forEach(id => {
 			params = params.append('oracle_id', id);
