@@ -40,7 +40,7 @@ export class DialogAddTagComponent implements OnInit {
 		return this.options.filter(option => option.toLowerCase().includes(filterValue));
 	}
 
-	close(isAccept: boolean) {
+	close(isAccept: boolean = false) {
 		console.log(this.myControl.value);
 
 		let value = this.myControl.value;

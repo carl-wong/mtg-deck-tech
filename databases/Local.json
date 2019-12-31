@@ -23,6 +23,14 @@
     {
       "name": "PROTECTION",
       "id": 6
+    },
+    {
+      "name": "WIN-CON",
+      "id": 7
+    },
+    {
+      "name": "SACRIFICE",
+      "id": 8
     }
   ],
   "CardTagLinks": [
@@ -80,6 +88,21 @@
       "oracle_id": "ca204b66-8d0c-431a-8d34-282f7c2d17da",
       "TagId": 6,
       "id": 11
+    },
+    {
+      "oracle_id": "f29dc596-2121-4421-8463-15f6c2e8b9b3",
+      "TagId": 4,
+      "id": 12
+    },
+    {
+      "oracle_id": "310f141c-7f37-4729-aed6-dd9c09db448d",
+      "TagId": 7,
+      "id": 13
+    },
+    {
+      "oracle_id": "9603e553-f72d-40bf-94ab-596afb7d6db3",
+      "TagId": 8,
+      "id": 14
     }
   ]
 }

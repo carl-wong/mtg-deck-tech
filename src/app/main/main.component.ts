@@ -6,6 +6,7 @@ import { SleepHelper } from '../classes/sleep-helper';
 import { OracleApiService } from '../services/oracle-api.service';
 import { LocalApiService } from '../services/local-api.service';
 import { DialogAddTagComponent } from '../dialog-add-tag/dialog-add-tag.component';
+import  {DialogCardDetailsComponent} from '../dialog-card-details/dialog-card-details.component';
 import { MatDialog, MatDialogConfig } from '@angular/material/dialog';
 
 
@@ -155,6 +156,17 @@ export class MainComponent implements OnInit {
 			}
 		});
 		this.isCardsByTypeReady = true;
+	}
+
+	openDialogCardDetails(card: CardReference) {
+		const dConfig = new MatDialogConfig();
+
+		dConfig.disableClose = false;
+		dConfig.autoFocus = false;
+
+		dConfig.data = card;
+
+		this.dialog.open(DialogCardDetailsComponent, dConfig);
 	}
 
 	openDialogAddTag(card: CardReference) {

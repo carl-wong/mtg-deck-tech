@@ -9,6 +9,7 @@ import { MatDialogModule } from '@angular/material/dialog';
 import { MatExpansionModule } from '@angular/material/expansion';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
+import { MatIconModule } from '@angular/material/icon';
 import { MatSelectModule } from '@angular/material/select';
 import { MatTableModule } from '@angular/material/table';
 import { MatToolbarModule } from '@angular/material/toolbar';
@@ -17,6 +18,7 @@ import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
 import { DialogAddTagComponent } from './dialog-add-tag/dialog-add-tag.component';
+import { DialogCardDetailsComponent } from './dialog-card-details/dialog-card-details.component';
 import { MainComponent } from './main/main.component';
 
 
@@ -24,10 +26,12 @@ import { MainComponent } from './main/main.component';
   declarations: [
     AppComponent,
     MainComponent,
-    DialogAddTagComponent
+    DialogAddTagComponent,
+    DialogCardDetailsComponent
   ],
   entryComponents: [
-    DialogAddTagComponent
+    DialogAddTagComponent,
+    DialogCardDetailsComponent,
   ],
   imports: [
     BrowserModule,
@@ -38,6 +42,7 @@ import { MainComponent } from './main/main.component';
     ReactiveFormsModule,
     BrowserAnimationsModule,
     MatInputModule,
+    MatIconModule,
     MatButtonModule,
     MatAutocompleteModule,
     MatDialogModule,

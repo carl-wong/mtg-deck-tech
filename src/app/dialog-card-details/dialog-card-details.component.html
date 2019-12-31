@@ -1,0 +1,14 @@
+<h2 mat-dialog-title>Card Details</h2>
+<mat-dialog-content>
+  <!-- <code>{{oracle_text}}</code> -->
+  <ng-container *ngIf="model">
+    <div style="width: auto; text-align: center; padding: 1em; height: 400px;">
+      <img src="{{model.OracleCard.image_uris.normal}}" style="width: auto; height: 100%;" />
+    </div>
+  </ng-container>
+</mat-dialog-content>
+<mat-dialog-actions align="end">
+  <button mat-raised-button color="primary" (click)="close()">
+    Close
+  </button>
+</mat-dialog-actions>
