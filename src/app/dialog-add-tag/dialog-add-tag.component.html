@@ -2,7 +2,7 @@
 <mat-dialog-content>
   <ng-container *ngIf="options">
     <mat-form-field>
-      <input type="text" matInput [formControl]="myControl" [matAutocomplete]="auto" (keydown.enter)="close(true)" (keydown.esc)="close()">
+      <input type="text" matInput [formControl]="tagInput" [(ngModel)]="tagName" [matAutocomplete]="auto" (keydown.enter)="onKeyEnter()" (keydown.esc)="close()">
     </mat-form-field>
     <mat-autocomplete #auto="matAutocomplete">
       <mat-option *ngFor="let option of filteredOptions | async" [value]="option">

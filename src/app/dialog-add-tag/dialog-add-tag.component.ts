@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, Input } from '@angular/core';
 import { FormControl } from '@angular/forms';
 import { MatDialogRef } from '@angular/material';
 import { Observable } from 'rxjs';
@@ -16,7 +16,9 @@ export class DialogAddTagComponent implements OnInit {
 	private _tags: Tag[];
 	options: string[];
 	filteredOptions: Observable<string[]>;
-	myControl = new FormControl();
+	tagInput = new FormControl();
+
+	@Input() tagName: string = '';
 
 	constructor(
 		private service: LocalApiService,
@@ -26,8 +28,8 @@ export class DialogAddTagComponent implements OnInit {
 	ngOnInit() {
 		this.service.getTags().subscribe(tags => {
 			this._tags = tags;
-			this.options = tags.map(a => a.name);
-			this.filteredOptions = this.myControl.valueChanges
+			this.options = tags.map(a => a.name).sort();
+			this.filteredOptions = this.tagInput.valueChanges
 				.pipe(
 					startWith(''),
 					map(value => this._filter(value))
@@ -40,22 +42,30 @@ export class DialogAddTagComponent implements OnInit {
 		return this.options.filter(option => option.toLowerCase().includes(filterValue));
 	}
 
-	close(isAccept: boolean = false) {
-		console.log(this.myControl.value);
+	onKeyEnter() {
+		const value = this.tagInput.value;
+		const filteredOptions = this._filter(value);
 
-		let value = this.myControl.value;
-		if (value) {
-			value = value.trim().toUpperCase();
+		if (filteredOptions.length > 0) {
+			this.tagName = filteredOptions[0];
 		}
 
-		if (isAccept && value) {
-			const existing = this._tags.find(m => m.name === value);
+		this.close(true);
+	}
+
+	close(isAccept: boolean = false) {
+		if (this.tagName) {
+			this.tagName = this.tagName.trim().toUpperCase();
+		}
+
+		if (isAccept && this.tagName) {
+			const existing = this._tags.find(m => m.name === this.tagName);
 
 			if (existing) {
 				this.dialogRef.close(existing.id);
 			} else {
 				let newTag = new Tag();
-				newTag.name = value;
+				newTag.name = this.tagName;
 
 				this.service.createTag(newTag).subscribe(res => {
 					if (res) {
