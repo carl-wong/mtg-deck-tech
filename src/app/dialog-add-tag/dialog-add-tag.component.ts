@@ -42,6 +42,10 @@ export class DialogAddTagComponent implements OnInit {
 		return this.options.filter(option => option.toLowerCase().includes(filterValue));
 	}
 
+	onOptionSelected($event) {
+		this.close(true);
+	}
+
 	onKeyEnter() {
 		const value = this.tagInput.value;
 		const filteredOptions = this._filter(value);

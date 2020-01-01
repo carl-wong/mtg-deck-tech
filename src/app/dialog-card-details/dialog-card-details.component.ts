@@ -16,7 +16,7 @@ export class DialogCardDetailsComponent implements OnInit {
 		private dialogRef: MatDialogRef<DialogCardDetailsComponent>,
 		@Inject(MAT_DIALOG_DATA) data: CardReference) {
 		this.model = data;
-		this.oracle_text = data.OracleCard.oracle_text.trim();
+		// this.oracle_text = data.OracleCard.oracle_text.trim();
 	}
 
 	ngOnInit() {

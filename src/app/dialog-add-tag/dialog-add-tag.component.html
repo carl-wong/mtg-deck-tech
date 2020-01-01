@@ -4,7 +4,7 @@
     <mat-form-field>
       <input type="text" matInput [formControl]="tagInput" [(ngModel)]="tagName" [matAutocomplete]="auto" (keydown.enter)="onKeyEnter()" (keydown.esc)="close()">
     </mat-form-field>
-    <mat-autocomplete #auto="matAutocomplete">
+    <mat-autocomplete #auto="matAutocomplete" (optionSelected)="onOptionSelected($event)">
       <mat-option *ngFor="let option of filteredOptions | async" [value]="option">
         {{option}}
       </mat-option>
