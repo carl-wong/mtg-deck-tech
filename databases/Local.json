@@ -63,6 +63,14 @@
     {
       "name": "ANTHEM",
       "id": 16
+    },
+    {
+      "name": "DRAIN",
+      "id": 17
+    },
+    {
+      "name": "ETB",
+      "id": 18
     }
   ],
   "CardTagLinks": [
@@ -335,6 +343,101 @@
       "oracle_id": "cc65ac73-5bef-4ecb-ad8e-39199084c027",
       "TagId": 16,
       "id": 54
+    },
+    {
+      "oracle_id": "18f34bfd-7675-49df-91ea-695c510cd3c3",
+      "TagId": 7,
+      "id": 55
+    },
+    {
+      "oracle_id": "6969a7e2-6866-4001-a139-24b3be13deae",
+      "TagId": 11,
+      "id": 56
+    },
+    {
+      "oracle_id": "2f807301-37df-4724-871a-08e3512b07b3",
+      "TagId": 13,
+      "id": 57
+    },
+    {
+      "oracle_id": "a7dc2e62-1c50-4ed7-b71f-2d782a447a5e",
+      "TagId": 17,
+      "id": 58
+    },
+    {
+      "oracle_id": "c48d844c-3976-4fa5-8e0d-3f0e535e7619",
+      "TagId": 18,
+      "id": 59
+    },
+    {
+      "oracle_id": "7a3e50a5-c163-4c41-b62d-d52c233c55b7",
+      "TagId": 11,
+      "id": 60
+    },
+    {
+      "oracle_id": "9d6686a0-1648-42f6-a606-16d2a84138a7",
+      "TagId": 7,
+      "id": 61
+    },
+    {
+      "oracle_id": "a5f537f6-3254-45a3-a4e7-d4d4fd7a972d",
+      "TagId": 2,
+      "id": 62
+    },
+    {
+      "oracle_id": "f88a096e-7497-4297-ab65-f18769b1cc47",
+      "TagId": 3,
+      "id": 63
+    },
+    {
+      "oracle_id": "f88a096e-7497-4297-ab65-f18769b1cc47",
+      "TagId": 13,
+      "id": 64
+    },
+    {
+      "oracle_id": "a498bc70-36e7-4454-bc44-906893df38b8",
+      "TagId": 7,
+      "id": 65
+    },
+    {
+      "oracle_id": "3ea71eed-e1ae-4e28-a4f5-44ff115949f4",
+      "TagId": 13,
+      "id": 66
+    },
+    {
+      "oracle_id": "3ea71eed-e1ae-4e28-a4f5-44ff115949f4",
+      "TagId": 2,
+      "id": 67
+    },
+    {
+      "oracle_id": "7fd61a18-6e4f-40c5-aa00-3d101ec1ec82",
+      "TagId": 10,
+      "id": 68
+    },
+    {
+      "oracle_id": "0d3bebc6-662a-4cd4-ad1e-aeed0c5e04f6",
+      "TagId": 3,
+      "id": 69
+    },
+    {
+      "oracle_id": "14c3ff84-1e82-4606-a433-869fc52cc382",
+      "TagId": 7,
+      "id": 70
+    },
+    {
+      "oracle_id": "754e227b-ff31-4b5c-b612-2221c2b44246",
+      "TagId": 15,
+      "id": 71
+    },
+    {
+      "oracle_id": "f82a4e85-526d-4456-b700-7760043a31be",
+      "TagId": 8,
+      "id": 72
+    },
+    {
+      "oracle_id": "76b003e0-15af-4f22-bdf2-1ade5430964a",
+      "TagId": 7,
+      "id": 73
     }
   ]
 }

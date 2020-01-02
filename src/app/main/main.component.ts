@@ -392,7 +392,7 @@ export class MainComponent implements OnInit {
 									const newTag = link.Tag.name;
 									let index = 0;
 									while (index < card.CardTagLinks.length) {
-										if (newTag > card[index]) {
+										if (newTag > card.CardTagLinks[index].Tag.name) {
 											index++;
 										} else {
 											break;
