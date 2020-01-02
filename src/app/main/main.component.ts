@@ -10,6 +10,10 @@ import { DialogCardDetailsComponent } from '../dialog-card-details/dialog-card-d
 import { LocalApiService } from '../services/local-api.service';
 import { OracleApiService } from '../services/oracle-api.service';
 
+const MODE_TYPES = 'Types';
+const MODE_TAGS = 'Tags';
+const MODE_CMC = 'CMC';
+
 const UNTAGGED_PLACEHOLDER = 'UNTAGGED';
 const QUERY_BATCH_SIZE = 10;
 
@@ -29,8 +33,9 @@ export class MainComponent implements OnInit {
 	onCardsLoaded = new EventEmitter();
 
 	groupByModes = [
-		'Types',
-		'Tags'
+		MODE_TYPES,
+		MODE_TAGS,
+		MODE_CMC,
 	];
 
 	private _isTransformCardsCacheReady = false;
@@ -198,8 +203,8 @@ export class MainComponent implements OnInit {
 	private _groupCardsByType() {
 		const MAIN_TYPES = [
 			'Creature',
-			'Instant',
 			'Sorcery',
+			'Instant',
 			'Enchantment',
 			'Artifact',
 			'Land',
@@ -228,7 +233,6 @@ export class MainComponent implements OnInit {
 		});
 
 		result.map(a => this._sortGroupContents(a));
-		result = result.sort(this._sortTupleByGroup);
 
 		this.cardsGrouped = result;
 		this.accordionStep = 'groups';
@@ -283,6 +287,33 @@ export class MainComponent implements OnInit {
 		this.accordionStep = 'groups';
 	}
 
+	private _groupCardsByCMC() {
+		function cmcToString(cmc: number) {
+			if (cmc > 6) {
+				return '7+ CMC';
+			} else {
+				return `${cmc} CMC`;
+			}
+		}
+
+		let result: [string, CardReference[], number][] = [];
+
+		for (let i = 0; i < 8; i++) {
+			result.push([cmcToString(i), [], 0]);
+		}
+
+		this._cards.forEach(card => {
+			const cmcString = cmcToString(card.OracleCard.cmc);
+			let group: [string, CardReference[], number] = result.find(m => m[0] === cmcString);
+			group[1].push(card);
+			group[2] += card.count;
+		});
+
+		result.map(a => this._sortGroupContents(a));
+		this.cardsGrouped = result;
+		this.accordionStep = 'groups';
+	}
+
 	private _sortTupleByGroup(a, b): number {
 		return (a[0] > b[0]) ? 1 : ((b[0] > a[0]) ? -1 : 0);
 	}
@@ -305,12 +336,16 @@ export class MainComponent implements OnInit {
 
 	performGroupByMode(mode: string) {
 		switch (mode) {
-			case 'Types':
+			case MODE_TYPES:
 				this._groupCardsByType();
 				break;
 
-			case 'Tags':
+			case MODE_TAGS:
 				this._groupCardsByTag();
+				break;
+
+			case MODE_CMC:
+				this._groupCardsByCMC();
 				break;
 
 			default:
