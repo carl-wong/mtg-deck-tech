@@ -90,11 +90,6 @@
       "id": 3
     },
     {
-      "oracle_id": "5f601f48-d24b-4883-9fde-b3f620e7c9ea",
-      "TagId": 3,
-      "id": 4
-    },
-    {
       "oracle_id": "a242c9bf-dab6-4996-bb3a-b4356f9ed0c9",
       "TagId": 4,
       "id": 5
@@ -438,6 +433,36 @@
       "oracle_id": "76b003e0-15af-4f22-bdf2-1ade5430964a",
       "TagId": 7,
       "id": 73
+    },
+    {
+      "oracle_id": "2fa94a07-c932-4f85-b6e0-a97d2b29eb52",
+      "TagId": 7,
+      "id": 74
+    },
+    {
+      "oracle_id": "8de50bda-1ef6-4ccf-9efc-fab10b7eb2e5",
+      "TagId": 15,
+      "id": 75
+    },
+    {
+      "oracle_id": "c6bdaf76-6a03-4695-9c4b-f040e73435af",
+      "TagId": 7,
+      "id": 76
+    },
+    {
+      "oracle_id": "eb414a8f-566f-4635-80a1-77b2e18ac8dc",
+      "TagId": 2,
+      "id": 77
+    },
+    {
+      "oracle_id": "2549bc57-9ffb-4053-9f10-f2a5f792b845",
+      "TagId": 2,
+      "id": 78
+    },
+    {
+      "oracle_id": "2549bc57-9ffb-4053-9f10-f2a5f792b845",
+      "TagId": 5,
+      "id": 79
     }
   ]
 }

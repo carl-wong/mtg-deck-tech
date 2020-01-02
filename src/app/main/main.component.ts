@@ -4,11 +4,14 @@ import { CardReference } from '../classes/card-reference';
 import { CardTagLink } from '../classes/card-tag-link';
 import { OracleCard } from '../classes/oracle-card';
 import { SleepHelper } from '../classes/sleep-helper';
+import { Statistics } from '../classes/statistics';
 import { Tag } from '../classes/tag';
 import { DialogAddTagComponent } from '../dialog-add-tag/dialog-add-tag.component';
 import { DialogCardDetailsComponent } from '../dialog-card-details/dialog-card-details.component';
 import { LocalApiService } from '../services/local-api.service';
 import { OracleApiService } from '../services/oracle-api.service';
+import { ChartCmc } from './chart-cmc/chart-cmc.component';
+
 
 const MODE_TYPES = 'Types';
 const MODE_TAGS = 'Tags';
@@ -47,6 +50,7 @@ export class MainComponent implements OnInit {
 	private _cards: CardReference[] = [];
 
 	cardsGrouped: [string, CardReference[], number][] = [];
+	chartCMCCurve: ChartCmc;
 
 	constructor(
 		private oracle: OracleApiService,
@@ -66,11 +70,12 @@ export class MainComponent implements OnInit {
 				case FinishedStep.Oracle:
 					// mixin CardTagLinks
 					this._mixinTagLinks();
+					this._getStatistics();
 					break;
 
 				case FinishedStep.Tags:
 					// group cards based on selected mode value
-					this.performGroupByMode(this.groupByMode);
+					this._performGroupByMode(this.groupByMode);
 					break;
 
 				default:
@@ -195,6 +200,29 @@ export class MainComponent implements OnInit {
 		}
 	}
 
+	private _getStatistics() {
+		let cmcChart = {
+			title: 'CMC',
+			data: [Statistics.getChartCMCCurve(this._cards)],
+			labels: [],
+			colors: [],
+		};
+
+		for (let cmc = 0; cmc < 8; cmc++) {
+			if (cmc === 7) {
+				cmcChart.labels.push('7+');
+			} else {
+				cmcChart.labels.push(cmc.toString());
+			}
+		}
+
+		cmcChart.colors.push({
+			backgroundColor: cmcChart.data[0].backgroundColor.toString()
+		});
+
+		this.chartCMCCurve = cmcChart;
+	}
+
 	private _resetSession() {
 		this._cards = [];
 		this.cardsGrouped = [];
@@ -283,7 +311,6 @@ export class MainComponent implements OnInit {
 		}
 
 		this.cardsGrouped = result;
-
 		this.accordionStep = 'groups';
 	}
 
@@ -331,10 +358,10 @@ export class MainComponent implements OnInit {
 	}
 
 	refreshGroups() {
-		this.performGroupByMode(this.groupByMode);
+		this._performGroupByMode(this.groupByMode);
 	}
 
-	performGroupByMode(mode: string) {
+	_performGroupByMode(mode: string) {
 		switch (mode) {
 			case MODE_TYPES:
 				this._groupCardsByType();
@@ -354,7 +381,7 @@ export class MainComponent implements OnInit {
 	}
 
 	selectedMode($event) {
-		this.performGroupByMode($event.value);
+		this._performGroupByMode($event.value);
 	}
 
 	openDialogCardDetails(card: CardReference) {

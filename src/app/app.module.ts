@@ -8,18 +8,20 @@ import { MatCardModule } from '@angular/material/card';
 import { MatDialogModule } from '@angular/material/dialog';
 import { MatExpansionModule } from '@angular/material/expansion';
 import { MatFormFieldModule } from '@angular/material/form-field';
-import { MatInputModule } from '@angular/material/input';
 import { MatIconModule } from '@angular/material/icon';
+import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import { MatTableModule } from '@angular/material/table';
 import { MatToolbarModule } from '@angular/material/toolbar';
 import { BrowserModule } from '@angular/platform-browser';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
+import { ChartsModule } from 'ng2-charts';
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
 import { DialogAddTagComponent } from './dialog-add-tag/dialog-add-tag.component';
 import { DialogCardDetailsComponent } from './dialog-card-details/dialog-card-details.component';
 import { MainComponent } from './main/main.component';
+import { ChartCmcComponent } from './main/chart-cmc/chart-cmc.component';
 
 
 @NgModule({
@@ -27,7 +29,8 @@ import { MainComponent } from './main/main.component';
     AppComponent,
     MainComponent,
     DialogAddTagComponent,
-    DialogCardDetailsComponent
+    DialogCardDetailsComponent,
+    ChartCmcComponent
   ],
   entryComponents: [
     DialogAddTagComponent,
@@ -37,6 +40,7 @@ import { MainComponent } from './main/main.component';
     BrowserModule,
     HttpClientModule,
     AppRoutingModule,
+    ChartsModule,
     FlexLayoutModule,
     FormsModule,
     ReactiveFormsModule,
