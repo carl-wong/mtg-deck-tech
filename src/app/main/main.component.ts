@@ -11,6 +11,7 @@ import { DialogCardDetailsComponent } from '../dialog-card-details/dialog-card-d
 import { LocalApiService } from '../services/local-api.service';
 import { OracleApiService } from '../services/oracle-api.service';
 import { ChartCmc } from './chart-cmc/chart-cmc.component';
+import { ChartColorPie } from './chart-color-pie/chart-color-pie.component';
 
 
 const MODE_TYPES = 'Types';
@@ -51,6 +52,7 @@ export class MainComponent implements OnInit {
 
 	cardsGrouped: [string, CardReference[], number][] = [];
 	chartCMCCurve: ChartCmc;
+	chartColorPie: ChartColorPie;
 
 	constructor(
 		private oracle: OracleApiService,
@@ -201,26 +203,42 @@ export class MainComponent implements OnInit {
 	}
 
 	private _getStatistics() {
-		let cmcChart = {
+		this._getCMCChart();
+		this._getColorsPieChart();
+	}
+
+	private _getColorsPieChart() {
+		let chart: ChartColorPie = {
+			title: 'Color Breakdown',
+			data: Statistics.getChartColorPie(this._cards),
+			labels: [],
+			colors: []
+		};
+
+		this.chartColorPie = chart;
+	}
+
+	private _getCMCChart() {
+		let chart: ChartCmc = {
 			title: 'CMC',
-			data: [Statistics.getChartCMCCurve(this._cards)],
+			data: [Statistics.getChartCMC(this._cards)],
 			labels: [],
 			colors: [],
 		};
 
 		for (let cmc = 0; cmc < 8; cmc++) {
 			if (cmc === 7) {
-				cmcChart.labels.push('7+');
+				chart.labels.push('7+');
 			} else {
-				cmcChart.labels.push(cmc.toString());
+				chart.labels.push(cmc.toString());
 			}
 		}
 
-		cmcChart.colors.push({
-			backgroundColor: cmcChart.data[0].backgroundColor.toString()
+		chart.colors.push({
+			backgroundColor: chart.data[0].backgroundColor.toString()
 		});
 
-		this.chartCMCCurve = cmcChart;
+		this.chartCMCCurve = chart;
 	}
 
 	private _resetSession() {
