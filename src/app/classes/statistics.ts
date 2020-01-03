@@ -46,7 +46,7 @@ export abstract class Statistics {
 		return result;
 	}
 
-	static getChartColorPie(deck: CardReference[]): ChartDataSets[] {
+	static getChartColorPie(deck: CardReference[]): MultiDataSet {
 
 		let cardCounts: { [color: string]: number } = {};
 		let landCounts: { [color: string]: number } = {};

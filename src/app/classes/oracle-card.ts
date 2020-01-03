@@ -1,89 +1,89 @@
-export interface ImageUris {
-	small: string;
+export class ImageUris {
+	private small: string;
 	normal: string;
-	large: string;
-	png: string;
-	art_crop: string;
-	border_crop: string;
+	private large: string;
+	private png: string;
+	private art_crop: string;
+	private border_crop: string;
 }
 
-export interface Legalities {
-	standard: string;
-	future: string;
-	historic: string;
-	pioneer: string;
-	modern: string;
-	legacy: string;
-	pauper: string;
-	vintage: string;
-	penny: string;
-	commander: string;
-	brawl: string;
-	duel: string;
-	oldschool: string;
+export class Legalities {
+	private standard: string;
+	private future: string;
+	private historic: string;
+	private pioneer: string;
+	private modern: string;
+	private legacy: string;
+	private pauper: string;
+	private vintage: string;
+	private penny: string;
+	private commander: string;
+	private brawl: string;
+	private duel: string;
+	private oldschool: string;
 }
 
-export interface RelatedUris {
-	gatherer: string;
-	tcgplayer_decks: string;
-	edhrec: string;
-	mtgtop8: string;
+export class RelatedUris {
+	private gatherer: string;
+	private tcgplayer_decks: string;
+	private edhrec: string;
+	private mtgtop8: string;
 }
 
-export interface OracleCard {
-	object: string;
-	id: string;
+export class OracleCard {
+	private object: string;
+	private id: string;
 	oracle_id: string;
-	multiverse_ids: number[];
-	mtgo_id: number;
-	tcgplayer_id: number;
+	private multiverse_ids: number[];
+	private mtgo_id: number;
+	private tcgplayer_id: number;
 	name: string;
-	lang: string;
-	released_at: string;
-	uri: string;
-	scryfall_uri: string;
+	private lang: string;
+	private released_at: string;
+	private uri: string;
+	private scryfall_uri: string;
 	layout: string;
-	highres_image: boolean;
-	image_uris: ImageUris;
-	mana_cost: string;
+	private highres_image: boolean;
+	private image_uris: ImageUris;
+	private mana_cost: string;
 	cmc: number;
 	type_line: string;
 	oracle_text: string;
-	power: string;
-	toughness: string;
+	private power: string;
+	private toughness: string;
 	colors: string[];
 	color_identity: string[];
-	legalities: Legalities;
-	games: string[];
-	reserved: boolean;
-	foil: boolean;
-	nonfoil: boolean;
-	oversized: boolean;
-	promo: boolean;
-	reprint: boolean;
-	variation: boolean;
-	set: string;
-	set_name: string;
-	set_type: string;
-	set_uri: string;
-	set_search_uri: string;
-	scryfall_set_uri: string;
-	rulings_uri: string;
-	prints_search_uri: string;
-	collector_number: string;
-	digital: boolean;
-	rarity: string;
-	flavor_text: string;
-	card_back_id: string;
-	artist: string;
-	artist_ids: string[];
-	illustration_id: string;
-	border_color: string;
-	frame: string;
-	full_art: boolean;
-	textless: boolean;
-	booster: boolean;
-	story_spotlight: boolean;
-	edhrec_rank: number;
-	related_uris: RelatedUris;
+	private legalities: Legalities;
+	private games: string[];
+	private reserved: boolean;
+	private foil: boolean;
+	private nonfoil: boolean;
+	private oversized: boolean;
+	private promo: boolean;
+	private reprint: boolean;
+	private variation: boolean;
+	private set: string;
+	private set_name: string;
+	private set_type: string;
+	private set_uri: string;
+	private set_search_uri: string;
+	private scryfall_set_uri: string;
+	private rulings_uri: string;
+	private prints_search_uri: string;
+	private collector_number: string;
+	private digital: boolean;
+	private rarity: string;
+	private flavor_text: string;
+	private card_back_id: string;
+	private artist: string;
+	private artist_ids: string[];
+	private illustration_id: string;
+	private border_color: string;
+	private frame: string;
+	private full_art: boolean;
+	private textless: boolean;
+	private booster: boolean;
+	private story_spotlight: boolean;
+	private edhrec_rank: number;
+	private related_uris: RelatedUris;
 }
