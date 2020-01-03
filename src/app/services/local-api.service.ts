@@ -4,6 +4,7 @@ import { Observable, of } from 'rxjs';
 import { catchError, map } from 'rxjs/operators';
 import { environment } from '../../environments/environment';
 import { CardTagLink } from '../classes/card-tag-link';
+import { Profile } from '../classes/profile';
 import { Tag } from '../classes/tag';
 
 
@@ -22,6 +23,27 @@ export class LocalApiService {
 	constructor(
 		private http: HttpClient,
 	) {
+	}
+
+	public getProfilesByAuth0(id: string): Observable<Profile[]> {
+		return this.http.get<Profile>(this._api + '/Profiles', {
+			params: new HttpParams()
+				.set('auth0Id', id)
+		})
+			.pipe(
+				map(res => {
+					res['payload'] = res;
+					return res['payload'];
+				}),
+				catchError(this.handleError('get id=' + id))
+			);
+	}
+
+	public createProfile(model: Profile): Observable<Profile> {
+		return this.http.post<Profile>(this._api + '/Profiles', model, this.httpOptions)
+			.pipe(
+				catchError(this.handleError<Profile>('create'))
+			);
 	}
 
 	public getTag(id: number): Observable<Tag> {

@@ -1,4 +1,10 @@
 {
+  "Profiles": [
+    {
+      "auth0Id": "google-oauth2|110130619306186326294",
+      "id": 1
+    }
+  ],
   "Tags": [
     {
       "name": "REMOVAL",

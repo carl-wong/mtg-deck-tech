@@ -1,0 +1,7 @@
+<mat-toolbar color="primary">
+  <span>MTG Deck Tech</span>
+  <span class="fill-space"></span>
+  <button mat-raised-button (click)="auth.logout()" *ngIf="auth.loggedIn">
+    <mat-icon>emoji_people</mat-icon>Log Out
+  </button>
+</mat-toolbar>

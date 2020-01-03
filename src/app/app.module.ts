@@ -23,6 +23,8 @@ import { DialogCardDetailsComponent } from './dialog-card-details/dialog-card-de
 import { ChartCmcComponent } from './main/chart-cmc/chart-cmc.component';
 import { MainComponent } from './main/main.component';
 import { ChartColorPieComponent } from './main/chart-color-pie/chart-color-pie.component';
+import { HeaderComponent } from './header/header.component';
+import { CallbackComponent } from './callback/callback.component';
 
 
 @NgModule({
@@ -32,7 +34,9 @@ import { ChartColorPieComponent } from './main/chart-color-pie/chart-color-pie.c
     DialogAddTagComponent,
     DialogCardDetailsComponent,
     ChartCmcComponent,
-    ChartColorPieComponent
+    ChartColorPieComponent,
+    HeaderComponent,
+    CallbackComponent
   ],
   entryComponents: [
     DialogAddTagComponent,
