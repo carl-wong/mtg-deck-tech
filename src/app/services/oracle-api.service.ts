@@ -1,7 +1,8 @@
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Observable, of } from 'rxjs';
-import { catchError, map, tap } from 'rxjs/operators';
+import { map } from 'rxjs/operators';
+import { environment } from '../../environments/environment';
 import { OracleCard } from '../classes/oracle-card';
 
 
@@ -9,7 +10,7 @@ import { OracleCard } from '../classes/oracle-card';
 	providedIn: 'root'
 })
 export class OracleApiService {
-	apiUrl = 'http://localhost:3000';
+	private _api = environment.oracleApi;
 
 	constructor(
 		private http: HttpClient,
@@ -20,7 +21,7 @@ export class OracleApiService {
 		let params: HttpParams = new HttpParams()
 			.set('layout', 'transform');
 
-		return this.http.get(this.apiUrl + '/Cards', {
+		return this.http.get(this._api + '/Cards', {
 			params: params
 		})
 			.pipe(
@@ -39,7 +40,7 @@ export class OracleApiService {
 			params = params.append('name', card_name);
 		});
 
-		return this.http.get(this.apiUrl + '/Cards', {
+		return this.http.get(this._api + '/Cards', {
 			params: params
 		})
 			.pipe(
