@@ -1,12 +1,11 @@
 import { Component, Input, OnInit, ViewChild } from '@angular/core';
 import { ChartOptions, ChartType } from 'chart.js';
 import { BaseChartDirective, Color, Label, MultiDataSet } from 'ng2-charts';
+import { Statistics } from '../../classes/statistics';
 
 export interface ChartColorPie {
 	title: string;
 	data: MultiDataSet;
-	labels: Label[];
-	colors: Color[];
 }
 
 
@@ -21,22 +20,60 @@ export class ChartColorPieComponent implements OnInit {
 
 	options: ChartOptions = {
 		responsive: true,
-		legend: {
-			position: 'right',
-		},
 		tooltips: {
+			custom: function(tooltip: Chart.ChartTooltipModel) {
+				if (!tooltip) { return; }
+				tooltip.displayColors = false;
+			},
 			callbacks: {
 				label(tooltipItem, data) {
-					const risk = data.labels[tooltipItem.index];
-					const percentage = data.datasets[tooltipItem.datasetIndex].data[tooltipItem.index] + '%';
-					return risk + ': ' + percentage;
+					function sum(a, b) {
+						return a + b;
+					}
+
+					const label = data.labels[tooltipItem.datasetIndex] as string;
+					const colorName = Statistics.COLORS[tooltipItem.index][1];
+
+					const count = data.datasets[tooltipItem.datasetIndex].data[tooltipItem.index] as number;
+					const total = (data.datasets[tooltipItem.datasetIndex].data as number[]).reduce(sum);
+					const percent = total > 0 ? Math.round(count / total * 10000) / 100 : 0;
+
+					return [label, `${count} ${colorName} cards`, percent + '%'];
 				}
 			}
 		}
 	};
 
-	legend = true;
+	legend = false;
 	type: ChartType = 'doughnut';
+
+	labels = [
+		'Lands',
+		'Non-Lands',
+	];
+
+	colors = [
+		{
+			backgroundColor: [
+				'#F6F2E4',
+				'#B9E6FE',
+				'#BAB1AB',
+				'#F5B396',
+				'#A6CEAA',
+				'#CCCCCC'
+			],
+		},
+		{
+			backgroundColor: [
+				'#F6F2E4',
+				'#B9E6FE',
+				'#BAB1AB',
+				'#F5B396',
+				'#A6CEAA',
+				'#CCCCCC'
+			],
+		},
+	];
 
 	constructor() { }
 

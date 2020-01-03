@@ -211,8 +211,6 @@ export class MainComponent implements OnInit {
 		let chart: ChartColorPie = {
 			title: 'Color Breakdown',
 			data: Statistics.getChartColorPie(this._cards),
-			labels: [],
-			colors: []
 		};
 
 		this.chartColorPie = chart;
@@ -346,16 +344,28 @@ export class MainComponent implements OnInit {
 		for (let i = 0; i < 8; i++) {
 			result.push([cmcToString(i), [], 0]);
 		}
+		
+		let landsGroup: [string, CardReference[], number] = ['Lands', [], 0];
+		result.push(landsGroup);
 
 		this._cards.forEach(card => {
-			const cmcString = cmcToString(card.OracleCard.cmc);
-			let group: [string, CardReference[], number] = result.find(m => m[0] === cmcString);
-			group[1].push(card);
-			group[2] += card.count;
+			if (card.OracleCard.layout &&
+				card.OracleCard.layout !== 'transform' &&
+				card.OracleCard.type_line &&
+				card.OracleCard.type_line.includes('Land')) {
+				landsGroup[1].push(card);
+				landsGroup[2] += card.count;
+			} else {
+				const cmcString = cmcToString(card.OracleCard.cmc);
+				let group: [string, CardReference[], number] = result.find(m => m[0] === cmcString);
+				group[1].push(card);
+				group[2] += card.count;
+			}
 		});
 
 		result.map(a => this._sortGroupContents(a));
-		this.cardsGrouped = result;
+
+		this.cardsGrouped = result.filter(m => m[2] > 0);
 		this.accordionStep = 'groups';
 	}
 

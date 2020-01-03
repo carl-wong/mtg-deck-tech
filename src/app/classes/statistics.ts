@@ -4,6 +4,15 @@ import { CardReference } from './card-reference';
 
 
 export abstract class Statistics {
+	static COLORS = [
+		['W', 'White'],
+		['U', 'Blue'],
+		['B', 'Black'],
+		['R', 'Red'],
+		['G', 'Green'],
+		['C', 'Colorless']
+	];
+
 	static getChartCMC(deck: CardReference[]): ChartDataSets {
 		function sum(total, num) {
 			return total + num;
@@ -37,44 +46,44 @@ export abstract class Statistics {
 		return result;
 	}
 
-	static getChartColorPie(deck: CardReference[]): MultiDataSet {
-		const COLORS = ['W', 'U', 'B', 'R', 'G', 'C'];
+	static getChartColorPie(deck: CardReference[]): ChartDataSets[] {
 
 		let cardCounts: { [color: string]: number } = {};
 		let landCounts: { [color: string]: number } = {};
 
-		COLORS.forEach(c => {
-			cardCounts[c] = 0;
-			landCounts[c] = 0;
+		this.COLORS.forEach(c => {
+			cardCounts[c[0]] = 0;
+			landCounts[c[0]] = 0;
 		});
 
-		deck.filter(m => m.OracleCard && m.OracleCard.cmc > 0).forEach(card => {
-			if (card.OracleCard.colors) {
-				card.OracleCard.colors.forEach(c => {
-					cardCounts[c] += 1;
-				});
+		deck.filter(m => m.OracleCard).forEach(card => {
+			if (card.OracleCard.layout !== 'transform' &&
+				card.OracleCard.type_line.includes('Land')) {
+				if (card.OracleCard.color_identity) {
+					card.OracleCard.color_identity.forEach(c => {
+						landCounts[c] += 1;
+					});
+				}
+
+				if (card.OracleCard.oracle_text.includes('Add {C}')) {
+					landCounts['C'] += 1;
+				}
 			} else {
-				cardCounts['C'] += 1;
-			}
-		});
-
-		deck.filter(m => m.OracleCard && m.OracleCard.layout !== 'transform' && m.OracleCard.type_line.includes('Land')).forEach(card => {
-			if (card.OracleCard.color_identity) {
-				card.OracleCard.color_identity.forEach(c => {
-					landCounts[c] += 1;
-				});
-			}
-
-			if (card.OracleCard.oracle_text.includes('Add {C}')) {
-				landCounts['C'] += 1;
+				if (card.OracleCard.colors) {
+					card.OracleCard.colors.forEach(c => {
+						cardCounts[c] += 1;
+					});
+				} else {
+					cardCounts['C'] += 1;
+				}
 			}
 		});
 
 		let result: MultiDataSet = [[], []];
 
-		for (let i = 0; i < COLORS.length; i++) {
-			result[1][i] = cardCounts[COLORS[i]];
-			result[0][i] = landCounts[COLORS[i]];
+		for (let i = 0; i < this.COLORS.length; i++) {
+			result[0][i] = landCounts[this.COLORS[i][0]];
+			result[1][i] = cardCounts[this.COLORS[i][0]];
 		}
 
 		return result;
