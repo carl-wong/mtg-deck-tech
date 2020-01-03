@@ -1,5 +1,6 @@
 export class ImageUris {
 	normal: string;
+	
 	private art_crop: string;
 	private border_crop: string;
 	private large: string;
@@ -38,6 +39,8 @@ export class OracleCard {
 	name: string;
 	oracle_id: string;
 	oracle_text: string;
+	type_line: string;
+
 	private artist: string;
 	private artist_ids: string[];
 	private booster: boolean;
@@ -85,5 +88,4 @@ export class OracleCard {
 	private toughness: string;
 	private uri: string;
 	private variation: boolean;
-	type_line: string;
 }
