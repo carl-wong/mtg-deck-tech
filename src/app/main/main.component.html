@@ -93,9 +93,6 @@
         Statistics
       </mat-panel-title>
     </mat-expansion-panel-header>
-    <p *ngIf="!chartCMCCurve">
-      No data, please submit a decklist first.
-    </p>
     <ng-container *ngIf="chartCMCCurve">
       <app-chart-cmc [model]="chartCMCCurve"></app-chart-cmc>
     </ng-container>
