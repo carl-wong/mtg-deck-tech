@@ -34,9 +34,9 @@
         <mat-icon>refresh</mat-icon>
       </button>
     </div>
-    <p *ngIf="cardsGrouped.length === 0">
-      No data, please submit a decklist first.
-    </p>
+    <ng-container *ngIf="cardsGrouped.length === 0">
+      <ng-container *ngTemplateOutlet="noDataWarning;"></ng-container>
+    </ng-container>
     <ng-container *ngIf="cardsGrouped.length > 0">
       <mat-accordion multi="true">
         <mat-expansion-panel *ngFor="let group of cardsGrouped; first as isFirst;" [expanded]="isFirst">
@@ -93,8 +93,21 @@
         Statistics
       </mat-panel-title>
     </mat-expansion-panel-header>
-    <ng-container *ngIf="chartCMCCurve">
-      <app-chart-cmc [model]="chartCMCCurve"></app-chart-cmc>
+    <ng-container *ngIf="!chartCMCCurve">
+      <ng-container *ngTemplateOutlet="noDataWarning;"></ng-container>
     </ng-container>
+    <div class="container">
+      <div class="row">
+        <div class="col-md" *ngIf="chartCMCCurve">
+          <app-chart-cmc [model]="chartCMCCurve"></app-chart-cmc>
+        </div>
+        <div class="col-md" *ngIf="chartColorPie">
+          <app-chart-color-pie [model]="chartColorPie"></app-chart-color-pie>
+        </div>
+      </div>
+    </div>
   </mat-expansion-panel>
 </mat-accordion>
+<ng-template #noDataWarning>
+  <p>No data, please submit a decklist first.</p>
+</ng-template>
