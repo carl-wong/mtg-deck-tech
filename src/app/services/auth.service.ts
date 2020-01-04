@@ -83,8 +83,6 @@ export class AuthService {
 								});
 						}
 					});
-
-				// this.userProfileSubject$.next(user);
 			})
 		);
 	}
@@ -103,11 +101,12 @@ export class AuthService {
 				return of(loggedIn);
 			})
 		);
-		checkAuth$.subscribe((response: { [key: string]: any } | boolean) => {
-			// If authenticated, response will be user object
-			// If not authenticated, response will be 'false'
-			this.loggedIn = !!response;
-		});
+		// checkAuth$.subscribe((response: { [key: string]: any } | boolean) => {
+		// 	// If authenticated, response will be user object
+		// 	// If not authenticated, response will be 'false'
+		// 	this.loggedIn = !!response;
+		// });
+		checkAuth$.subscribe();
 	}
 
 	login(redirectPath: string = '/') {
