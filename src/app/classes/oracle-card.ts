@@ -1,11 +1,26 @@
 export class ImageUris {
 	normal: string;
-	
+
 	private art_crop: string;
 	private border_crop: string;
 	private large: string;
 	private png: string;
 	private small: string;
+}
+
+export class CardFace {
+	image_uris: ImageUris;
+
+	private object: string;
+	private name: string;
+	private mana_cost: string;
+	private type_line: string;
+	private oracle_text: string;
+	private colors: string[];
+	private flavor_text: string;
+	private artist: string;
+	private artist_id: string;
+	private illustration_id: string;
 }
 
 export class Legalities {
@@ -32,15 +47,18 @@ export class RelatedUris {
 }
 
 export class OracleCard {
+	card_faces: CardFace[];
 	cmc: number;
 	color_identity: string[];
 	colors: string[];
+	image_uris: ImageUris;
 	layout: string;
 	name: string;
 	oracle_id: string;
 	oracle_text: string;
 	type_line: string;
 
+	private arena_id: number;
 	private artist: string;
 	private artist_ids: string[];
 	private booster: boolean;
@@ -52,12 +70,12 @@ export class OracleCard {
 	private flavor_text: string;
 	private foil: boolean;
 	private frame: string;
+	private frame_effects: string[];
 	private full_art: boolean;
 	private games: string[];
 	private highres_image: boolean;
 	private id: string;
 	private illustration_id: string;
-	private image_uris: ImageUris;
 	private lang: string;
 	private legalities: Legalities;
 	private mana_cost: string;

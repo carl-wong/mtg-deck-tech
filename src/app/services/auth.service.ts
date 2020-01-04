@@ -67,14 +67,16 @@ export class AuthService {
 				this.local.getProfilesByAuth0(auth0User.sub)
 					.subscribe(users => {
 						if (users && users.length > 0) {
-							sessionStorage.setItem('profileId', users[0].id.toString());
+							sessionStorage.setItem('ProfileId', users[0].id.toString());
+							this.userProfileSubject$.next(user);
 						} else {
 							const model = new Profile();
 							model.auth0Id = auth0User.sub;
 							this.local.createProfile(model)
 								.subscribe(result => {
 									if (result) {
-										sessionStorage.setItem('profileId', result.id.toString());
+										sessionStorage.setItem('ProfileId', result.id.toString());
+										this.userProfileSubject$.next(user);
 									} else {
 										this.logout();
 									}
@@ -82,7 +84,7 @@ export class AuthService {
 						}
 					});
 
-				this.userProfileSubject$.next(user);
+				// this.userProfileSubject$.next(user);
 			})
 		);
 	}

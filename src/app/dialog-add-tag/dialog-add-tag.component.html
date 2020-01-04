@@ -1,15 +1,13 @@
 <h2 mat-dialog-title>Add Tag</h2>
 <mat-dialog-content>
-  <ng-container *ngIf="options">
-    <mat-form-field>
-      <input type="text" matInput [formControl]="tagInput" [(ngModel)]="tagName" [matAutocomplete]="auto" (keydown.enter)="onKeyEnter()" (keydown.esc)="close()">
-    </mat-form-field>
-    <mat-autocomplete #auto="matAutocomplete" (optionSelected)="onOptionSelected($event)">
-      <mat-option *ngFor="let option of filteredOptions | async" [value]="option">
-        {{option}}
-      </mat-option>
-    </mat-autocomplete>
-  </ng-container>
+  <mat-form-field>
+    <input type="text" matInput [formControl]="tagInput" [matAutocomplete]="auto" (keydown.enter)="onKeyEnter()" (keydown.esc)="close()">
+  </mat-form-field>
+  <mat-autocomplete #auto="matAutocomplete" (optionSelected)="onOptionSelected($event)">
+    <mat-option *ngFor="let option of filteredOptions | async" [value]="option">
+      {{option}}
+    </mat-option>
+  </mat-autocomplete>
 </mat-dialog-content>
 <mat-dialog-actions align="end">
   <button mat-raised-button color="primary" (click)="close(true)">

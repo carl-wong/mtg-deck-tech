@@ -1,11 +1,13 @@
 <h2 mat-dialog-title>Card Details</h2>
 <mat-dialog-content>
-  <!-- <code>{{oracle_text}}</code> -->
-  <ng-container *ngIf="model">
-    <div style="width: auto; text-align: center; padding: 1em; height: 400px;">
-      <img src="{{model.OracleCard.image_uris.normal}}" style="width: auto; height: 100%;" />
-    </div>
-  </ng-container>
+  <div class="img-wrapper">
+    <ng-container *ngFor="let uri of imageUris; let i = index;">
+      <img *ngIf="i === shownIndex" src="{{uri}}" [class.clickable]="imageUris.length > 1" (click)="changeShown()" />
+    </ng-container>
+  </div>
+  <div *ngIf="imageUris && imageUris.length > 1" class="msg-wrapper">
+    <p>(click image to cycle)</p>
+  </div>
 </mat-dialog-content>
 <mat-dialog-actions align="end">
   <button mat-raised-button color="primary" (click)="close()">

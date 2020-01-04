@@ -14,11 +14,11 @@ import { LocalApiService } from '../services/local-api.service';
 })
 export class DialogAddTagComponent implements OnInit {
 	private _tags: Tag[];
-	options: string[];
+	options: string[] = [];
 	filteredOptions: Observable<string[]>;
 	tagInput = new FormControl();
 
-	@Input() tagName: string = '';
+	private tagName: string = '';
 
 	constructor(
 		private service: LocalApiService,
@@ -47,8 +47,7 @@ export class DialogAddTagComponent implements OnInit {
 	}
 
 	onKeyEnter() {
-		const value = this.tagInput.value;
-		const filteredOptions = this._filter(value);
+		const filteredOptions = this._filter(this.tagInput.value);
 
 		if (filteredOptions.length > 0) {
 			this.tagName = filteredOptions[0];
@@ -58,8 +57,8 @@ export class DialogAddTagComponent implements OnInit {
 	}
 
 	close(isAccept: boolean = false) {
-		if (this.tagName) {
-			this.tagName = this.tagName.trim().toUpperCase();
+		if (!this.tagName) {
+			this.tagName = this.tagInput.value.trim().toUpperCase();
 		}
 
 		if (isAccept && this.tagName) {

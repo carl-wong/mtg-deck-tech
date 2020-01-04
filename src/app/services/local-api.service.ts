@@ -25,6 +25,11 @@ export class LocalApiService {
 	) {
 	}
 
+	private _getProfileId(): string {
+		return sessionStorage.getItem('ProfileId');
+
+	}
+
 	public getProfilesByAuth0(id: string): Observable<Profile[]> {
 		return this.http.get<Profile>(this._api + '/Profiles', {
 			params: new HttpParams()
@@ -47,7 +52,9 @@ export class LocalApiService {
 	}
 
 	public getTag(id: number): Observable<Tag> {
-		return this.http.get<Tag>(this._api + '/Tags/' + id);
+		return this.http.get<Tag>(this._api + '/Tags/' + id, {
+			params: new HttpParams().set('ProfileId', this._getProfileId())
+		});
 	}
 
 	public getTags(): Observable<Tag[]> {
@@ -67,7 +74,7 @@ export class LocalApiService {
 			params = params.append('oracle_id', id);
 		});
 
-		return this.http.get(this._api + '/CardTagLinks', {
+		return this.http.get(this._api + '/Profiles/' + this._getProfileId() + '/CardTagLinks', {
 			params: params
 		})
 			.pipe(
@@ -80,6 +87,7 @@ export class LocalApiService {
 
 
 	public createTag(model: Tag): Observable<Tag> {
+		model.ProfileId = parseInt(this._getProfileId());
 		return this.http.post<Tag>(this._api + '/Tags', model, this.httpOptions)
 			.pipe(
 				catchError(this.handleError<Tag>('create Tag'))
@@ -87,6 +95,7 @@ export class LocalApiService {
 	}
 
 	public createCardTagLink(model: CardTagLink): Observable<CardTagLink> {
+		model.ProfileId = parseInt(this._getProfileId());
 		return this.http.post<CardTagLink>(this._api + '/CardTagLinks', model, this.httpOptions)
 			.pipe(
 				catchError(this.handleError<CardTagLink>('create CardTagLink'))
