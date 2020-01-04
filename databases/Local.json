@@ -551,6 +551,462 @@
       "TagId": 6,
       "ProfileId": 1,
       "id": 93
+    },
+    {
+      "oracle_id": "68865793-daeb-4c55-80cb-12853f9f96c4",
+      "TagId": 19,
+      "ProfileId": 1,
+      "id": 94
+    },
+    {
+      "oracle_id": "a5f7967e-d357-4ab6-96ac-77262864f280",
+      "TagId": 12,
+      "ProfileId": 1,
+      "id": 95
+    },
+    {
+      "oracle_id": "7b8f1458-c638-4907-9363-f7cc22d04605",
+      "TagId": 19,
+      "ProfileId": 1,
+      "id": 96
+    },
+    {
+      "oracle_id": "fc893d4a-debd-4df0-ae83-d3ebd2f0fefe",
+      "TagId": 19,
+      "ProfileId": 1,
+      "id": 97
+    },
+    {
+      "oracle_id": "a61ef0cc-1da9-49f9-b0dc-01cf9f6205be",
+      "TagId": 19,
+      "ProfileId": 1,
+      "id": 98
+    },
+    {
+      "oracle_id": "d4ec0df9-a4a3-48cf-a0aa-b1aea5c49142",
+      "TagId": 20,
+      "ProfileId": 1,
+      "id": 99
+    },
+    {
+      "oracle_id": "42226b87-0746-4ebf-9fd0-108d508462af",
+      "TagId": 20,
+      "ProfileId": 1,
+      "id": 100
+    },
+    {
+      "oracle_id": "458ca9f4-4622-48e1-9ca1-6a8117188973",
+      "TagId": 6,
+      "ProfileId": 1,
+      "id": 101
+    },
+    {
+      "oracle_id": "c33604ac-636a-43ad-9efe-8d7b3a28bf81",
+      "TagId": 16,
+      "ProfileId": 1,
+      "id": 102
+    },
+    {
+      "oracle_id": "c33604ac-636a-43ad-9efe-8d7b3a28bf81",
+      "TagId": 6,
+      "ProfileId": 1,
+      "id": 103
+    },
+    {
+      "oracle_id": "da17da9b-f300-4613-978b-ba3026d4e275",
+      "TagId": 20,
+      "ProfileId": 1,
+      "id": 104
+    },
+    {
+      "oracle_id": "da17da9b-f300-4613-978b-ba3026d4e275",
+      "TagId": 1,
+      "ProfileId": 1,
+      "id": 105
+    },
+    {
+      "oracle_id": "378fcd0f-1096-4769-9149-55b4a889ff56",
+      "TagId": 6,
+      "ProfileId": 1,
+      "id": 106
+    },
+    {
+      "oracle_id": "2c09ca09-8e62-4fe3-9b3d-61573dd2ffbc",
+      "TagId": 2,
+      "ProfileId": 1,
+      "id": 107
+    },
+    {
+      "oracle_id": "2c09ca09-8e62-4fe3-9b3d-61573dd2ffbc",
+      "TagId": 5,
+      "ProfileId": 1,
+      "id": 108
+    },
+    {
+      "oracle_id": "1eebc02a-9a64-49b0-8322-c5ce671457ce",
+      "TagId": 19,
+      "ProfileId": 1,
+      "id": 109
+    },
+    {
+      "oracle_id": "1eebc02a-9a64-49b0-8322-c5ce671457ce",
+      "TagId": 11,
+      "ProfileId": 1,
+      "id": 110
+    },
+    {
+      "oracle_id": "c0636d16-671c-4e80-af8c-67d80d2cd979",
+      "TagId": 19,
+      "ProfileId": 1,
+      "id": 111
+    },
+    {
+      "oracle_id": "8be4745e-36d8-430f-945e-c8a7fde9b4f6",
+      "TagId": 2,
+      "ProfileId": 1,
+      "id": 112
+    },
+    {
+      "oracle_id": "bd47398d-da35-4a09-8754-771af91b14f4",
+      "TagId": 2,
+      "ProfileId": 1,
+      "id": 113
+    },
+    {
+      "oracle_id": "bd47398d-da35-4a09-8754-771af91b14f4",
+      "TagId": 5,
+      "ProfileId": 1,
+      "id": 114
+    },
+    {
+      "oracle_id": "6b7e6ae4-2ee1-44bf-ac93-79fc87494515",
+      "TagId": 16,
+      "ProfileId": 1,
+      "id": 115
+    },
+    {
+      "oracle_id": "17e905ca-c0bd-473d-95a7-e180ba5fea43",
+      "TagId": 19,
+      "ProfileId": 1,
+      "id": 116
+    },
+    {
+      "oracle_id": "7275fb8c-571a-4c4c-889a-829419332e51",
+      "TagId": 20,
+      "ProfileId": 1,
+      "id": 117
+    },
+    {
+      "oracle_id": "bf418a2f-e639-4e52-9cad-5a0713a1829b",
+      "TagId": 19,
+      "ProfileId": 1,
+      "id": 118
+    },
+    {
+      "oracle_id": "bf418a2f-e639-4e52-9cad-5a0713a1829b",
+      "TagId": 2,
+      "ProfileId": 1,
+      "id": 119
+    },
+    {
+      "oracle_id": "bf418a2f-e639-4e52-9cad-5a0713a1829b",
+      "TagId": 16,
+      "ProfileId": 1,
+      "id": 120
+    },
+    {
+      "oracle_id": "a871b03e-0218-4c15-8ad8-c8284b5be45f",
+      "TagId": 3,
+      "ProfileId": 1,
+      "id": 121
+    },
+    {
+      "oracle_id": "2d7e00b6-12f0-4b03-82a6-50e3d1b5395e",
+      "TagId": 7,
+      "ProfileId": 1,
+      "id": 122
+    },
+    {
+      "oracle_id": "70034860-5198-421f-871d-7c1676337b6e",
+      "TagId": 16,
+      "ProfileId": 1,
+      "id": 123
+    },
+    {
+      "oracle_id": "70034860-5198-421f-871d-7c1676337b6e",
+      "TagId": 1,
+      "ProfileId": 1,
+      "id": 124
+    },
+    {
+      "oracle_id": "2ae71e86-4400-4a30-9077-4d57a43e7395",
+      "TagId": 3,
+      "ProfileId": 1,
+      "id": 125
+    },
+    {
+      "oracle_id": "2ae71e86-4400-4a30-9077-4d57a43e7395",
+      "TagId": 2,
+      "ProfileId": 1,
+      "id": 126
+    },
+    {
+      "oracle_id": "b9d388ca-1a63-4a11-bf33-9f7b87305a52",
+      "TagId": 19,
+      "ProfileId": 1,
+      "id": 127
+    },
+    {
+      "oracle_id": "762d864b-69bc-43ac-af2f-e18186010169",
+      "TagId": 9,
+      "ProfileId": 1,
+      "id": 128
+    },
+    {
+      "oracle_id": "c4d2c804-1448-4639-b41b-0a86bac083b9",
+      "TagId": 6,
+      "ProfileId": 1,
+      "id": 129
+    },
+    {
+      "oracle_id": "a7ff1b64-8eab-4309-892c-17a619cd302e",
+      "TagId": 20,
+      "ProfileId": 1,
+      "id": 130
+    },
+    {
+      "oracle_id": "fd5ee26c-cc54-4dc0-b611-5cda14354a5e",
+      "TagId": 19,
+      "ProfileId": 1,
+      "id": 131
+    },
+    {
+      "oracle_id": "87b22b09-4f6d-4bc5-9cfc-663e4c7c6981",
+      "TagId": 3,
+      "ProfileId": 1,
+      "id": 132
+    },
+    {
+      "oracle_id": "87b22b09-4f6d-4bc5-9cfc-663e4c7c6981",
+      "TagId": 2,
+      "ProfileId": 1,
+      "id": 133
+    },
+    {
+      "oracle_id": "7e4d1ce3-92f0-4acc-962b-8073d41d3673",
+      "TagId": 19,
+      "ProfileId": 1,
+      "id": 134
+    },
+    {
+      "oracle_id": "65d9b8b6-5215-4037-8e50-e0ca80c5dc9e",
+      "TagId": 19,
+      "ProfileId": 1,
+      "id": 135
+    },
+    {
+      "oracle_id": "55bceb83-bbba-477f-98ce-6e0a80b91080",
+      "TagId": 20,
+      "ProfileId": 1,
+      "id": 136
+    },
+    {
+      "oracle_id": "a70d8e3d-a62d-4c4c-890b-e502e48c4475",
+      "TagId": 20,
+      "ProfileId": 1,
+      "id": 137
+    },
+    {
+      "oracle_id": "92c58354-e106-402f-8348-6c7cdb67c6df",
+      "TagId": 20,
+      "ProfileId": 1,
+      "id": 138
+    },
+    {
+      "oracle_id": "a7043fbd-1dfd-42cf-be4b-cc343d0949e5",
+      "TagId": 7,
+      "ProfileId": 1,
+      "id": 139
+    },
+    {
+      "oracle_id": "a7043fbd-1dfd-42cf-be4b-cc343d0949e5",
+      "TagId": 3,
+      "ProfileId": 1,
+      "id": 140
+    },
+    {
+      "oracle_id": "a97d9a72-2e47-491b-b1db-9829a9abbbd7",
+      "TagId": 11,
+      "ProfileId": 1,
+      "id": 141
+    },
+    {
+      "oracle_id": "8b755881-a72d-4e21-a369-d2924eb4585a",
+      "TagId": 2,
+      "ProfileId": 1,
+      "id": 142
+    },
+    {
+      "oracle_id": "8b755881-a72d-4e21-a369-d2924eb4585a",
+      "TagId": 5,
+      "ProfileId": 1,
+      "id": 143
+    },
+    {
+      "oracle_id": "ac6c5852-71c7-4f19-8c87-ccb345052862",
+      "TagId": 3,
+      "ProfileId": 1,
+      "id": 144
+    },
+    {
+      "oracle_id": "dcd65c9b-4aaa-42af-869f-de179ae57c9f",
+      "TagId": 12,
+      "ProfileId": 1,
+      "id": 145
+    },
+    {
+      "oracle_id": "1593ea18-2f2f-4ab4-83fb-6ccc0bec8a90",
+      "TagId": 5,
+      "ProfileId": 1,
+      "id": 146
+    },
+    {
+      "oracle_id": "1593ea18-2f2f-4ab4-83fb-6ccc0bec8a90",
+      "TagId": 2,
+      "ProfileId": 1,
+      "id": 147
+    },
+    {
+      "oracle_id": "e6e4a8bd-5c40-4654-8de1-0da9afed90fd",
+      "TagId": 11,
+      "ProfileId": 1,
+      "id": 148
+    },
+    {
+      "oracle_id": "4f2adfd0-c8ab-4bcc-ae55-cb0e798aec7f",
+      "TagId": 9,
+      "ProfileId": 1,
+      "id": 149
+    },
+    {
+      "oracle_id": "c6836d78-ca71-4413-aced-d4de19976221",
+      "TagId": 19,
+      "ProfileId": 1,
+      "id": 150
+    },
+    {
+      "oracle_id": "8cf77dc4-763b-41b7-a5da-0ef2734f08e6",
+      "TagId": 5,
+      "ProfileId": 1,
+      "id": 151
+    },
+    {
+      "oracle_id": "8cf77dc4-763b-41b7-a5da-0ef2734f08e6",
+      "TagId": 2,
+      "ProfileId": 1,
+      "id": 152
+    },
+    {
+      "oracle_id": "8cf77dc4-763b-41b7-a5da-0ef2734f08e6",
+      "TagId": 3,
+      "ProfileId": 1,
+      "id": 153
+    },
+    {
+      "oracle_id": "6fd5e591-fae8-4128-a4d3-a848c8a8ffda",
+      "TagId": 2,
+      "ProfileId": 1,
+      "id": 154
+    },
+    {
+      "oracle_id": "83b43aba-bf9c-4da2-967d-9daa632e97d2",
+      "TagId": 20,
+      "ProfileId": 1,
+      "id": 155
+    },
+    {
+      "oracle_id": "6a84eda1-7e72-4b5a-849f-b6e177565aeb",
+      "TagId": 20,
+      "ProfileId": 1,
+      "id": 156
+    },
+    {
+      "oracle_id": "6ad8011d-3471-4369-9d68-b264cc027487",
+      "TagId": 2,
+      "ProfileId": 1,
+      "id": 157
+    },
+    {
+      "oracle_id": "83db5c28-e172-4a4d-9324-ed5ade5255bc",
+      "TagId": 7,
+      "ProfileId": 1,
+      "id": 158
+    },
+    {
+      "oracle_id": "c8b143ad-43ec-4e0d-a440-e348daa31391",
+      "TagId": 15,
+      "ProfileId": 1,
+      "id": 159
+    },
+    {
+      "oracle_id": "c8b143ad-43ec-4e0d-a440-e348daa31391",
+      "TagId": 6,
+      "ProfileId": 1,
+      "id": 160
+    },
+    {
+      "oracle_id": "a7308a1f-ec46-478e-86ea-33b2ebbd995f",
+      "TagId": 11,
+      "ProfileId": 1,
+      "id": 161
+    },
+    {
+      "oracle_id": "2987c385-011a-4032-a516-a46d1e9dc9e8",
+      "TagId": 1,
+      "ProfileId": 1,
+      "id": 162
+    },
+    {
+      "oracle_id": "b1544f21-7e98-461b-aed5-e748b0168c52",
+      "TagId": 1,
+      "ProfileId": 1,
+      "id": 163
+    },
+    {
+      "oracle_id": "0c572396-4e53-4c86-9b04-f41341dcea05",
+      "TagId": 16,
+      "ProfileId": 1,
+      "id": 164
+    },
+    {
+      "oracle_id": "043f869d-b11c-4c0d-9591-2bf0df7bde55",
+      "TagId": 2,
+      "ProfileId": 1,
+      "id": 165
+    },
+    {
+      "oracle_id": "043f869d-b11c-4c0d-9591-2bf0df7bde55",
+      "TagId": 5,
+      "ProfileId": 1,
+      "id": 166
+    },
+    {
+      "oracle_id": "f04441b0-755c-4e7b-a9e4-4e03b8175ab6",
+      "TagId": 6,
+      "ProfileId": 1,
+      "id": 167
+    },
+    {
+      "oracle_id": "6858702a-e563-4dcb-a50d-65406cea7c86",
+      "TagId": 7,
+      "ProfileId": 1,
+      "id": 168
+    },
+    {
+      "oracle_id": "79a71fe5-38ce-4bb5-aea0-c9b9a856d397",
+      "TagId": 20,
+      "ProfileId": 1,
+      "id": 169
     }
   ],
   "Profiles": [
@@ -649,6 +1105,16 @@
       "ProfileId": 1,
       "id": 18,
       "name": "ETB"
+    },
+    {
+      "name": "CHANGELING",
+      "ProfileId": 1,
+      "id": 19
+    },
+    {
+      "name": "COPY",
+      "ProfileId": 1,
+      "id": 20
     }
   ]
 }

@@ -29,12 +29,13 @@ export class OracleApiService {
 					res['payload'] = res;
 					return res['payload'];
 				})
-			); 
+			);
 	}
 
 	// API: GET /Oracles
 	public getByNames(names: string[]): Observable<OracleCard[]> {
-		let params: HttpParams = new HttpParams();
+		let params: HttpParams = new HttpParams()
+			.set('layout_ne', 'token');
 
 		names.forEach(card_name => {
 			params = params.append('name', card_name);
