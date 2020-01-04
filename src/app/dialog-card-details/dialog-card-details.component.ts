@@ -18,14 +18,15 @@ export class DialogCardDetailsComponent implements OnInit {
 		private dialogRef: MatDialogRef<DialogCardDetailsComponent>,
 		@Inject(MAT_DIALOG_DATA) data: CardReference) {
 		this._card = data;
-		console.log(data);
 	}
 
 	ngOnInit() {
 		if (this._card.OracleCard.image_uris &&
 			this._card.OracleCard.image_uris.normal) {
 			this.imageUris.push(this._card.OracleCard.image_uris.normal);
-		} else if (this._card.OracleCard.card_faces) {
+		}
+
+		if (this._card.OracleCard.card_faces) {
 			this._card.OracleCard.card_faces.forEach(face => {
 				if (face.image_uris &&
 					face.image_uris.normal) {
@@ -34,14 +35,15 @@ export class DialogCardDetailsComponent implements OnInit {
 			});
 		}
 
-
 		if (this.imageUris.length > 0) {
 			this.shownIndex = 0;
 		}
 	}
 
 	changeShown() {
-		this.shownIndex = (this.shownIndex + 1) % this.imageUris.length;
+		if (this.imageUris.length > 0) {
+			this.shownIndex = (this.shownIndex + 1) % this.imageUris.length;
+		}
 	}
 
 	close() {
