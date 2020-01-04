@@ -1,4 +1,6 @@
-<h2 mat-dialog-title>Card Details</h2>
+<h2 mat-dialog-title *ngIf="model">
+  {{model.name}}
+</h2>
 <mat-dialog-content>
   <div class="img-wrapper">
     <ng-container *ngFor="let uri of imageUris; let i = index;">
@@ -9,8 +11,8 @@
     <p>(click image to cycle)</p>
   </div>
 </mat-dialog-content>
-<mat-dialog-actions align="end">
+<!-- <mat-dialog-actions align="end">
   <button mat-raised-button color="primary" (click)="close()">
     Close
   </button>
-</mat-dialog-actions>
+</mat-dialog-actions> -->

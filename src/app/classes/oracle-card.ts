@@ -46,7 +46,19 @@ export class RelatedUris {
 	private mtgtop8: string;
 }
 
-export class OracleCard {
+export class MinOracleCard {
+	cmc: number;
+	color_identity: string;
+	colors: string;
+	image_uris: string;
+	layout: string;
+	name: string;
+	oracle_id: string;
+	oracle_text: string;
+	type_line: string;
+}
+
+class OracleCard {
 	card_faces: CardFace[];
 	cmc: number;
 	color_identity: string[];

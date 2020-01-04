@@ -60,9 +60,10 @@ export abstract class Statistics {
 			if (card.OracleCard.layout !== 'transform' &&
 				card.OracleCard.type_line.includes('Land')) {
 				if (card.OracleCard.color_identity) {
-					card.OracleCard.color_identity.forEach(c => {
-						landCounts[c] += 1;
-					});
+					card.OracleCard.color_identity.split(',')
+						.forEach(c => {
+							landCounts[c] += 1;
+						});
 				}
 
 				if (card.OracleCard.oracle_text.includes('Add {C}')) {
@@ -70,9 +71,10 @@ export abstract class Statistics {
 				}
 			} else {
 				if (card.OracleCard.colors) {
-					card.OracleCard.colors.forEach(c => {
-						cardCounts[c] += 1;
-					});
+					card.OracleCard.colors.split(',')
+						.forEach(c => {
+							cardCounts[c] += 1;
+						});
 				} else {
 					cardCounts['C'] += 1;
 				}

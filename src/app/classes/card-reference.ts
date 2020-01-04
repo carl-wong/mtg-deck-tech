@@ -1,4 +1,4 @@
-import { OracleCard } from './oracle-card';
+import { MinOracleCard } from './oracle-card';
 import { CardTagLink } from './card-tag-link';
 
 
@@ -6,7 +6,7 @@ export class CardReference {
 	count: number;
 	name: string;
 
-	OracleCard: OracleCard;
+	OracleCard: MinOracleCard;
 	CardTagLinks: CardTagLink[];
 
 	constructor(values: Object = {}) {

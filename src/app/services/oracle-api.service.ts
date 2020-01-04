@@ -3,7 +3,7 @@ import { Injectable } from '@angular/core';
 import { Observable, of } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { environment } from '../../environments/environment';
-import { OracleCard } from '../classes/oracle-card';
+import { MinOracleCard } from '../classes/oracle-card';
 
 
 @Injectable({
@@ -17,11 +17,11 @@ export class OracleApiService {
 	) {
 	}
 
-	public getTransform(): Observable<OracleCard[]> {
+	public getTransform(): Observable<MinOracleCard[]> {
 		let params: HttpParams = new HttpParams()
 			.set('layout', 'transform');
 
-		return this.http.get(this._api + '/Cards', {
+		return this.http.get(this._api + '/OracleCards', {
 			params: params
 		})
 			.pipe(
@@ -33,7 +33,7 @@ export class OracleApiService {
 	}
 
 	// API: GET /Oracles
-	public getByNames(names: string[]): Observable<OracleCard[]> {
+	public getByNames(names: string[]): Observable<MinOracleCard[]> {
 		let params: HttpParams = new HttpParams()
 			.set('layout_ne', 'token');
 
@@ -41,7 +41,7 @@ export class OracleApiService {
 			params = params.append('name', card_name);
 		});
 
-		return this.http.get(this._api + '/Cards', {
+		return this.http.get(this._api + '/OracleCards', {
 			params: params
 		})
 			.pipe(

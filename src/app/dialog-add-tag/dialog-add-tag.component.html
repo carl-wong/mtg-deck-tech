@@ -1,7 +1,7 @@
 <h2 mat-dialog-title>Add Tag</h2>
 <mat-dialog-content>
   <mat-form-field>
-    <input type="text" matInput [formControl]="tagInput" [matAutocomplete]="auto" (keydown.enter)="onKeyEnter()" (keydown.esc)="close()">
+    <input type="text" matInput [formControl]="tagInput" [matAutocomplete]="auto" (keydown.enter)="onKeyEnter()">
   </mat-form-field>
   <mat-autocomplete #auto="matAutocomplete" (optionSelected)="onOptionSelected($event)">
     <mat-option *ngFor="let option of filteredOptions | async" [value]="option">
@@ -13,7 +13,7 @@
   <button mat-raised-button color="primary" (click)="close(true)">
     Save
   </button>
-  <button mat-raised-button color="warn" (click)="close()">
+  <!-- <button mat-raised-button color="warn" (click)="close()">
     Cancel
-  </button>
+  </button> -->
 </mat-dialog-actions>

@@ -9,30 +9,19 @@ import { CardReference } from '../classes/card-reference';
 	styleUrls: ['./dialog-card-details.component.less']
 })
 export class DialogCardDetailsComponent implements OnInit {
-	private _card: CardReference;
-
+	model: CardReference;
 	shownIndex: number;
 	imageUris: string[] = [];
 
 	constructor(
 		private dialogRef: MatDialogRef<DialogCardDetailsComponent>,
 		@Inject(MAT_DIALOG_DATA) data: CardReference) {
-		this._card = data;
+		this.model = data;
 	}
 
 	ngOnInit() {
-		if (this._card.OracleCard.image_uris &&
-			this._card.OracleCard.image_uris.normal) {
-			this.imageUris.push(this._card.OracleCard.image_uris.normal);
-		}
-
-		if (this._card.OracleCard.card_faces) {
-			this._card.OracleCard.card_faces.forEach(face => {
-				if (face.image_uris &&
-					face.image_uris.normal) {
-					this.imageUris.push(face.image_uris.normal);
-				}
-			});
+		if (this.model.OracleCard.image_uris) {
+			this.imageUris = this.model.OracleCard.image_uris.split(',');
 		}
 
 		if (this.imageUris.length > 0) {
