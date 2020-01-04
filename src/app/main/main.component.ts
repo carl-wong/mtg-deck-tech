@@ -63,8 +63,6 @@ export class MainComponent implements OnInit {
 
 	ngOnInit() {
 		this.onCardsLoaded.subscribe((step: FinishedStep) => {
-			console.log('Received onCardsLoaded: ' + step.toString());
-
 			switch (step) {
 				case FinishedStep.Transform:
 					this._isTransformCardsCacheReady = true;
@@ -91,13 +89,10 @@ export class MainComponent implements OnInit {
 
 	submitDecklist() {
 		if (this._isTransformCardsCacheReady) {
-			console.log('Submission received');
-
 			this._resetSession();
 
 			let lookupArray: string[] = [];
 			let lines = this.decklist.split('\n').filter(l => l.length > 2);
-			console.log('Found ' + lines.length + ' lines');
 
 			while (lines.length > 0) {
 				let line = lines.pop();
@@ -165,7 +160,6 @@ export class MainComponent implements OnInit {
 	private _mixinTagLinks() {
 		let lookupArray = [];
 		let oracle_ids = this._cards.filter(m => m.OracleCard).map(a => a.OracleCard.oracle_id);
-		console.log('Found ' + oracle_ids.length + ' oracle_ids');
 
 		while (oracle_ids.length > 0) {
 			lookupArray.push(oracle_ids.pop());
