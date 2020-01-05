@@ -31,10 +31,7 @@ export class LocalApiService {
 	}
 
 	public getProfilesByAuth0(id: string): Observable<Profile[]> {
-		return this.http.get<Profile>(this._api + '/Profiles', {
-			params: new HttpParams()
-				.set('auth0Id', id)
-		})
+		return this.http.get<Profile[]>(this._api + '/Profiles?auth0Id=' + id)
 			.pipe(
 				map(res => {
 					res['payload'] = res;
@@ -44,21 +41,39 @@ export class LocalApiService {
 			);
 	}
 
-	public createProfile(model: Profile): Observable<Profile> {
+	public createProfile(model: Profile) {
 		return this.http.post<Profile>(this._api + '/Profiles', model, this.httpOptions)
 			.pipe(
 				catchError(this.handleError<Profile>('create'))
 			);
 	}
 
-	public getTag(id: number): Observable<Tag> {
-		return this.http.get<Tag>(this._api + '/Tags/' + id, {
-			params: new HttpParams().set('ProfileId', this._getProfileId())
-		});
+	public getTags(): Observable<Tag[]> {
+		return this.http.get(this._api + '/Profiles/' + this._getProfileId() + '/Tags')
+			.pipe(
+				map(res => {
+					res['payload'] = res;
+					return res['payload'];
+				})
+			);
 	}
 
-	public getTags(): Observable<Tag[]> {
-		return this.http.get(this._api + '/Tags')
+	public createTag(model: Tag) {
+		model.ProfileId = parseInt(this._getProfileId());
+		return this.http.post<Tag>(this._api + '/Tags', model, this.httpOptions)
+			.pipe(
+				catchError(this.handleError<Tag>('create Tag'))
+			);
+	}
+
+	public getCardTagLink(oracle_id: string, tagId: number): Observable<CardTagLink[]> {
+		let queries: string[] = [];
+
+		queries.push('oracle_id=' + oracle_id);
+		queries.push('TagId=' + tagId.toString());
+
+		const suffix = queries.length > 0 ? '?' + queries.join('&') : '';
+		return this.http.get(this._api + '/Profiles/' + this._getProfileId() + '/CardTagLinks' + suffix)
 			.pipe(
 				map(res => {
 					res['payload'] = res;
@@ -68,15 +83,14 @@ export class LocalApiService {
 	}
 
 	public getCardTagLinks(oracle_ids: string[]): Observable<CardTagLink[]> {
-		let params = new HttpParams().set('_expand', 'Tag');
+		let queries: string[] = [];
 
 		oracle_ids.forEach(id => {
-			params = params.append('oracle_id', id);
+			queries.push('oracle_id=' + id);
 		});
 
-		return this.http.get(this._api + '/Profiles/' + this._getProfileId() + '/CardTagLinks', {
-			params: params
-		})
+		const suffix = queries.length > 0 ? '?' + queries.join('&') : '';
+		return this.http.get(this._api + '/Profiles/' + this._getProfileId() + '/CardTagLinks' + suffix)
 			.pipe(
 				map(res => {
 					res['payload'] = res;
@@ -85,27 +99,11 @@ export class LocalApiService {
 			);
 	}
 
-
-	public createTag(model: Tag): Observable<Tag> {
-		model.ProfileId = parseInt(this._getProfileId());
-		return this.http.post<Tag>(this._api + '/Tags', model, this.httpOptions)
-			.pipe(
-				catchError(this.handleError<Tag>('create Tag'))
-			);
-	}
-
 	public createCardTagLink(model: CardTagLink): Observable<CardTagLink> {
 		model.ProfileId = parseInt(this._getProfileId());
 		return this.http.post<CardTagLink>(this._api + '/CardTagLinks', model, this.httpOptions)
 			.pipe(
 				catchError(this.handleError<CardTagLink>('create CardTagLink'))
-			);
-	}
-
-	public updateTag(model: Tag): Observable<Tag> {
-		return this.http.put<Tag>(this._api + '/Tags/' + model.id, model, this.httpOptions)
-			.pipe(
-				catchError(this.handleError<Tag>('update Tag'))
 			);
 	}
 

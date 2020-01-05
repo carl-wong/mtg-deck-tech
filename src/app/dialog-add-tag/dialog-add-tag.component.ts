@@ -70,12 +70,17 @@ export class DialogAddTagComponent implements OnInit {
 				let newTag = new Tag();
 				newTag.name = this.tagName;
 
-				this.service.createTag(newTag).subscribe(res => {
-					if (res) {
-						this.dialogRef.close(res.id);
-					} else {
-						alert('Could not create tag');
-					}
+				this.service.createTag(newTag).subscribe(() => {
+					this.service.getTags().subscribe(tags => {
+						if (tags) {
+							const tag = tags.find(m => m.name === this.tagName);
+							if (tag) {
+								this.dialogRef.close(tag.id);
+							} else {
+								alert('Could not create tag');
+							}
+						}
+					});
 				});
 			}
 		}

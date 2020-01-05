@@ -55,6 +55,26 @@ export class AuthService {
 		this.handleAuthCallback();
 	}
 
+	private _setupProfileId(auth0Id: string, isLastAttempt: boolean = false) {
+		this.local.getProfilesByAuth0(auth0Id)
+			.subscribe(users => {
+				if (users && users.length > 0) {
+					sessionStorage.setItem('ProfileId', users[0].id.toString());
+				} else if (isLastAttempt) {
+					this.logout();
+				} else {
+					const model = new Profile();
+					model.auth0Id = auth0Id;
+
+					// create the new profile
+					this.local.createProfile(model)
+						.subscribe(() => {
+							this._setupProfileId(auth0Id, true);
+						});
+				}
+			});
+	}
+
 	// When calling, options can be passed if desired
 	// https://auth0.github.io/auth0-spa-js/classes/auth0client.html#getuser
 	getUser$(options?): Observable<any> {
@@ -63,26 +83,9 @@ export class AuthService {
 			tap(user => {
 				const auth0User: Auth0User = Object.assign(new Auth0User(), user);
 				sessionStorage.setItem('auth0', auth0User.sub);
+				this._setupProfileId(auth0User.sub);
 
-				this.local.getProfilesByAuth0(auth0User.sub)
-					.subscribe(users => {
-						if (users && users.length > 0) {
-							sessionStorage.setItem('ProfileId', users[0].id.toString());
-							this.userProfileSubject$.next(user);
-						} else {
-							const model = new Profile();
-							model.auth0Id = auth0User.sub;
-							this.local.createProfile(model)
-								.subscribe(result => {
-									if (result) {
-										sessionStorage.setItem('ProfileId', result.id.toString());
-										this.userProfileSubject$.next(user);
-									} else {
-										this.logout();
-									}
-								});
-						}
-					});
+				this.userProfileSubject$.next(user);
 			})
 		);
 	}

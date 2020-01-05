@@ -34,8 +34,7 @@ export class OracleApiService {
 
 	// API: GET /Oracles
 	public getByNames(names: string[]): Observable<MinOracleCard[]> {
-		let params: HttpParams = new HttpParams()
-			.set('layout_ne', 'token');
+		let params: HttpParams = new HttpParams();
 
 		names.forEach(card_name => {
 			params = params.append('name', card_name);

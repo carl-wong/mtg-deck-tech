@@ -25,7 +25,8 @@ const QUERY_BATCH_SIZE = 10;
 enum FinishedStep {
 	Transform,
 	Oracle,
-	Tags
+	Tags,
+	CardTagLinks
 }
 
 @Component({
@@ -35,13 +36,16 @@ enum FinishedStep {
 })
 export class MainComponent implements OnInit {
 	accordionStep = 'input';
-	onCardsLoaded = new EventEmitter();
+	_onFinishedStep = new EventEmitter();
 
 	groupByModes = [
 		MODE_TYPES,
 		MODE_TAGS,
 		MODE_CMC,
 	];
+
+	private _isTagsCacheReady = false;
+	private _tagsCache: Tag[];
 
 	private _isTransformCardsCacheReady = false;
 	private _transformCardsCache: { [name: string]: string } = {};
@@ -62,8 +66,14 @@ export class MainComponent implements OnInit {
 	) { }
 
 	ngOnInit() {
-		this.onCardsLoaded.subscribe((step: FinishedStep) => {
+		this._onFinishedStep.subscribe((step: FinishedStep) => {
+			console.log('Received signal for step ' + step.toString());
+
 			switch (step) {
+				case FinishedStep.Tags:
+					this._isTagsCacheReady = true;
+					break;
+
 				case FinishedStep.Transform:
 					this._isTransformCardsCacheReady = true;
 					break;
@@ -74,7 +84,7 @@ export class MainComponent implements OnInit {
 					this._getStatistics();
 					break;
 
-				case FinishedStep.Tags:
+				case FinishedStep.CardTagLinks:
 					// group cards based on selected mode value
 					this._performGroupByMode(this.groupByMode);
 					break;
@@ -85,6 +95,7 @@ export class MainComponent implements OnInit {
 		});
 
 		this._getTransformCache();
+		this._getTagsCache();
 	}
 
 	submitDecklist() {
@@ -121,10 +132,10 @@ export class MainComponent implements OnInit {
 			if (lookupArray.length > 0) {
 				this.oracle.getByNames(lookupArray).subscribe(cards => {
 					this._mixinOracleCards(cards);
-					this.onCardsLoaded.emit(FinishedStep.Oracle);
+					this._onFinishedStep.emit(FinishedStep.Oracle);
 				});
 			} else {
-				this.onCardsLoaded.emit(FinishedStep.Oracle);
+				this._onFinishedStep.emit(FinishedStep.Oracle);
 			}
 		} else {
 			alert('Please wait for transform cards cache to load...');
@@ -139,10 +150,17 @@ export class MainComponent implements OnInit {
 					this._transformCardsCache[frontName] = card.name;
 				});
 
-				this.onCardsLoaded.emit(FinishedStep.Transform);
+				this._onFinishedStep.emit(FinishedStep.Transform);
 			} else {
 				alert('Could not load transform cards, is the oracle service running?');
 			}
+		});
+	}
+
+	private _getTagsCache() {
+		this.service.getTags().subscribe(tags => {
+			this._tagsCache = tags;
+			this._onFinishedStep.emit(FinishedStep.Tags);
 		});
 	}
 
@@ -158,42 +176,46 @@ export class MainComponent implements OnInit {
 	}
 
 	private _mixinTagLinks() {
-		let lookupArray = [];
-		let oracle_ids = this._cards.filter(m => m.OracleCard).map(a => a.OracleCard.oracle_id);
+		if (this._isTagsCacheReady) {
+			let lookupArray = [];
+			let oracle_ids = this._cards.filter(m => m.OracleCard).map(a => a.OracleCard.oracle_id);
 
-		while (oracle_ids.length > 0) {
-			lookupArray.push(oracle_ids.pop());
-			if (lookupArray.length >= QUERY_BATCH_SIZE) {
-				this.service.getCardTagLinks(lookupArray).subscribe(links => {
-					links.forEach(link => {
-						if (link) {
+			while (oracle_ids.length > 0) {
+				lookupArray.push(oracle_ids.pop());
+				if (lookupArray.length >= QUERY_BATCH_SIZE) {
+					this.service.getCardTagLinks(lookupArray).subscribe(links => {
+						links.forEach(link => {
+							link.Tag = this._tagsCache.find(m => m.id === link.TagId);
+
 							let dCard = this._oracleCardsCache[link.oracle_id];
 							if (dCard) {
 								dCard.CardTagLinks ? dCard.CardTagLinks.push(link) : dCard.CardTagLinks = [link];
 							}
-						}
+						});
 					});
-				});
 
-				lookupArray = [];
-				SleepHelper.sleep(50);
+					lookupArray = [];
+					SleepHelper.sleep(50);
+				}
 			}
-		}
 
-		if (lookupArray.length > 0) {
-			this.service.getCardTagLinks(lookupArray).subscribe(links => {
-				links.forEach(link => {
-					if (link) {
+			if (lookupArray.length > 0) {
+				this.service.getCardTagLinks(lookupArray).subscribe(links => {
+					links.forEach(link => {
+						link.Tag = this._tagsCache.find(m => m.id === link.TagId);
+
 						let dCard = this._oracleCardsCache[link.oracle_id];
 						if (dCard) {
 							dCard.CardTagLinks ? dCard.CardTagLinks.push(link) : dCard.CardTagLinks = [link];
 						}
-					}
+					});
+					this._onFinishedStep.emit(FinishedStep.CardTagLinks);
 				});
-				this.onCardsLoaded.emit(FinishedStep.Tags);
-			});
+			} else {
+				this._onFinishedStep.emit(FinishedStep.CardTagLinks);
+			}
 		} else {
-			this.onCardsLoaded.emit(FinishedStep.Tags);
+			alert('Please wait for Tags cache to load...');
 		}
 	}
 
@@ -431,32 +453,36 @@ export class MainComponent implements OnInit {
 				newLink.oracle_id = card.OracleCard.oracle_id;
 				newLink.TagId = tagId;
 
-				this.service.createCardTagLink(newLink).subscribe((link: CardTagLink) => {
-					if (link) {
-						// new links don't return with Tag loaded
-						this.service.getTag(link.TagId).subscribe((tag: Tag) => {
-							if (tag) {
-								link.Tag = tag;
+				this.service.createCardTagLink(newLink)
+					.subscribe(() => {
+						this.service.getCardTagLink(card.OracleCard.oracle_id, tagId)
+							.subscribe(links => {
+								if (links && links.length > 0) {
+									let link = links[0];
 
-								if (card.CardTagLinks) {
-									const newTag = link.Tag.name;
-									let index = 0;
-									while (index < card.CardTagLinks.length) {
-										if (newTag > card.CardTagLinks[index].Tag.name) {
-											index++;
+									// new links don't return with Tag loaded
+									this.service.getTags().subscribe(tags => {
+										link.Tag = tags.find(m => m.id === link.TagId);
+
+										if (card.CardTagLinks) {
+											const newTag = link.Tag.name;
+											let index = 0;
+											while (index < card.CardTagLinks.length) {
+												if (newTag > card.CardTagLinks[index].Tag.name) {
+													index++;
+												} else {
+													break;
+												}
+											}
+
+											card.CardTagLinks.splice(index, 0, link);
 										} else {
-											break;
+											card.CardTagLinks = [link];
 										}
-									}
-
-									card.CardTagLinks.splice(index, 0, link);
-								} else {
-									card.CardTagLinks = [link];
+									});
 								}
-							}
-						});
-					}
-				});
+							});
+					});
 			}
 		});
 	}
