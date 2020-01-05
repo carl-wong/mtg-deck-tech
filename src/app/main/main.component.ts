@@ -3,7 +3,7 @@ import { MatDialog, MatDialogConfig } from '@angular/material/dialog';
 import { environment } from '../../environments/environment';
 import { CardReference } from '../classes/card-reference';
 import { CardTagLink } from '../classes/card-tag-link';
-import { MinOracleCard } from '../classes/oracle-card';
+import { MinOracleCard } from '../classes/min-oracle-card';
 import { SleepHelper } from '../classes/sleep-helper';
 import { Statistics } from '../classes/statistics';
 import { Tag } from '../classes/tag';

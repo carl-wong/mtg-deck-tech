@@ -1,4 +1,4 @@
-import { MinOracleCard } from './oracle-card';
+import { MinOracleCard } from './min-oracle-card';
 import { CardTagLink } from './card-tag-link';
 
 

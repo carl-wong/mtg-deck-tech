@@ -3,7 +3,7 @@ import { Injectable } from '@angular/core';
 import { Observable, of } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { environment } from '../../environments/environment';
-import { MinOracleCard } from '../classes/oracle-card';
+import { MinOracleCard } from '../classes/min-oracle-card';
 
 
 @Injectable({
