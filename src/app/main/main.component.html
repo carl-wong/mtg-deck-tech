@@ -9,7 +9,7 @@
       <textarea matInput [(ngModel)]="decklist" placeholder="Decklist (Simple Format)" rows="10"></textarea>
     </mat-form-field>
     <mat-action-row>
-      <button mat-button color="primary" (click)="submitDecklist()">
+      <button mat-button color="primary" (click)="submitDecklist()" *ngIf="isTagsCacheReady && isTransformCardsCacheReady">
         <mat-icon>save_alt</mat-icon>
         Submit
       </button>

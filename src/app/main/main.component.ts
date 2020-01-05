@@ -44,10 +44,10 @@ export class MainComponent implements OnInit {
 		MODE_CMC,
 	];
 
-	private _isTagsCacheReady = false;
+	isTagsCacheReady = false;
 	private _tagsCache: Tag[];
 
-	private _isTransformCardsCacheReady = false;
+	isTransformCardsCacheReady = false;
 	private _transformCardsCache: { [name: string]: string } = {};
 	private _oracleCardsCache: { [oracle_id: string]: CardReference } = {};
 
@@ -67,15 +67,15 @@ export class MainComponent implements OnInit {
 
 	ngOnInit() {
 		this._onFinishedStep.subscribe((step: FinishedStep) => {
-			console.log('Received signal for step ' + step.toString());
+			// console.log('Received signal for step ' + step.toString());
 
 			switch (step) {
 				case FinishedStep.Tags:
-					this._isTagsCacheReady = true;
+					this.isTagsCacheReady = true;
 					break;
 
 				case FinishedStep.Transform:
-					this._isTransformCardsCacheReady = true;
+					this.isTransformCardsCacheReady = true;
 					break;
 
 				case FinishedStep.Oracle:
@@ -99,7 +99,7 @@ export class MainComponent implements OnInit {
 	}
 
 	submitDecklist() {
-		if (this._isTransformCardsCacheReady) {
+		if (this.isTransformCardsCacheReady) {
 			this._resetSession();
 
 			let lookupArray: string[] = [];
@@ -176,7 +176,7 @@ export class MainComponent implements OnInit {
 	}
 
 	private _mixinTagLinks() {
-		if (this._isTagsCacheReady) {
+		if (this.isTagsCacheReady) {
 			let lookupArray = [];
 			let oracle_ids = this._cards.filter(m => m.OracleCard).map(a => a.OracleCard.oracle_id);
 
@@ -274,9 +274,7 @@ export class MainComponent implements OnInit {
 		let result: [string, CardReference[], number][] = [];
 
 		this._cards.forEach(card => {
-			if (!card.OracleCard) {
-				console.log('Could not find ' + card.name);
-			} else {
+			if (card.OracleCard) {
 				MAIN_TYPES.forEach(mt => {
 					if (card.OracleCard.type_line.indexOf(mt) != -1) {
 						let type: [string, CardReference[], number] = result.find(m => m[0] === mt);
