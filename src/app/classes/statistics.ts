@@ -62,21 +62,21 @@ export abstract class Statistics {
 				if (card.OracleCard.color_identity) {
 					card.OracleCard.color_identity.split(',')
 						.forEach(c => {
-							landCounts[c] += 1;
+							landCounts[c] += card.count;
 						});
 				}
 
 				if (card.OracleCard.oracle_text.includes('Add {C}')) {
-					landCounts['C'] += 1;
+					landCounts['C'] += card.count;
 				}
 			} else {
 				if (card.OracleCard.colors) {
 					card.OracleCard.colors.split(',')
 						.forEach(c => {
-							cardCounts[c] += 1;
+							cardCounts[c] += card.count;
 						});
 				} else {
-					cardCounts['C'] += 1;
+					cardCounts['C'] += card.count;
 				}
 			}
 		});

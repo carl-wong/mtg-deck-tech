@@ -463,40 +463,45 @@ export class MainComponent implements OnInit, OnDestroy {
 		const dRef = this.dialog.open(DialogAddTagComponent, dConfig);
 		dRef.afterClosed().subscribe(tagId => {
 			if (tagId) {
-				const newLink = new CardTagLink();
-				newLink.oracle_id = card.OracleCard.oracle_id;
-				newLink.TagId = tagId;
+				if (card.CardTagLinks && card.CardTagLinks.find(m => m.TagId === tagId)) {
+					// don't add the same tag twice
+					alert('That tag is already linked to this card.');
+				} else {
+					const newLink = new CardTagLink();
+					newLink.oracle_id = card.OracleCard.oracle_id;
+					newLink.TagId = tagId;
 
-				this.service.createCardTagLink(newLink)
-					.subscribe(() => {
-						this.service.getCardTagLink(card.OracleCard.oracle_id, tagId)
-							.subscribe(links => {
-								if (links && links.length > 0) {
-									let link = links[0];
+					this.service.createCardTagLink(newLink)
+						.subscribe(() => {
+							this.service.getCardTagLink(card.OracleCard.oracle_id, tagId)
+								.subscribe(links => {
+									if (links && links.length > 0) {
+										let link = links[0];
 
-									// new links don't return with Tag loaded
-									this.service.getTags().subscribe(tags => {
-										link.Tag = tags.find(m => m.id === link.TagId);
+										// new links don't return with Tag loaded
+										this.service.getTags().subscribe(tags => {
+											link.Tag = tags.find(m => m.id === link.TagId);
 
-										if (card.CardTagLinks) {
-											const newTag = link.Tag.name;
-											let index = 0;
-											while (index < card.CardTagLinks.length) {
-												if (newTag > card.CardTagLinks[index].Tag.name) {
-													index++;
-												} else {
-													break;
+											if (card.CardTagLinks) {
+												const newTag = link.Tag.name;
+												let index = 0;
+												while (index < card.CardTagLinks.length) {
+													if (newTag > card.CardTagLinks[index].Tag.name) {
+														index++;
+													} else {
+														break;
+													}
 												}
-											}
 
-											card.CardTagLinks.splice(index, 0, link);
-										} else {
-											card.CardTagLinks = [link];
-										}
-									});
-								}
-							});
-					});
+												card.CardTagLinks.splice(index, 0, link);
+											} else {
+												card.CardTagLinks = [link];
+											}
+										});
+									}
+								});
+						});
+				}
 			}
 		});
 	}
