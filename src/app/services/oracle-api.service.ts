@@ -26,8 +26,8 @@ export class OracleApiService {
 		})
 			.pipe(
 				map(res => {
-					res.payload = res;
-					return res.payload;
+					res['payload'] = res;
+					return res['payload'];
 				})
 			);
 	}
@@ -45,8 +45,8 @@ export class OracleApiService {
 		})
 			.pipe(
 				map(res => {
-					res.payload = res;
-					return res.payload;
+					res['payload'] = res;
+					return res['payload'];
 				})
 			);
 	}
