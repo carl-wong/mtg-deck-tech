@@ -282,6 +282,7 @@ export class MainComponent implements OnInit, OnDestroy {
 			'Instant',
 			'Enchantment',
 			'Artifact',
+			'Planeswalker',
 			'Land',
 		];
 
