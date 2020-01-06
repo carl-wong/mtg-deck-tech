@@ -552,13 +552,13 @@ export class MainComponent implements OnInit, OnDestroy {
 										card.CardTagLinks = [newLink];
 									}
 								} else {
-									alert(`Could not link Tag with id ${tagId} for "${card.name}."`);
+									this.messages.add(`Could not link Tag with id ${tagId} for "${card.name}."`, 'warn');
 								}
 							}
 						});
 					}
 				} else {
-					alert(`Could not find Tag with id ${tagId} in cache.`);
+					this.messages.add(`Could not find Tag with id ${tagId} in cache.`, 'warn');
 				}
 			}
 		});
@@ -568,7 +568,7 @@ export class MainComponent implements OnInit, OnDestroy {
 		this.service.deleteCardTagLink(link.id).subscribe(result => {
 			if (result) {
 				if (!result.isSuccess) {
-					alert(`Could not remove link to "${link.TagName}".`);
+					this.messages.add(`Could not remove link to "${link.TagName}".`, 'warn');
 				} else {
 					const card = this._cards.find(m => m.OracleCard && m.OracleCard.oracle_id === link.oracle_id);
 					if (card) {

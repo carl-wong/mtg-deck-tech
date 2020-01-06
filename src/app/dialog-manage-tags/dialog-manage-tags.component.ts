@@ -137,7 +137,7 @@ export class DialogManageTagsComponent implements OnInit, OnDestroy {
 					this.service.deleteTag(model.id).subscribe(result => {
 						if (result) {
 							if (!result.isSuccess) {
-								alert(`Could not remove "${model.name}".`);
+								this.messages.add(`Could not remove "${model.name}".`, 'warn');
 							} else {
 								let data: iTagsUpdated = {
 									type: EventType.Delete,

@@ -75,7 +75,7 @@ export class DialogRenameTagComponent implements OnInit {
 				this.service.updateTag(this.model).subscribe(result => {
 					if (result) {
 						if (!result.isSuccess) {
-							alert(`Failed to rename "${this.model.name}"...`);
+							this.messages.add(`Failed to rename "${this.model.name}"...`, 'warn');
 						} else {
 							let data: iTagsUpdated = {
 								type: EventType.Update,
@@ -90,7 +90,7 @@ export class DialogRenameTagComponent implements OnInit {
 				});
 			}
 		} else {
-			alert('Tag name cannot be empty!');
+			this.messages.add('Tag name cannot be empty!', 'warn');
 		}
 	}
 

@@ -9,7 +9,10 @@ export class MessagesService {
 	constructor() { }
 
 	add(text: string, level: string = 'info') {
-		console.log(`${level.toUpperCase()}: ${text}`);
+		if (level === 'warn') {
+			alert(text);
+		}
+		
 		this.messages.push([level, text]);
 	}
 
