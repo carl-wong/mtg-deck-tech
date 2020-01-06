@@ -17,13 +17,9 @@ export class OracleApiService {
 	) {
 	}
 
+	// API: GET /OracleCards
 	public getTransform(): Observable<MinOracleCard[]> {
-		const params: HttpParams = new HttpParams()
-			.set('layout', 'transform');
-
-		return this.http.get(this._api + '/OracleCards', {
-			params
-		})
+		return this.http.get(this._api + '/OracleCards?layout=transform')
 			.pipe(
 				map(res => {
 					res['payload'] = res;
@@ -32,17 +28,16 @@ export class OracleApiService {
 			);
 	}
 
-	// API: GET /Oracles
+	// API: GET /OracleCards
 	public getByNames(names: string[]): Observable<MinOracleCard[]> {
-		let params: HttpParams = new HttpParams();
+		const queries: string[] = [];
 
-		names.forEach(card_name => {
-			params = params.append('name', card_name);
+		names.forEach(name => {
+			queries.push('name=' + encodeURIComponent(name));
 		});
 
-		return this.http.get(this._api + '/OracleCards', {
-			params
-		})
+		const suffix = queries.length > 0 ? '?' + queries.join('&') : '';
+		return this.http.get(this._api + '/OracleCards' + suffix)
 			.pipe(
 				map(res => {
 					res['payload'] = res;
