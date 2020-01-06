@@ -63,40 +63,36 @@ export class DialogManageTagsComponent implements OnInit, OnDestroy {
 	selectedAction($event, model: Tag) {
 		switch ($event.value) {
 			case 'rename': {
-					const dConfig = new MatDialogConfig();
+				const dConfig = new MatDialogConfig();
 
-					dConfig.autoFocus = false;
-					dConfig.disableClose = false;
+				dConfig.autoFocus = false;
+				dConfig.disableClose = false;
 
-					const data: iDialogRenameTag = {
-						model,
-						all: this.tags,
-					};
+				const data: iDialogRenameTag = {
+					model,
+					all: this.tags,
+				};
 
-					dConfig.data = data;
+				dConfig.data = data;
 
-					this.dialog.open(DialogRenameTagComponent, dConfig);
-					break;
-				}
+				this.dialog.open(DialogRenameTagComponent, dConfig);
+				break;
+			}
 
 			case 'delete': {
-					this.service.getCardTagLinksByTagId(model.id).subscribe(links => {
-						if (links && links.length > 0) {
-							alert(`There are ${links.length} cards linked to this tag. Please remove the links or merge this tag with another first.`);
-						} else {
-							if (confirm(`Do you wish to delete "${model.name}"?`)) {
-								this.service.deleteTag(model.id).subscribe(() => {
-									this.notify.tagsUpdated();
-								});
-							}
-						}
+				if (confirm(`There are ${model.$CardTagLinksCount} cards linked to this tag. These links will also be removed if you proceed.\nDo you want to proceed?`)) {
+					this.service.deleteTag(model.id).subscribe(() => {
+						this.notify.tagsUpdated();
 					});
-					break;
 				}
+				break;
+			}
 
 			default:
 				break;
 		}
+
+		
 	}
 
 
