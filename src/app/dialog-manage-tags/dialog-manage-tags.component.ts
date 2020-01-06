@@ -1,11 +1,12 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
-import { LocalApiService } from '../services/local-api.service';
+import { Component, OnDestroy, OnInit, ViewChild } from '@angular/core';
+import { MatDialogRef, MatTableDataSource } from '@angular/material';
 import { MatDialog, MatDialogConfig } from '@angular/material/dialog';
-import { MatDialogRef } from '@angular/material';
-import { Tag } from '../classes/tag';
-import { iDialogRenameTag, DialogRenameTagComponent } from '../dialog-rename-tag/dialog-rename-tag.component';
-import { NotificationService } from '../services/notification.service';
+import { MatPaginator } from '@angular/material/paginator';
 import { Subscription } from 'rxjs';
+import { Tag } from '../classes/tag';
+import { DialogRenameTagComponent, iDialogRenameTag } from '../dialog-rename-tag/dialog-rename-tag.component';
+import { LocalApiService } from '../services/local-api.service';
+import { NotificationService } from '../services/notification.service';
 
 
 @Component({
@@ -16,6 +17,9 @@ import { Subscription } from 'rxjs';
 export class DialogManageTagsComponent implements OnInit, OnDestroy {
 	tags: Tag[];
 	displayColumns = ['name', 'actions'];
+	dataSource: MatTableDataSource<Tag>;
+
+	@ViewChild(MatPaginator, { static: false }) paginator: MatPaginator;
 
 	private _tagsUpdatedSub: Subscription;
 
@@ -27,6 +31,7 @@ export class DialogManageTagsComponent implements OnInit, OnDestroy {
 	) { }
 
 	ngOnInit() {
+
 		this._tagsUpdatedSub = this.notify.isTagsUpdated$.subscribe(() => {
 			this._loadTags();
 		});
@@ -40,7 +45,18 @@ export class DialogManageTagsComponent implements OnInit, OnDestroy {
 
 	private _loadTags() {
 		this.service.getTags().subscribe(tags => {
-			this.tags = tags;
+			this.tags = tags.sort((a, b) => {
+				if (a.name > b.name) {
+					return 1;
+				} else if (b.name > a.name) {
+					return -1;
+				} else {
+					return 0;
+				}
+			});
+
+			this.dataSource = new MatTableDataSource(this.tags);
+			this.dataSource.paginator = this.paginator;
 		});
 	}
 

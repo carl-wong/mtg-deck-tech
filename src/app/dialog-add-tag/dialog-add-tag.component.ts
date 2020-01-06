@@ -51,9 +51,8 @@ export class DialogAddTagComponent implements OnInit {
 
 		if (filteredOptions.length > 0) {
 			this.tagName = filteredOptions[0];
+			this.close(true);
 		}
-
-		this.close(true);
 	}
 
 	close(isAccept: boolean = false) {
