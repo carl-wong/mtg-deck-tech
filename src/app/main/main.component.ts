@@ -384,17 +384,22 @@ export class MainComponent implements OnInit, OnDestroy {
 		result.push(landsGroup);
 
 		this._cards.forEach(card => {
-			if (card.OracleCard.layout &&
-				card.OracleCard.layout !== 'transform' &&
-				card.OracleCard.type_line &&
-				card.OracleCard.type_line.includes('Land')) {
-				landsGroup[1].push(card);
-				landsGroup[2] += card.count;
+			const oracle = card.OracleCard;
+			if (oracle) {
+				if (oracle.layout &&
+					oracle.layout !== 'transform' &&
+					oracle.type_line &&
+					oracle.type_line.includes('Land')) {
+					landsGroup[1].push(card);
+					landsGroup[2] += card.count;
+				} else {
+					const cmcString = cmcToString(oracle.cmc);
+					const group: [string, CardReference[], number] = result.find(m => m[0] === cmcString);
+					group[1].push(card);
+					group[2] += card.count;
+				}
 			} else {
-				const cmcString = cmcToString(card.OracleCard.cmc);
-				const group: [string, CardReference[], number] = result.find(m => m[0] === cmcString);
-				group[1].push(card);
-				group[2] += card.count;
+				console.log('Could not find Oracle entry for ' + card.name);
 			}
 		});
 
