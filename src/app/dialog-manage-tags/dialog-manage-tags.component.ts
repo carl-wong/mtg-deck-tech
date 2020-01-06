@@ -31,7 +31,6 @@ export class DialogManageTagsComponent implements OnInit, OnDestroy {
 	) { }
 
 	ngOnInit() {
-
 		this._tagsUpdatedSub = this.notify.isTagsUpdated$.subscribe(event => {
 			switch (event.type) {
 				case NotificationType.Init:

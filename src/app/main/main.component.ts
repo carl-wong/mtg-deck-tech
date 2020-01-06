@@ -11,6 +11,7 @@ import { Tag } from '../classes/tag';
 import { DialogAddTagComponent } from '../dialog-add-tag/dialog-add-tag.component';
 import { DialogCardDetailsComponent } from '../dialog-card-details/dialog-card-details.component';
 import { LocalApiService } from '../services/local-api.service';
+import { MessagesService } from '../services/messages.service';
 import { NotificationService, NotificationType } from '../services/notification.service';
 import { OracleApiService } from '../services/oracle-api.service';
 import { ChartCmc } from './chart-cmc/chart-cmc.component';
@@ -64,6 +65,7 @@ export class MainComponent implements OnInit, OnDestroy {
 	private _tagsUpdatedSub: Subscription;
 
 	constructor(
+		private messages: MessagesService,
 		private oracle: OracleApiService,
 		private service: LocalApiService,
 		private notify: NotificationService,
@@ -127,34 +129,34 @@ export class MainComponent implements OnInit, OnDestroy {
 				}
 
 				default:
-					console.log('Received unexpected EventType: ' + event.type);
+					this.messages.add('Received unexpected EventType: ' + event.type);
 					break;
 			}
 		});
 
 		this._onFinishedStep.subscribe((step: FinishedStep) => {
-			// console.log('Received signal for step ' + step.toString());
+			// this.messages.add('Received signal for step ' + step.toString());
 
 			switch (step) {
 				case FinishedStep.Tags:
 					this.isTagsCacheReady = true;
-					console.log('Tags cache loaded...');
+					this.messages.add('Tags cache loaded...');
 					break;
 
 				case FinishedStep.Transform:
 					this.isTransformCardsCacheReady = true;
-					console.log('Transform cards cache loaded...');
+					this.messages.add('Transform cards cache loaded...');
 					break;
 
 				case FinishedStep.Oracle:
-					console.log('Oracle cards loaded...');
+					this.messages.add('Oracle cards loaded...');
 					// mixin CardTagLinks
 					this._mixinTagLinks();
 					this._getStatistics();
 					break;
 
 				case FinishedStep.CardTagLinks:
-					console.log('CardTagLinks loaded...');
+					this.messages.add('CardTagLinks loaded...');
 					// group cards based on selected mode value
 					this._performGroupByMode(this.groupByMode);
 					break;
@@ -446,7 +448,7 @@ export class MainComponent implements OnInit, OnDestroy {
 					group[2] += card.count;
 				}
 			} else {
-				console.log('Could not find Oracle entry for ' + card.name);
+				this.messages.add('Could not find Oracle entry for ' + card.name);
 			}
 		});
 
@@ -519,13 +521,12 @@ export class MainComponent implements OnInit, OnDestroy {
 		const dRef = this.dialog.open(DialogAddTagComponent, dConfig);
 		dRef.afterClosed().subscribe(tagId => {
 			if (tagId) {
-				if (card.CardTagLinks && card.CardTagLinks.findIndex(m => m.TagId === tagId) !== -1) {
-					// don't add the same tag twice
-					alert('That tag is already linked to this card.');
-				} else {
-					const cachedTag = this._tagsCache.find(m => m.id === tagId);
-					if (cachedTag) {
-
+				const cachedTag = this._tagsCache.find(m => m.id === tagId);
+				if (cachedTag) {
+					if (card.CardTagLinks && card.CardTagLinks.findIndex(m => m.TagId === tagId) !== -1) {
+						// don't add the same tag twice
+						this.messages.add(`"${card.name}" is already tagged with "${cachedTag.name}".`, 'warn');
+					} else {
 						const newLink = new CardTagLink();
 						newLink.oracle_id = card.OracleCard.oracle_id;
 						newLink.TagName = cachedTag.name;
@@ -555,9 +556,9 @@ export class MainComponent implements OnInit, OnDestroy {
 								}
 							}
 						});
-					} else {
-						alert(`Could not find Tag with id ${tagId} in cache.`);
 					}
+				} else {
+					alert(`Could not find Tag with id ${tagId} in cache.`);
 				}
 			}
 		});

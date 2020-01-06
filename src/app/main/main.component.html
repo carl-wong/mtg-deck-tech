@@ -110,6 +110,14 @@
       </div>
     </div>
   </mat-expansion-panel>
+  <mat-expansion-panel [expanded]="accordionStep === 'messages'" (opened)="open('messages')">
+    <mat-expansion-panel-header>
+      <mat-panel-title>
+        Log Messages
+      </mat-panel-title>
+    </mat-expansion-panel-header>
+    <app-messages></app-messages>
+  </mat-expansion-panel>
 </mat-accordion>
 <ng-template #noDataWarning>
   <p>No data, please submit a decklist first.</p>

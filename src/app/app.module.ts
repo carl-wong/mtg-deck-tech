@@ -29,6 +29,7 @@ import { HeaderComponent } from './header/header.component';
 import { ChartCmcComponent } from './main/chart-cmc/chart-cmc.component';
 import { ChartColorPieComponent } from './main/chart-color-pie/chart-color-pie.component';
 import { MainComponent } from './main/main.component';
+import { MessagesComponent } from './messages/messages.component';
 
 
 @NgModule({
@@ -42,7 +43,8 @@ import { MainComponent } from './main/main.component';
         HeaderComponent,
         CallbackComponent,
         DialogManageTagsComponent,
-        DialogRenameTagComponent
+        DialogRenameTagComponent,
+        MessagesComponent
     ],
     entryComponents: [
         DialogAddTagComponent,
