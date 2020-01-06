@@ -1,5 +1,6 @@
-import { Component, EventEmitter, Input, OnInit, OnDestroy } from '@angular/core';
+import { Component, EventEmitter, Input, OnDestroy, OnInit } from '@angular/core';
 import { MatDialog, MatDialogConfig } from '@angular/material/dialog';
+import { Subscription } from 'rxjs';
 import { environment } from '../../environments/environment';
 import { CardReference } from '../classes/card-reference';
 import { CardTagLink } from '../classes/card-tag-link';
@@ -10,11 +11,10 @@ import { Tag } from '../classes/tag';
 import { DialogAddTagComponent } from '../dialog-add-tag/dialog-add-tag.component';
 import { DialogCardDetailsComponent } from '../dialog-card-details/dialog-card-details.component';
 import { LocalApiService } from '../services/local-api.service';
+import { NotificationService, NotificationType } from '../services/notification.service';
 import { OracleApiService } from '../services/oracle-api.service';
 import { ChartCmc } from './chart-cmc/chart-cmc.component';
 import { ChartColorPie } from './chart-color-pie/chart-color-pie.component';
-import { NotificationService } from '../services/notification.service';
-import { Subscription } from 'rxjs';
 
 
 const MODE_TYPES = 'Types';
@@ -75,9 +75,61 @@ export class MainComponent implements OnInit, OnDestroy {
 	}
 
 	ngOnInit() {
-		this._tagsUpdatedSub = this.notify.isTagsUpdated$.subscribe(() => {
-			this.isTagsCacheReady = false;
-			this._getTagsCache();
+		this._tagsUpdatedSub = this.notify.isTagsUpdated$.subscribe(event => {
+			switch (event.type) {
+				case NotificationType.Init:
+					// do nothing
+					break;
+
+				case NotificationType.Update: {
+					let tag = this._tagsCache.find(m => m.id == event.Tag.id);
+					tag.name = event.Tag.name;
+
+					this._cards.filter(m => m.CardTagLinks && m.CardTagLinks.length > 0)
+						.forEach(card => {
+							const link = card.CardTagLinks.find(m => m.TagId === tag.id);
+							if (link) {
+								link.TagName = event.Tag.name;
+							}
+						});
+					break;
+				}
+
+				case NotificationType.Insert: {
+					this._tagsCache.push(event.Tag);
+					break;
+				}
+
+				case NotificationType.Delete: {
+					const tagIndex = this._tagsCache.findIndex(m => m.id === event.Tag.id);
+					if (tagIndex !== -1) {
+						this._tagsCache.splice(tagIndex, 1);
+					}
+					break;
+				}
+
+				case NotificationType.Merge: {
+					// remove the merged tag
+					const tagIndex = this._tagsCache.findIndex(m => m.id == event.fromId);
+					if (tagIndex !== -1) {
+						this._tagsCache.splice(tagIndex, 1);
+					}
+
+					// update the TagId and TagName of all links referencing the merged from Tag
+					this._cards.filter(m => m.CardTagLinks).forEach(card => {
+						const link = card.CardTagLinks.find(m => m.TagId === event.fromId);
+						if (link) {
+							link.TagName = event.Tag.name;
+							link.TagId = event.toId;
+						}
+					});
+					break;
+				}
+
+				default:
+					console.log('Received unexpected EventType: ' + event.type);
+					break;
+			}
 		});
 
 		this._onFinishedStep.subscribe((step: FinishedStep) => {
@@ -86,19 +138,23 @@ export class MainComponent implements OnInit, OnDestroy {
 			switch (step) {
 				case FinishedStep.Tags:
 					this.isTagsCacheReady = true;
+					console.log('Tags cache loaded...');
 					break;
 
 				case FinishedStep.Transform:
 					this.isTransformCardsCacheReady = true;
+					console.log('Transform cards cache loaded...');
 					break;
 
 				case FinishedStep.Oracle:
+					console.log('Oracle cards loaded...');
 					// mixin CardTagLinks
 					this._mixinTagLinks();
 					this._getStatistics();
 					break;
 
 				case FinishedStep.CardTagLinks:
+					console.log('CardTagLinks loaded...');
 					// group cards based on selected mode value
 					this._performGroupByMode(this.groupByMode);
 					break;
@@ -171,7 +227,7 @@ export class MainComponent implements OnInit, OnDestroy {
 			this._onFinishedStep.emit(FinishedStep.Tags);
 
 			if (this._cards.length > 0) {
-				this._mixinTagLinks(true);
+
 			}
 		});
 	}
@@ -187,13 +243,7 @@ export class MainComponent implements OnInit, OnDestroy {
 		});
 	}
 
-	private _mixinTagLinks(isOverwriteLinks: boolean = false) {
-		if (isOverwriteLinks) {
-			this._cards.forEach(card => {
-				card.CardTagLinks = [];
-			});
-		}
-
+	private _mixinTagLinks() {
 		let lookupArray = [];
 		const oracle_ids = this._cards.filter(m => m.OracleCard).map(a => a.OracleCard.oracle_id);
 
@@ -202,8 +252,6 @@ export class MainComponent implements OnInit, OnDestroy {
 			if (lookupArray.length >= QUERY_BATCH_SIZE) {
 				this.service.getCardTagLinks(lookupArray).subscribe(links => {
 					links.forEach(link => {
-						link.Tag = this._tagsCache.find(m => m.id === link.TagId);
-
 						const dCard = this._oracleCardsCache[link.oracle_id];
 						if (dCard) {
 							dCard.CardTagLinks ? dCard.CardTagLinks.push(link) : dCard.CardTagLinks = [link];
@@ -219,8 +267,6 @@ export class MainComponent implements OnInit, OnDestroy {
 		if (lookupArray.length > 0) {
 			this.service.getCardTagLinks(lookupArray).subscribe(links => {
 				links.forEach(link => {
-					link.Tag = this._tagsCache.find(m => m.id === link.TagId);
-
 					const dCard = this._oracleCardsCache[link.oracle_id];
 					if (dCard) {
 						dCard.CardTagLinks ? dCard.CardTagLinks.push(link) : dCard.CardTagLinks = [link];
@@ -334,11 +380,11 @@ export class MainComponent implements OnInit, OnDestroy {
 		this._cards.forEach(card => {
 			if (card.CardTagLinks && card.CardTagLinks.length > 0) {
 				card.CardTagLinks.forEach(link => {
-					if (link && link.Tag) {
-						let type: [string, CardReference[], number] = result.find(m => m[0] === link.Tag.name);
+					if (link && link.TagName) {
+						let type: [string, CardReference[], number] = result.find(m => m[0] === link.TagName);
 
 						if (!type) {
-							type = [link.Tag.name, [], 0];
+							type = [link.TagName, [], 0];
 							result.push(type);
 						}
 
@@ -419,8 +465,8 @@ export class MainComponent implements OnInit, OnDestroy {
 	}
 
 	private _sortCardTagLinksByName(a: CardTagLink, b: CardTagLink): number {
-		if (a.Tag && b.Tag) {
-			return (a.Tag.name > b.Tag.name) ? 1 : ((b.Tag.name > a.Tag.name) ? -1 : 0);
+		if (a.TagName && b.TagName) {
+			return (a.TagName > b.TagName) ? 1 : ((b.TagName > a.TagName) ? -1 : 0);
 		} else {
 			return 1;
 		}
@@ -473,53 +519,65 @@ export class MainComponent implements OnInit, OnDestroy {
 		const dRef = this.dialog.open(DialogAddTagComponent, dConfig);
 		dRef.afterClosed().subscribe(tagId => {
 			if (tagId) {
-				if (card.CardTagLinks && card.CardTagLinks.find(m => m.TagId === tagId)) {
+				if (card.CardTagLinks && card.CardTagLinks.findIndex(m => m.TagId === tagId) !== -1) {
 					// don't add the same tag twice
 					alert('That tag is already linked to this card.');
 				} else {
-					const newLink = new CardTagLink();
-					newLink.oracle_id = card.OracleCard.oracle_id;
-					newLink.TagId = tagId;
+					const cachedTag = this._tagsCache.find(m => m.id === tagId);
+					if (cachedTag) {
 
-					this.service.createCardTagLink(newLink)
-						.subscribe(() => {
-							this.service.getCardTagLink(card.OracleCard.oracle_id, tagId)
-								.subscribe(links => {
-									if (links && links.length > 0) {
-										const link = links[0];
+						const newLink = new CardTagLink();
+						newLink.oracle_id = card.OracleCard.oracle_id;
+						newLink.TagName = cachedTag.name;
+						newLink.TagId = tagId;
 
-										// new links don't return with Tag loaded
-										this.service.getTags().subscribe(tags => {
-											link.Tag = tags.find(m => m.id === link.TagId);
+						this.service.createCardTagLink(newLink).subscribe(result => {
+							if (result) {
+								if (result.id) {
+									newLink.id = result.id;
 
-											if (card.CardTagLinks) {
-												const newTag = link.Tag.name;
-												let index = 0;
-												while (index < card.CardTagLinks.length) {
-													if (newTag > card.CardTagLinks[index].Tag.name) {
-														index++;
-													} else {
-														break;
-													}
-												}
-
-												card.CardTagLinks.splice(index, 0, link);
+									if (card.CardTagLinks) {
+										let index = 0;
+										while (index < card.CardTagLinks.length) {
+											if (newLink.TagName > card.CardTagLinks[index].TagName) {
+												index++;
 											} else {
-												card.CardTagLinks = [link];
+												break;
 											}
-										});
+										}
+
+										card.CardTagLinks.splice(index, 0, newLink);
+									} else {
+										card.CardTagLinks = [newLink];
 									}
-								});
+								} else {
+									alert(`Could not link Tag with id ${tagId} for "${card.name}."`);
+								}
+							}
 						});
+					} else {
+						alert(`Could not find Tag with id ${tagId} in cache.`);
+					}
 				}
 			}
 		});
 	}
 
 	removeCardTagLink(link: CardTagLink) {
-		this.service.deleteCardTagLink(link.id).subscribe(() => {
-			const links = this._oracleCardsCache[link.oracle_id].CardTagLinks;
-			links.splice(links.findIndex(m => m.TagId === link.TagId), 1);
+		this.service.deleteCardTagLink(link.id).subscribe(result => {
+			if (result) {
+				if (!result.isSuccess) {
+					alert(`Could not remove link to "${link.TagName}".`);
+				} else {
+					const card = this._cards.find(m => m.OracleCard && m.OracleCard.oracle_id === link.oracle_id);
+					if (card) {
+						const linkIndex = card.CardTagLinks.findIndex(m => m.TagId === link.TagId);
+						if (linkIndex !== -1) {
+							card.CardTagLinks.splice(linkIndex, 1);
+						}
+					}
+				}
+			}
 		});
 	}
 

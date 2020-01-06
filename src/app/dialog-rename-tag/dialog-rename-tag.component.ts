@@ -1,8 +1,8 @@
+import { Component, Inject, OnInit } from '@angular/core';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material';
-import { Component, OnInit, Inject } from '@angular/core';
 import { Tag } from '../classes/tag';
 import { LocalApiService } from '../services/local-api.service';
-import { NotificationService } from '../services/notification.service';
+import { iTagsUpdated, NotificationService, NotificationType } from '../services/notification.service';
 
 
 
@@ -40,17 +40,52 @@ export class DialogRenameTagComponent implements OnInit {
 			if (mergeInto) {
 				// request to merge tags
 				if (confirm(`Do you wish to merge this tag into "${mergeInto.name}"?`)) {
-					this.service.mergeTags(this.model, mergeInto).subscribe(() => {
-						this.service.deleteTag(this.model.id).subscribe(() => {
-							this.notify.tagsUpdated();
-							this.dialogRef.close();
-						});
+					this.service.mergeTags(this.model, mergeInto).subscribe(mergeResult => {
+						if (mergeResult) {
+							if (!mergeResult.isSuccess) {
+								alert(`Failed to merge "${this.model.name}" into "${mergeInto.name}".`);
+							} else {
+								console.log(`Successfully merged "${this.model.name}" into "${mergeInto.name}".`);
+								this.service.deleteTag(this.model.id).subscribe(deleteResult => {
+									if (deleteResult) {
+										if (!deleteResult.isSuccess) {
+											alert(`Failed to remove "${this.model.name}"...`);
+										} else {
+											console.log(`Successfully removed "${this.model.name}".`);
+											// only send a single update notification
+											// EventType.Merge should handle EventType.Delete functionality too
+											let data: iTagsUpdated = {
+												type: NotificationType.Merge,
+												Tag: this.model,
+												fromId: this.model.id,
+												toId: mergeInto.id,
+											};
+
+											this.notify.tagsUpdated(data);
+											this.dialogRef.close();
+										}
+									}
+								});
+							}
+						}
 					});
 				}
 			} else {
-				this.service.updateTag(this.model).subscribe(() => {
-					this.notify.tagsUpdated();
-					this.dialogRef.close();
+				this.service.updateTag(this.model).subscribe(result => {
+					if (result) {
+						if (!result.isSuccess) {
+							alert(`Failed to rename "${this.model.name}"...`);
+						} else {
+							let data: iTagsUpdated = {
+								type: NotificationType.Update,
+								Tag: this.model,
+								fromId: -1,
+								toId: -1,
+							};
+							this.notify.tagsUpdated(data);
+							this.dialogRef.close();
+						}
+					}
 				});
 			}
 		} else {

@@ -5,6 +5,7 @@ import { Observable } from 'rxjs';
 import { map, startWith } from 'rxjs/operators';
 import { Tag } from '../classes/tag';
 import { LocalApiService } from '../services/local-api.service';
+import { NotificationService, iTagsUpdated, NotificationType } from '../services/notification.service';
 
 
 @Component({
@@ -22,7 +23,8 @@ export class DialogAddTagComponent implements OnInit {
 
 	constructor(
 		private service: LocalApiService,
-		private dialogRef: MatDialogRef<DialogAddTagComponent>
+		private dialogRef: MatDialogRef<DialogAddTagComponent>,
+		private notify: NotificationService,
 	) { }
 
 	ngOnInit() {
@@ -51,8 +53,9 @@ export class DialogAddTagComponent implements OnInit {
 
 		if (filteredOptions.length > 0) {
 			this.tagName = filteredOptions[0];
-			this.close(true);
 		}
+
+		this.close(true);
 	}
 
 	close(isAccept: boolean = false) {
@@ -69,17 +72,24 @@ export class DialogAddTagComponent implements OnInit {
 				const newTag = new Tag();
 				newTag.name = this.tagName;
 
-				this.service.createTag(newTag).subscribe(() => {
-					this.service.getTags().subscribe(tags => {
-						if (tags) {
-							const tag = tags.find(m => m.name === this.tagName);
-							if (tag) {
-								this.dialogRef.close(tag.id);
-							} else {
-								alert('Could not create tag');
+				this.service.createTag(newTag).subscribe(result => {
+					if (result) {
+						if (result.id) {
+							newTag.id = result.id;
+							newTag.ProfileId = this.notify.getProfileId();
+
+							let data: iTagsUpdated = {
+								type: NotificationType.Insert,
+								Tag: newTag,
+								fromId: -1,
+								toId: -1
 							}
+
+							this.notify.tagsUpdated(data);
 						}
-					});
+
+						this.dialogRef.close(result.id);
+					}
 				});
 			}
 		} else {

@@ -6,7 +6,7 @@ export class CardTagLink {
 	ProfileId: number;
 	TagId: number;
 
-	Tag: Tag;
+	TagName: string;// Tag.name from Tag attached to this link
 
 	constructor(values: Object = {}) {
 		Object.assign(this, values);

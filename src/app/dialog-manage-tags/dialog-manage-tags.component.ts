@@ -6,7 +6,7 @@ import { Subscription } from 'rxjs';
 import { Tag } from '../classes/tag';
 import { DialogRenameTagComponent, iDialogRenameTag } from '../dialog-rename-tag/dialog-rename-tag.component';
 import { LocalApiService } from '../services/local-api.service';
-import { NotificationService } from '../services/notification.service';
+import { iTagsUpdated, NotificationService, NotificationType } from '../services/notification.service';
 
 
 @Component({
@@ -16,7 +16,7 @@ import { NotificationService } from '../services/notification.service';
 })
 export class DialogManageTagsComponent implements OnInit, OnDestroy {
 	tags: Tag[];
-	displayColumns = ['name', 'actions'];
+	displayColumns = ['name', 'count', 'actions'];
 	dataSource: MatTableDataSource<Tag>;
 
 	@ViewChild(MatPaginator, { static: false }) paginator: MatPaginator;
@@ -32,7 +32,54 @@ export class DialogManageTagsComponent implements OnInit, OnDestroy {
 
 	ngOnInit() {
 
-		this._tagsUpdatedSub = this.notify.isTagsUpdated$.subscribe(() => {
+		this._tagsUpdatedSub = this.notify.isTagsUpdated$.subscribe(event => {
+			switch (event.type) {
+				case NotificationType.Init:
+					// do nothing
+					break;
+					
+				case NotificationType.Update: {
+					let tag = this.tags.find(m => m.id == event.Tag.id);
+					tag.name = event.Tag.name;
+					break;
+				}
+
+				case NotificationType.Insert: {
+					this.tags.push(event.Tag);
+					break;
+				}
+
+				case NotificationType.Delete: {
+					const tagIndex = this.tags.findIndex(m => m.id === event.Tag.id);
+					if (tagIndex !== -1) {
+						this.tags.splice(tagIndex, 1);
+					}
+					break;
+				}
+
+				case NotificationType.Merge: {
+					// update the count of links for the merged to Tag
+					const fromTag = this.tags.find(m => m.id === event.fromId);
+					if (fromTag && fromTag.CardTagLinksCount > 0) {
+						let toTag = this.tags.find(m => m.id === event.toId);
+						if (toTag) {
+							toTag.CardTagLinksCount += fromTag.CardTagLinksCount;
+						}
+					}
+
+					// remove the merged tag
+					const tagIndex = this.tags.findIndex(m => m.id == event.fromId);
+					if (tagIndex !== -1) {
+						this.tags.splice(tagIndex, 1);
+					}
+					break;
+				}
+
+				default:
+					console.log('Received unexpected EventType: ' + event.type);
+					break;
+			}
+
 			this._loadTags();
 		});
 
@@ -80,9 +127,28 @@ export class DialogManageTagsComponent implements OnInit, OnDestroy {
 			}
 
 			case 'delete': {
-				if (confirm(`There are ${model.$CardTagLinksCount} cards linked to this tag. These links will also be removed if you proceed.\nDo you want to proceed?`)) {
-					this.service.deleteTag(model.id).subscribe(() => {
-						this.notify.tagsUpdated();
+				let confirmMsg = `Are you sure you want to delete ${model.name}?`;
+
+				if (model.CardTagLinksCount > 0) {
+					confirmMsg = `There are ${model.CardTagLinksCount} cards linked to this tag. These links will also be removed if you proceed.\n` + confirmMsg;
+				}
+
+				if (confirm(confirmMsg)) {
+					this.service.deleteTag(model.id).subscribe(result => {
+						if (result) {
+							if (!result.isSuccess) {
+								alert(`Could not remove "${model.name}".`);
+							} else {
+								let data: iTagsUpdated = {
+									type: NotificationType.Delete,
+									Tag: model,
+									toId: -1,
+									fromId: -1,
+								};
+
+								this.notify.tagsUpdated(data);
+							}
+						}
 					});
 				}
 				break;
@@ -92,7 +158,7 @@ export class DialogManageTagsComponent implements OnInit, OnDestroy {
 				break;
 		}
 
-		
+
 	}
 
 

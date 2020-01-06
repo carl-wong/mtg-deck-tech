@@ -21,8 +21,11 @@
         Deck Results
       </mat-panel-title>
     </mat-expansion-panel-header>
+    <div>
+      PLACEHOLDER FOR RESULTS SUMMARY
+    </div>
     <div style="text-align: right;">
-      <mat-form-field style="min-width: 25%;">
+      <mat-form-field style="max-width: 25%;">
         <mat-label>Group By</mat-label>
         <mat-select [(ngModel)]="groupByMode" (selectionChange)="selectedMode($event)">
           <mat-option *ngFor="let mode of groupByModes" [value]="mode">
@@ -67,8 +70,8 @@
                 </button>
                 <ng-container *ngIf="element.CardTagLinks">
                   <ng-container *ngFor="let link of element.CardTagLinks">
-                    <button *ngIf="link && link.Tag" mat-raised-button color="warn" (click)="removeCardTagLink(link)">
-                      {{link.Tag.name}}
+                    <button *ngIf="link && link.TagName" mat-raised-button color="warn" (click)="removeCardTagLink(link)">
+                      {{link.TagName}}
                     </button>
                   </ng-container>
                 </ng-container>

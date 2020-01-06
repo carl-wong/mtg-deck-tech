@@ -7,6 +7,12 @@
         {{element.name}}
       </td>
     </ng-container>
+    <ng-container matColumnDef="count">
+      <th mat-header-cell *matHeaderCellDef class="count-col">Links</th>
+      <td mat-cell *matCellDef="let element">
+        {{element.CardTagLinksCount}}
+      </td>
+    </ng-container>
     <ng-container matColumnDef="actions">
       <th mat-header-cell *matHeaderCellDef class="actions-col">Actions</th>
       <td mat-cell *matCellDef="let element">

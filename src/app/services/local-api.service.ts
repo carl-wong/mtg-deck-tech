@@ -6,7 +6,7 @@ import { environment } from '../../environments/environment';
 import { CardTagLink } from '../classes/card-tag-link';
 import { Profile } from '../classes/profile';
 import { Tag } from '../classes/tag';
-
+import { ApiResult, PostResult } from '../classes/api-result';
 
 @Injectable({
 	providedIn: 'root'
@@ -41,10 +41,10 @@ export class LocalApiService {
 			);
 	}
 
-	public createProfile(model: Profile) {
-		return this.http.post(this._api + '/Profiles', model, this.httpOptions)
+	public createProfile(model: Profile): Observable<PostResult> {
+		return this.http.post<PostResult>(this._api + '/Profiles', model, this.httpOptions)
 			.pipe(
-				catchError(this.handleError('create Profile'))
+				catchError(this.handleError<PostResult>('create Profile'))
 			);
 	}
 
@@ -58,33 +58,32 @@ export class LocalApiService {
 			);
 	}
 
-	public createTag(model: Tag) {
+	public createTag(model: Tag): Observable<PostResult> {
 		model.ProfileId = parseInt(this._getProfileId());
-		return this.http.post(this._api + '/Tags', model, this.httpOptions)
+		return this.http.post<PostResult>(this._api + '/Tags', model, this.httpOptions)
 			.pipe(
-				catchError(this.handleError('create Tag'))
+				catchError(this.handleError<PostResult>('create Tag'))
 			);
 	}
 
-	public updateTag(model: Tag) {
-		return this.http.put(this._api + '/Tags/' + model.id, model, this.httpOptions)
+	public updateTag(model: Tag): Observable<ApiResult> {
+		return this.http.put<ApiResult>(this._api + '/Tags/' + model.id, model, this.httpOptions)
 			.pipe(
-				catchError(this.handleError('update Tag'))
+				catchError(this.handleError<ApiResult>('update Tag'))
 			);
 	}
 
-	public mergeTags(from: Tag, into: Tag) {
-		return this.http.get(this._api + '/Tags/Merge/' + from.id + '/' + into.id)
+	public mergeTags(from: Tag, into: Tag): Observable<ApiResult> {
+		return this.http.get<ApiResult>(this._api + '/Tags/Merge/' + from.id + '/' + into.id)
 			.pipe(
-				catchError(this.handleError('merge Tag from ' + from.id + ' into ' + into.id))
+				catchError(this.handleError<ApiResult>('merge Tag from ' + from.id + ' into ' + into.id))
 			);
 	}
 
-	public deleteTag(id: number) {
-		return this.http.delete(this._api + '/Tags/' + id)
+	public deleteTag(id: number): Observable<ApiResult> {
+		return this.http.delete<ApiResult>(this._api + '/Tags/' + id)
 			.pipe(
-				map(res => null),
-				catchError(this.handleError('delete Tag'))
+				catchError(this.handleError<ApiResult>('delete Tag'))
 			);
 	}
 
@@ -132,19 +131,18 @@ export class LocalApiService {
 			);
 	}
 
-	public createCardTagLink(model: CardTagLink) {
+	public createCardTagLink(model: CardTagLink): Observable<PostResult> {
 		model.ProfileId = parseInt(this._getProfileId());
-		return this.http.post(this._api + '/CardTagLinks', model, this.httpOptions)
+		return this.http.post<PostResult>(this._api + '/CardTagLinks', model, this.httpOptions)
 			.pipe(
-				catchError(this.handleError('create CardTagLink'))
+				catchError(this.handleError<PostResult>('create CardTagLink'))
 			);
 	}
 
-	public deleteCardTagLink(id: number) {
-		return this.http.delete(this._api + '/CardTagLinks/' + id)
+	public deleteCardTagLink(id: number): Observable<ApiResult> {
+		return this.http.delete<ApiResult>(this._api + '/CardTagLinks/' + id)
 			.pipe(
-				map(res => null),
-				catchError(this.handleError('delete CardTagLink'))
+				catchError(this.handleError<ApiResult>('delete CardTagLink'))
 			);
 	}
 
