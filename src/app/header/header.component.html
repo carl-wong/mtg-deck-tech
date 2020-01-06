@@ -1,7 +1,17 @@
 <mat-toolbar color="primary">
   <span>MTG Deck Tech</span>
   <span class="fill-space"></span>
-  <button mat-raised-button (click)="auth.logout()" *ngIf="auth.loggedIn">
-    <mat-icon>emoji_people</mat-icon>Log Out
+  <button mat-button [matMenuTriggerFor]="profileMenu" *ngIf="auth.loggedIn">
+    <mat-icon>account_box</mat-icon>
   </button>
+  <mat-menu #profileMenu>
+    <button mat-menu-item (click)="openDialogManageTags()">
+      <mat-icon>label</mat-icon>
+      Manage Tags
+    </button>
+    <button mat-menu-item (click)="auth.logout()" *ngIf="auth.loggedIn">
+      <mat-icon>exit_to_app</mat-icon>
+      Logout
+    </button>
+  </mat-menu>
 </mat-toolbar>

@@ -11,6 +11,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import { MatTableModule } from '@angular/material/table';
+import { MatMenuModule } from '@angular/material/menu';
 import { MatToolbarModule } from '@angular/material/toolbar';
 import { BrowserModule } from '@angular/platform-browser';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
@@ -25,6 +26,8 @@ import { MainComponent } from './main/main.component';
 import { ChartColorPieComponent } from './main/chart-color-pie/chart-color-pie.component';
 import { HeaderComponent } from './header/header.component';
 import { CallbackComponent } from './callback/callback.component';
+import { DialogManageTagsComponent } from './dialog-manage-tags/dialog-manage-tags.component';
+import { DialogRenameTagComponent } from './dialog-rename-tag/dialog-rename-tag.component';
 
 
 @NgModule({
@@ -36,11 +39,15 @@ import { CallbackComponent } from './callback/callback.component';
     ChartCmcComponent,
     ChartColorPieComponent,
     HeaderComponent,
-    CallbackComponent
+    CallbackComponent,
+    DialogManageTagsComponent,
+    DialogRenameTagComponent
   ],
   entryComponents: [
     DialogAddTagComponent,
     DialogCardDetailsComponent,
+    DialogManageTagsComponent,
+    DialogRenameTagComponent,
   ],
   imports: [
     MDBBootstrapModule.forRoot(),
@@ -51,17 +58,18 @@ import { CallbackComponent } from './callback/callback.component';
     FormsModule,
     ReactiveFormsModule,
     BrowserAnimationsModule,
-    MatInputModule,
-    MatIconModule,
-    MatButtonModule,
     MatAutocompleteModule,
+    MatButtonModule,
+    MatCardModule,
     MatDialogModule,
+    MatExpansionModule,
+    MatFormFieldModule,
+    MatIconModule,
+    MatInputModule,
+    MatMenuModule,
     MatSelectModule,
     MatTableModule,
-    MatCardModule,
-    MatExpansionModule,
     MatToolbarModule,
-    MatFormFieldModule,
   ],
   providers: [],
   bootstrap: [AppComponent]

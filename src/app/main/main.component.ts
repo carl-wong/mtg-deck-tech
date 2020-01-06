@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Input, OnInit } from '@angular/core';
+import { Component, EventEmitter, Input, OnInit, OnDestroy } from '@angular/core';
 import { MatDialog, MatDialogConfig } from '@angular/material/dialog';
 import { environment } from '../../environments/environment';
 import { CardReference } from '../classes/card-reference';
@@ -13,6 +13,8 @@ import { LocalApiService } from '../services/local-api.service';
 import { OracleApiService } from '../services/oracle-api.service';
 import { ChartCmc } from './chart-cmc/chart-cmc.component';
 import { ChartColorPie } from './chart-color-pie/chart-color-pie.component';
+import { NotificationService } from '../services/notification.service';
+import { Subscription } from 'rxjs';
 
 
 const MODE_TYPES = 'Types';
@@ -34,7 +36,7 @@ enum FinishedStep {
 	templateUrl: './main.component.html',
 	styleUrls: ['./main.component.less']
 })
-export class MainComponent implements OnInit {
+export class MainComponent implements OnInit, OnDestroy {
 	accordionStep = 'input';
 	_onFinishedStep = new EventEmitter();
 
@@ -59,13 +61,27 @@ export class MainComponent implements OnInit {
 	chartCMCCurve: ChartCmc;
 	chartColorPie: ChartColorPie;
 
+	private _tagsUpdatedSub: Subscription;
+
 	constructor(
 		private oracle: OracleApiService,
 		private service: LocalApiService,
+		private notify: NotificationService,
 		private dialog: MatDialog,
 	) { }
 
+	ngOnDestroy() {
+		this._tagsUpdatedSub.unsubscribe();
+	}
+
 	ngOnInit() {
+		this._tagsUpdatedSub = this.notify.isTagsUpdated$.subscribe(() => {
+			this.isTagsCacheReady = false;
+			this._getTagsCache();
+
+			//todo: update refetch deck if exists
+		});
+
 		this._onFinishedStep.subscribe((step: FinishedStep) => {
 			// console.log('Received signal for step ' + step.toString());
 
@@ -99,46 +115,42 @@ export class MainComponent implements OnInit {
 	}
 
 	submitDecklist() {
-		if (this.isTransformCardsCacheReady) {
-			this._resetSession();
+		this._resetSession();
 
-			let lookupArray: string[] = [];
-			let lines = this.decklist.split('\n').filter(l => l.length > 2);
+		let lookupArray: string[] = [];
+		let lines = this.decklist.split('\n').filter(l => l.length > 2);
 
-			while (lines.length > 0) {
-				let line = lines.pop();
-				const bySpace = line.split(' ');
+		while (lines.length > 0) {
+			let line = lines.pop();
+			const bySpace = line.split(' ');
 
-				const count = parseInt(bySpace[0]);
-				const name = line.substring(count.toString().length + 1);
+			const count = parseInt(bySpace[0]);
+			const name = line.substring(count.toString().length + 1);
 
-				let card = new CardReference();
-				card.count = count;
-				card.name = this._transformCardsCache[name] ? this._transformCardsCache[name] : name;
+			let card = new CardReference();
+			card.count = count;
+			card.name = this._transformCardsCache[name] ? this._transformCardsCache[name] : name;
 
-				lookupArray.push(card.name);
-				this._cards.push(card);
+			lookupArray.push(card.name);
+			this._cards.push(card);
 
-				if (lookupArray.length >= QUERY_BATCH_SIZE) {
-					this.oracle.getByNames(lookupArray).subscribe(cards => {
-						this._mixinOracleCards(cards);
-					});
-
-					lookupArray = [];
-					SleepHelper.sleep(50);
-				}
-			}
-
-			if (lookupArray.length > 0) {
+			if (lookupArray.length >= QUERY_BATCH_SIZE) {
 				this.oracle.getByNames(lookupArray).subscribe(cards => {
 					this._mixinOracleCards(cards);
-					this._onFinishedStep.emit(FinishedStep.Oracle);
 				});
-			} else {
-				this._onFinishedStep.emit(FinishedStep.Oracle);
+
+				lookupArray = [];
+				SleepHelper.sleep(50);
 			}
+		}
+
+		if (lookupArray.length > 0) {
+			this.oracle.getByNames(lookupArray).subscribe(cards => {
+				this._mixinOracleCards(cards);
+				this._onFinishedStep.emit(FinishedStep.Oracle);
+			});
 		} else {
-			alert('Please wait for transform cards cache to load...');
+			this._onFinishedStep.emit(FinishedStep.Oracle);
 		}
 	}
 
@@ -151,8 +163,6 @@ export class MainComponent implements OnInit {
 				});
 
 				this._onFinishedStep.emit(FinishedStep.Transform);
-			} else {
-				alert('Could not load transform cards, is the oracle service running?');
 			}
 		});
 	}
@@ -161,6 +171,10 @@ export class MainComponent implements OnInit {
 		this.service.getTags().subscribe(tags => {
 			this._tagsCache = tags;
 			this._onFinishedStep.emit(FinishedStep.Tags);
+
+			if (this._cards.length > 0) {
+				this._mixinTagLinks(true);
+			}
 		});
 	}
 
@@ -175,31 +189,19 @@ export class MainComponent implements OnInit {
 		});
 	}
 
-	private _mixinTagLinks() {
-		if (this.isTagsCacheReady) {
-			let lookupArray = [];
-			let oracle_ids = this._cards.filter(m => m.OracleCard).map(a => a.OracleCard.oracle_id);
+	private _mixinTagLinks(isOverwriteLinks: boolean = false) {
+		if (isOverwriteLinks) {
+			this._cards.forEach(card => {
+				card.CardTagLinks = [];
+			});
+		}
 
-			while (oracle_ids.length > 0) {
-				lookupArray.push(oracle_ids.pop());
-				if (lookupArray.length >= QUERY_BATCH_SIZE) {
-					this.service.getCardTagLinks(lookupArray).subscribe(links => {
-						links.forEach(link => {
-							link.Tag = this._tagsCache.find(m => m.id === link.TagId);
+		let lookupArray = [];
+		let oracle_ids = this._cards.filter(m => m.OracleCard).map(a => a.OracleCard.oracle_id);
 
-							let dCard = this._oracleCardsCache[link.oracle_id];
-							if (dCard) {
-								dCard.CardTagLinks ? dCard.CardTagLinks.push(link) : dCard.CardTagLinks = [link];
-							}
-						});
-					});
-
-					lookupArray = [];
-					SleepHelper.sleep(50);
-				}
-			}
-
-			if (lookupArray.length > 0) {
+		while (oracle_ids.length > 0) {
+			lookupArray.push(oracle_ids.pop());
+			if (lookupArray.length >= QUERY_BATCH_SIZE) {
 				this.service.getCardTagLinks(lookupArray).subscribe(links => {
 					links.forEach(link => {
 						link.Tag = this._tagsCache.find(m => m.id === link.TagId);
@@ -209,13 +211,27 @@ export class MainComponent implements OnInit {
 							dCard.CardTagLinks ? dCard.CardTagLinks.push(link) : dCard.CardTagLinks = [link];
 						}
 					});
-					this._onFinishedStep.emit(FinishedStep.CardTagLinks);
 				});
-			} else {
-				this._onFinishedStep.emit(FinishedStep.CardTagLinks);
+
+				lookupArray = [];
+				SleepHelper.sleep(50);
 			}
+		}
+
+		if (lookupArray.length > 0) {
+			this.service.getCardTagLinks(lookupArray).subscribe(links => {
+				links.forEach(link => {
+					link.Tag = this._tagsCache.find(m => m.id === link.TagId);
+
+					let dCard = this._oracleCardsCache[link.oracle_id];
+					if (dCard) {
+						dCard.CardTagLinks ? dCard.CardTagLinks.push(link) : dCard.CardTagLinks = [link];
+					}
+				});
+				this._onFinishedStep.emit(FinishedStep.CardTagLinks);
+			});
 		} else {
-			alert('Please wait for Tags cache to load...');
+			this._onFinishedStep.emit(FinishedStep.CardTagLinks);
 		}
 	}
 
