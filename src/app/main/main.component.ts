@@ -78,8 +78,6 @@ export class MainComponent implements OnInit, OnDestroy {
 		this._tagsUpdatedSub = this.notify.isTagsUpdated$.subscribe(() => {
 			this.isTagsCacheReady = false;
 			this._getTagsCache();
-
-			//todo: update refetch deck if exists
 		});
 
 		this._onFinishedStep.subscribe((step: FinishedStep) => {
@@ -118,16 +116,16 @@ export class MainComponent implements OnInit, OnDestroy {
 		this._resetSession();
 
 		let lookupArray: string[] = [];
-		let lines = this.decklist.split('\n').filter(l => l.length > 2);
+		const lines = this.decklist.split('\n').filter(l => l.length > 2);
 
 		while (lines.length > 0) {
-			let line = lines.pop();
+			const line = lines.pop();
 			const bySpace = line.split(' ');
 
 			const count = parseInt(bySpace[0]);
 			const name = line.substring(count.toString().length + 1);
 
-			let card = new CardReference();
+			const card = new CardReference();
 			card.count = count;
 			card.name = this._transformCardsCache[name] ? this._transformCardsCache[name] : name;
 
@@ -181,7 +179,7 @@ export class MainComponent implements OnInit, OnDestroy {
 	private _mixinOracleCards(oCards: MinOracleCard[]) {
 		// attach oracle results to each card reference
 		oCards.forEach(oCard => {
-			let dCard = this._cards.find(m => m.name === oCard.name);
+			const dCard = this._cards.find(m => m.name === oCard.name);
 			if (dCard) {
 				dCard.OracleCard = oCard;
 				this._oracleCardsCache[oCard.oracle_id] = dCard;
@@ -197,7 +195,7 @@ export class MainComponent implements OnInit, OnDestroy {
 		}
 
 		let lookupArray = [];
-		let oracle_ids = this._cards.filter(m => m.OracleCard).map(a => a.OracleCard.oracle_id);
+		const oracle_ids = this._cards.filter(m => m.OracleCard).map(a => a.OracleCard.oracle_id);
 
 		while (oracle_ids.length > 0) {
 			lookupArray.push(oracle_ids.pop());
@@ -206,7 +204,7 @@ export class MainComponent implements OnInit, OnDestroy {
 					links.forEach(link => {
 						link.Tag = this._tagsCache.find(m => m.id === link.TagId);
 
-						let dCard = this._oracleCardsCache[link.oracle_id];
+						const dCard = this._oracleCardsCache[link.oracle_id];
 						if (dCard) {
 							dCard.CardTagLinks ? dCard.CardTagLinks.push(link) : dCard.CardTagLinks = [link];
 						}
@@ -223,7 +221,7 @@ export class MainComponent implements OnInit, OnDestroy {
 				links.forEach(link => {
 					link.Tag = this._tagsCache.find(m => m.id === link.TagId);
 
-					let dCard = this._oracleCardsCache[link.oracle_id];
+					const dCard = this._oracleCardsCache[link.oracle_id];
 					if (dCard) {
 						dCard.CardTagLinks ? dCard.CardTagLinks.push(link) : dCard.CardTagLinks = [link];
 					}
@@ -241,7 +239,7 @@ export class MainComponent implements OnInit, OnDestroy {
 	}
 
 	private _getColorsPieChart() {
-		let chart: ChartColorPie = {
+		const chart: ChartColorPie = {
 			title: 'Color Breakdown',
 			data: Statistics.getChartColorPie(this._cards),
 		};
@@ -250,7 +248,7 @@ export class MainComponent implements OnInit, OnDestroy {
 	}
 
 	private _getCMCChart() {
-		let chart: ChartCmc = {
+		const chart: ChartCmc = {
 			title: 'CMC',
 			data: [Statistics.getChartCMC(this._cards)],
 			labels: [],
@@ -277,7 +275,7 @@ export class MainComponent implements OnInit, OnDestroy {
 		this.cardsGrouped = [];
 	}
 
-	private _groupCardsByType() {
+	private _groupByType() {
 		const MAIN_TYPES = [
 			'Creature',
 			'Sorcery',
@@ -287,29 +285,35 @@ export class MainComponent implements OnInit, OnDestroy {
 			'Land',
 		];
 
-		let result: [string, CardReference[], number][] = [];
+		const result: [string, CardReference[], number][] = [];
+
+		MAIN_TYPES.forEach(mainType => {
+			result.push([mainType, [], 0]);
+		});
 
 		this._cards.forEach(card => {
 			if (card.OracleCard) {
-				MAIN_TYPES.forEach(mt => {
-					if (card.OracleCard.type_line.indexOf(mt) != -1) {
-						let type: [string, CardReference[], number] = result.find(m => m[0] === mt);
+				for (let iType = 0; iType < MAIN_TYPES.length; iType++) {
+					const mainType = MAIN_TYPES[iType];
 
-						if (!type) {
-							type = [mt, [], 0];
-							result.push(type);
-						}
+					if (card.OracleCard.type_line.indexOf(mainType) !== -1) {
+						let type: [string, CardReference[], number] = result.find(m => m[0] === mainType);
 
 						type[1].push(card);
 						type[2] += card.count;
+
+						if (mainType === 'Creature') {
+							// CHANGE: Shivon suggested not to list creatures under any other type to avoid confusion
+							break;
+						}
 					}
-				});
+				}
 			}
 		});
 
 		result.map(a => this._sortGroupContents(a));
 
-		this.cardsGrouped = result;
+		this.cardsGrouped = result.filter(m => m[2] > 0);
 		this.accordionStep = 'groups';
 	}
 
@@ -322,8 +326,8 @@ export class MainComponent implements OnInit, OnDestroy {
 		});
 	}
 
-	private _groupCardsByTag() {
-		let untagged: [string, CardReference[], number] = [UNTAGGED_PLACEHOLDER, [], 0];
+	private _groupByTag() {
+		const untagged: [string, CardReference[], number] = [UNTAGGED_PLACEHOLDER, [], 0];
 		let result: [string, CardReference[], number][] = [];
 
 		this._cards.forEach(card => {
@@ -361,7 +365,7 @@ export class MainComponent implements OnInit, OnDestroy {
 		this.accordionStep = 'groups';
 	}
 
-	private _groupCardsByCMC() {
+	private _groupByCMC() {
 		function cmcToString(cmc: number) {
 			if (cmc > 6) {
 				return '7+ CMC';
@@ -370,13 +374,13 @@ export class MainComponent implements OnInit, OnDestroy {
 			}
 		}
 
-		let result: [string, CardReference[], number][] = [];
+		const result: [string, CardReference[], number][] = [];
 
 		for (let i = 0; i < 8; i++) {
 			result.push([cmcToString(i), [], 0]);
 		}
 
-		let landsGroup: [string, CardReference[], number] = ['Lands', [], 0];
+		const landsGroup: [string, CardReference[], number] = ['Lands', [], 0];
 		result.push(landsGroup);
 
 		this._cards.forEach(card => {
@@ -388,7 +392,7 @@ export class MainComponent implements OnInit, OnDestroy {
 				landsGroup[2] += card.count;
 			} else {
 				const cmcString = cmcToString(card.OracleCard.cmc);
-				let group: [string, CardReference[], number] = result.find(m => m[0] === cmcString);
+				const group: [string, CardReference[], number] = result.find(m => m[0] === cmcString);
 				group[1].push(card);
 				group[2] += card.count;
 			}
@@ -420,18 +424,18 @@ export class MainComponent implements OnInit, OnDestroy {
 		this._performGroupByMode(this.groupByMode);
 	}
 
-	_performGroupByMode(mode: string) {
+	private _performGroupByMode(mode: string) {
 		switch (mode) {
 			case MODE_TYPES:
-				this._groupCardsByType();
+				this._groupByType();
 				break;
 
 			case MODE_TAGS:
-				this._groupCardsByTag();
+				this._groupByTag();
 				break;
 
 			case MODE_CMC:
-				this._groupCardsByCMC();
+				this._groupByCMC();
 				break;
 
 			default:
@@ -476,7 +480,7 @@ export class MainComponent implements OnInit, OnDestroy {
 							this.service.getCardTagLink(card.OracleCard.oracle_id, tagId)
 								.subscribe(links => {
 									if (links && links.length > 0) {
-										let link = links[0];
+										const link = links[0];
 
 										// new links don't return with Tag loaded
 										this.service.getTags().subscribe(tags => {
@@ -508,7 +512,7 @@ export class MainComponent implements OnInit, OnDestroy {
 
 	removeCardTagLink(link: CardTagLink) {
 		this.service.deleteCardTagLink(link.id).subscribe(() => {
-			let links = this._oracleCardsCache[link.oracle_id].CardTagLinks;
+			const links = this._oracleCardsCache[link.oracle_id].CardTagLinks;
 			links.splice(links.findIndex(m => m.TagId === link.TagId), 1);
 		});
 	}

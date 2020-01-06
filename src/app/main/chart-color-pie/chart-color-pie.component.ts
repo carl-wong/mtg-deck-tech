@@ -15,13 +15,13 @@ export interface ChartColorPie {
 	styleUrls: ['./chart-color-pie.component.less']
 })
 export class ChartColorPieComponent implements OnInit {
-	@Input() model: ChartColorPie
+	@Input() model: ChartColorPie;
 	@ViewChild(BaseChartDirective, { static: true }) baseChart: BaseChartDirective;
 
 	options: ChartOptions = {
 		responsive: true,
 		tooltips: {
-			custom: function(tooltip: Chart.ChartTooltipModel) {
+			custom(tooltip: Chart.ChartTooltipModel) {
 				if (!tooltip) { return; }
 				tooltip.displayColors = false;
 			},

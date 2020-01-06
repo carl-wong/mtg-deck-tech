@@ -54,7 +54,7 @@ export class DialogRenameTagComponent implements OnInit {
 				});
 			}
 		} else {
-			alert("Tag name cannot be empty!");
+			alert('Tag name cannot be empty!');
 		}
 	}
 

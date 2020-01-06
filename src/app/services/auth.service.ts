@@ -9,8 +9,8 @@ import { Profile } from '../classes/profile';
 import { LocalApiService } from './local-api.service';
 
 
-const DOMAIN = "johnnysasaki.auth0.com";
-const CLIENT_ID = "2RcQEkaXq2y2FrNcwMJY8YV5igue98hA";
+const DOMAIN = 'johnnysasaki.auth0.com';
+const CLIENT_ID = '2RcQEkaXq2y2FrNcwMJY8YV5igue98hA';
 
 @Injectable({
 	providedIn: 'root'

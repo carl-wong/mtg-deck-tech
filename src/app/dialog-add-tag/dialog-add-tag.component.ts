@@ -18,7 +18,7 @@ export class DialogAddTagComponent implements OnInit {
 	filteredOptions: Observable<string[]>;
 	tagInput = new FormControl();
 
-	private tagName: string = '';
+	private tagName = '';
 
 	constructor(
 		private service: LocalApiService,
@@ -66,7 +66,7 @@ export class DialogAddTagComponent implements OnInit {
 			if (existing) {
 				this.dialogRef.close(existing.id);
 			} else {
-				let newTag = new Tag();
+				const newTag = new Tag();
 				newTag.name = this.tagName;
 
 				this.service.createTag(newTag).subscribe(() => {
@@ -82,8 +82,7 @@ export class DialogAddTagComponent implements OnInit {
 					});
 				});
 			}
-		}
-		else {
+		} else {
 			this.dialogRef.close();
 		}
 	}

@@ -18,7 +18,7 @@ export abstract class Statistics {
 			return total + num;
 		}
 
-		let result: ChartDataSets = {
+		const result: ChartDataSets = {
 			data: [],
 			label: 'CMC Curve',
 			backgroundColor: PALETTE_BLUE[5]
@@ -48,8 +48,8 @@ export abstract class Statistics {
 
 	static getChartColorPie(deck: CardReference[]): MultiDataSet {
 
-		let cardCounts: { [color: string]: number } = {};
-		let landCounts: { [color: string]: number } = {};
+		const cardCounts: { [color: string]: number } = {};
+		const landCounts: { [color: string]: number } = {};
 
 		this.COLORS.forEach(c => {
 			cardCounts[c[0]] = 0;
@@ -67,7 +67,7 @@ export abstract class Statistics {
 				}
 
 				if (card.OracleCard.oracle_text.includes('Add {C}')) {
-					landCounts['C'] += card.count;
+					landCounts.C += card.count;
 				}
 			} else {
 				if (card.OracleCard.colors) {
@@ -76,12 +76,12 @@ export abstract class Statistics {
 							cardCounts[c] += card.count;
 						});
 				} else {
-					cardCounts['C'] += card.count;
+					cardCounts.C += card.count;
 				}
 			}
 		});
 
-		let result: MultiDataSet = [[], []];
+		const result: MultiDataSet = [[], []];
 
 		for (let i = 0; i < this.COLORS.length; i++) {
 			result[0][i] = landCounts[this.COLORS[i][0]];

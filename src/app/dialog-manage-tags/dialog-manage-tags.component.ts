@@ -62,17 +62,16 @@ export class DialogManageTagsComponent implements OnInit, OnDestroy {
 
 	selectedAction($event, model: Tag) {
 		switch ($event.value) {
-			case 'rename':
-				{
+			case 'rename': {
 					const dConfig = new MatDialogConfig();
 
 					dConfig.autoFocus = false;
 					dConfig.disableClose = false;
 
 					const data: iDialogRenameTag = {
-						model: model,
+						model,
 						all: this.tags,
-					}
+					};
 
 					dConfig.data = data;
 
@@ -80,8 +79,7 @@ export class DialogManageTagsComponent implements OnInit, OnDestroy {
 					break;
 				}
 
-			case 'delete':
-				{
+			case 'delete': {
 					this.service.getCardTagLinksByTagId(model.id).subscribe(links => {
 						if (links && links.length > 0) {
 							alert(`There are ${links.length} cards linked to this tag. Please remove the links or merge this tag with another first.`);

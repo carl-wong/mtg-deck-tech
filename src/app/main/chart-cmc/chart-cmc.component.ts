@@ -16,7 +16,7 @@ export interface ChartCmc {
 	styleUrls: ['./chart-cmc.component.less']
 })
 export class ChartCmcComponent implements OnInit {
-	@Input() model: ChartCmc
+	@Input() model: ChartCmc;
 	@ViewChild(BaseChartDirective, { static: true }) baseChart: BaseChartDirective;
 
 	options: ChartOptions = {
@@ -29,7 +29,7 @@ export class ChartCmcComponent implements OnInit {
 			}]
 		},
 		tooltips: {
-			custom: function(tooltip: Chart.ChartTooltipModel) {
+			custom(tooltip: Chart.ChartTooltipModel) {
 				if (!tooltip) { return; }
 				tooltip.displayColors = false;
 			},

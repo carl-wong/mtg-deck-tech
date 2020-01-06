@@ -34,8 +34,8 @@ export class LocalApiService {
 		return this.http.get<Profile[]>(this._api + '/Profiles?auth0Id=' + id)
 			.pipe(
 				map(res => {
-					res['payload'] = res;
-					return res['payload'];
+					res.payload = res;
+					return res.payload;
 				}),
 				catchError(this.handleError('get auth0Id=' + id))
 			);
@@ -52,8 +52,8 @@ export class LocalApiService {
 		return this.http.get(this._api + '/Profiles/' + this._getProfileId() + '/Tags')
 			.pipe(
 				map(res => {
-					res['payload'] = res;
-					return res['payload'];
+					res.payload = res;
+					return res.payload;
 				})
 			);
 	}
@@ -89,7 +89,7 @@ export class LocalApiService {
 	}
 
 	public getCardTagLink(oracle_id: string, tagId: number): Observable<CardTagLink[]> {
-		let queries: string[] = [];
+		const queries: string[] = [];
 
 		queries.push('oracle_id=' + oracle_id);
 		queries.push('TagId=' + tagId.toString());
@@ -98,8 +98,8 @@ export class LocalApiService {
 		return this.http.get(this._api + '/Profiles/' + this._getProfileId() + '/CardTagLinks' + suffix)
 			.pipe(
 				map(res => {
-					res['payload'] = res;
-					return res['payload'];
+					res.payload = res;
+					return res.payload;
 				})
 			);
 	}
@@ -109,14 +109,14 @@ export class LocalApiService {
 		return this.http.get(this._api + '/Profiles/' + this._getProfileId() + '/CardTagLinks' + suffix)
 			.pipe(
 				map(res => {
-					res['payload'] = res;
-					return res['payload'];
+					res.payload = res;
+					return res.payload;
 				})
 			);
 	}
 
 	public getCardTagLinks(oracle_ids: string[]): Observable<CardTagLink[]> {
-		let queries: string[] = [];
+		const queries: string[] = [];
 
 		oracle_ids.forEach(id => {
 			queries.push('oracle_id=' + id);
@@ -126,8 +126,8 @@ export class LocalApiService {
 		return this.http.get(this._api + '/Profiles/' + this._getProfileId() + '/CardTagLinks' + suffix)
 			.pipe(
 				map(res => {
-					res['payload'] = res;
-					return res['payload'];
+					res.payload = res;
+					return res.payload;
 				})
 			);
 	}
