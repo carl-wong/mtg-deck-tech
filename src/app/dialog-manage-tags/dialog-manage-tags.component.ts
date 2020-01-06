@@ -6,8 +6,8 @@ import { Subscription } from 'rxjs';
 import { Tag } from '../classes/tag';
 import { DialogRenameTagComponent, iDialogRenameTag } from '../dialog-rename-tag/dialog-rename-tag.component';
 import { LocalApiService } from '../services/local-api.service';
-import { iTagsUpdated, NotificationService, NotificationType } from '../services/notification.service';
-
+import { iTagsUpdated, NotificationService, EventType } from '../services/notification.service';
+import { MessagesService } from '../services/messages.service';
 
 @Component({
 	selector: 'app-dialog-manage-tags',
@@ -25,6 +25,7 @@ export class DialogManageTagsComponent implements OnInit, OnDestroy {
 
 	constructor(
 		private service: LocalApiService,
+		private messages: MessagesService,
 		private dialog: MatDialog,
 		private notify: NotificationService,
 		private dialogRef: MatDialogRef<DialogManageTagsComponent>
@@ -33,22 +34,22 @@ export class DialogManageTagsComponent implements OnInit, OnDestroy {
 	ngOnInit() {
 		this._tagsUpdatedSub = this.notify.isTagsUpdated$.subscribe(event => {
 			switch (event.type) {
-				case NotificationType.Init:
+				case EventType.Init:
 					// do nothing
 					break;
-					
-				case NotificationType.Update: {
+
+				case EventType.Update: {
 					let tag = this.tags.find(m => m.id == event.Tag.id);
 					tag.name = event.Tag.name;
 					break;
 				}
 
-				case NotificationType.Insert: {
+				case EventType.Insert: {
 					this.tags.push(event.Tag);
 					break;
 				}
 
-				case NotificationType.Delete: {
+				case EventType.Delete: {
 					const tagIndex = this.tags.findIndex(m => m.id === event.Tag.id);
 					if (tagIndex !== -1) {
 						this.tags.splice(tagIndex, 1);
@@ -56,7 +57,7 @@ export class DialogManageTagsComponent implements OnInit, OnDestroy {
 					break;
 				}
 
-				case NotificationType.Merge: {
+				case EventType.Merge: {
 					// update the count of links for the merged to Tag
 					const fromTag = this.tags.find(m => m.id === event.fromId);
 					if (fromTag && fromTag.CardTagLinksCount > 0) {
@@ -75,7 +76,7 @@ export class DialogManageTagsComponent implements OnInit, OnDestroy {
 				}
 
 				default:
-					console.log('Received unexpected EventType: ' + event.type);
+					this.messages.add('DialogManageTags received unexpected EventType: ' + event.type, 'warn');
 					break;
 			}
 
@@ -139,7 +140,7 @@ export class DialogManageTagsComponent implements OnInit, OnDestroy {
 								alert(`Could not remove "${model.name}".`);
 							} else {
 								let data: iTagsUpdated = {
-									type: NotificationType.Delete,
+									type: EventType.Delete,
 									Tag: model,
 									toId: -1,
 									fromId: -1,

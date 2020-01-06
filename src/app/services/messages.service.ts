@@ -9,7 +9,7 @@ export class MessagesService {
 	constructor() { }
 
 	add(text: string, level: string = 'info') {
-		console.log('Adding message: ' + text);
+		console.log(`${level.toUpperCase()}: ${text}`);
 		this.messages.push([level, text]);
 	}
 

@@ -7,7 +7,7 @@ import { Tag } from '../classes/tag';
 })
 export class NotificationService {
 	private _isTagsUpdated = new BehaviorSubject<iTagsUpdated>({
-		type: NotificationType.Init,
+		type: EventType.Init,
 		Tag: null,
 		fromId: -1,
 		toId: -1,
@@ -26,7 +26,7 @@ export class NotificationService {
 	}
 }
 
-export enum NotificationType {
+export enum EventType {
 	Init,
 	Insert,
 	Delete,
@@ -35,7 +35,7 @@ export enum NotificationType {
 }
 
 export interface iTagsUpdated {
-	type: NotificationType;
+	type: EventType;
 	Tag: Tag;
 
 	fromId: number;// for Merge

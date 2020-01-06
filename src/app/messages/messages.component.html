@@ -19,8 +19,8 @@
     Clear
   </button>
   <ul>
-    <li *ngFor="let msg of service.messages">
-      {{msg[0] | uppercase}}: {{msg[1]}}
+    <li *ngFor="let msg of service.messages;">
+      <span class="{{msg[0]}}">{{msg[0] | uppercase}}</span> - {{msg[1]}}
     </li>
   </ul>
 </ng-container>

@@ -5,7 +5,7 @@ import { Observable } from 'rxjs';
 import { map, startWith } from 'rxjs/operators';
 import { Tag } from '../classes/tag';
 import { LocalApiService } from '../services/local-api.service';
-import { NotificationService, iTagsUpdated, NotificationType } from '../services/notification.service';
+import { NotificationService, iTagsUpdated, EventType } from '../services/notification.service';
 
 
 @Component({
@@ -79,7 +79,7 @@ export class DialogAddTagComponent implements OnInit {
 							newTag.ProfileId = this.notify.getProfileId();
 
 							let data: iTagsUpdated = {
-								type: NotificationType.Insert,
+								type: EventType.Insert,
 								Tag: newTag,
 								fromId: -1,
 								toId: -1

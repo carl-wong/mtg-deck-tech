@@ -12,7 +12,7 @@ import { DialogAddTagComponent } from '../dialog-add-tag/dialog-add-tag.componen
 import { DialogCardDetailsComponent } from '../dialog-card-details/dialog-card-details.component';
 import { LocalApiService } from '../services/local-api.service';
 import { MessagesService } from '../services/messages.service';
-import { NotificationService, NotificationType } from '../services/notification.service';
+import { NotificationService, EventType } from '../services/notification.service';
 import { OracleApiService } from '../services/oracle-api.service';
 import { ChartCmc } from './chart-cmc/chart-cmc.component';
 import { ChartColorPie } from './chart-color-pie/chart-color-pie.component';
@@ -79,11 +79,11 @@ export class MainComponent implements OnInit, OnDestroy {
 	ngOnInit() {
 		this._tagsUpdatedSub = this.notify.isTagsUpdated$.subscribe(event => {
 			switch (event.type) {
-				case NotificationType.Init:
+				case EventType.Init:
 					// do nothing
 					break;
 
-				case NotificationType.Update: {
+				case EventType.Update: {
 					let tag = this._tagsCache.find(m => m.id == event.Tag.id);
 					tag.name = event.Tag.name;
 
@@ -97,12 +97,12 @@ export class MainComponent implements OnInit, OnDestroy {
 					break;
 				}
 
-				case NotificationType.Insert: {
+				case EventType.Insert: {
 					this._tagsCache.push(event.Tag);
 					break;
 				}
 
-				case NotificationType.Delete: {
+				case EventType.Delete: {
 					const tagIndex = this._tagsCache.findIndex(m => m.id === event.Tag.id);
 					if (tagIndex !== -1) {
 						this._tagsCache.splice(tagIndex, 1);
@@ -110,7 +110,7 @@ export class MainComponent implements OnInit, OnDestroy {
 					break;
 				}
 
-				case NotificationType.Merge: {
+				case EventType.Merge: {
 					// remove the merged tag
 					const tagIndex = this._tagsCache.findIndex(m => m.id == event.fromId);
 					if (tagIndex !== -1) {

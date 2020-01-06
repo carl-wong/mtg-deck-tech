@@ -2,8 +2,8 @@ import { Component, Inject, OnInit } from '@angular/core';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material';
 import { Tag } from '../classes/tag';
 import { LocalApiService } from '../services/local-api.service';
-import { iTagsUpdated, NotificationService, NotificationType } from '../services/notification.service';
-
+import { MessagesService } from '../services/messages.service';
+import { EventType, iTagsUpdated, NotificationService } from '../services/notification.service';
 
 
 export interface iDialogRenameTag {
@@ -21,6 +21,7 @@ export class DialogRenameTagComponent implements OnInit {
 	private _all: Tag[];
 
 	constructor(
+		private messages: MessagesService,
 		private service: LocalApiService,
 		private notify: NotificationService,
 		private dialogRef: MatDialogRef<DialogRenameTagComponent>,
@@ -43,19 +44,19 @@ export class DialogRenameTagComponent implements OnInit {
 					this.service.mergeTags(this.model, mergeInto).subscribe(mergeResult => {
 						if (mergeResult) {
 							if (!mergeResult.isSuccess) {
-								alert(`Failed to merge "${this.model.name}" into "${mergeInto.name}".`);
+								this.messages.add(`Failed to merge "${this.model.name}" into "${mergeInto.name}".`, 'warn');
 							} else {
-								console.log(`Successfully merged "${this.model.name}" into "${mergeInto.name}".`);
+								this.messages.add(`Successfully merged "${this.model.name}" into "${mergeInto.name}".`);
 								this.service.deleteTag(this.model.id).subscribe(deleteResult => {
 									if (deleteResult) {
 										if (!deleteResult.isSuccess) {
-											alert(`Failed to remove "${this.model.name}"...`);
+											this.messages.add(`Failed to remove "${this.model.name}"...`, 'warn');
 										} else {
-											console.log(`Successfully removed "${this.model.name}".`);
+											this.messages.add(`Successfully removed "${this.model.name}".`);
 											// only send a single update notification
 											// EventType.Merge should handle EventType.Delete functionality too
 											let data: iTagsUpdated = {
-												type: NotificationType.Merge,
+												type: EventType.Merge,
 												Tag: this.model,
 												fromId: this.model.id,
 												toId: mergeInto.id,
@@ -77,7 +78,7 @@ export class DialogRenameTagComponent implements OnInit {
 							alert(`Failed to rename "${this.model.name}"...`);
 						} else {
 							let data: iTagsUpdated = {
-								type: NotificationType.Update,
+								type: EventType.Update,
 								Tag: this.model,
 								fromId: -1,
 								toId: -1,
