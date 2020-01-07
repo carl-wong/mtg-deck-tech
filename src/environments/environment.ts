@@ -5,4 +5,5 @@ export const environment = {
   oracleApi: 'http://localhost:3000',
   localApi: 'http://localhost:3000',
   timestamp: 'Updated: 2020-01-07 @ 10:53:36',
+  version: 'LOCAL',
 };

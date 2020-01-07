@@ -6,7 +6,7 @@
     "start": "node ./timestamp.js && ng serve --open",
     "start-dev": "node ./timestamp.js && ng serve -c dev --open",
     "build": "node ./timestamp.js && ng build",
-    "build-prod": "node ./timestamp.js && ng build --prod && node ./deploy-archiver.js",
+    "build-prod": "npm version patch && node ./build-version.js && node ./timestamp.js && ng build --prod && node ./deploy-archiver.js",
     "test": "ng test",
     "lint": "ng lint",
     "e2e": "ng e2e"

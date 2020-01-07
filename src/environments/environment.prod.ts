@@ -4,4 +4,5 @@ export const environment = {
   oracleApi: 'https://decktech-api.narl.life',
   localApi: 'https://decktech-api.narl.life',
   timestamp: 'Updated: 2020-01-07 @ 10:53:36',
+  version: '0.0.0',
 };
