@@ -80,10 +80,9 @@ export class DialogManageTagsComponent implements OnInit, OnDestroy {
 					break;
 			}
 
-			this._loadTags();
+			this.dataSource = new MatTableDataSource(this.tags);
+			this.dataSource.paginator = this.paginator;
 		});
-
-		this._loadTags();
 	}
 
 	ngOnDestroy() {
@@ -158,8 +157,6 @@ export class DialogManageTagsComponent implements OnInit, OnDestroy {
 				break;
 		}
 
-
+		$event.writeValue(null);
 	}
-
-
 }
