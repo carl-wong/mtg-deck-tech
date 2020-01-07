@@ -1,3 +1,4 @@
+import { environment } from '../../environments/environment';
 import { Component, OnInit } from '@angular/core';
 import { MatDialog, MatDialogConfig } from '@angular/material/dialog';
 import { DialogManageTagsComponent } from '../dialog-manage-tags/dialog-manage-tags.component';
@@ -9,6 +10,7 @@ import { AuthService } from '../services/auth.service';
 	styleUrls: ['./header.component.less']
 })
 export class HeaderComponent implements OnInit {
+	lastUpdated: string = '';
 
 	constructor(
 		public auth: AuthService,
@@ -16,6 +18,7 @@ export class HeaderComponent implements OnInit {
 	) { }
 
 	ngOnInit() {
+		this.lastUpdated = environment.timestamp;
 	}
 
 	openDialogManageTags() {
