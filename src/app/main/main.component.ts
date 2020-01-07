@@ -186,29 +186,37 @@ export class MainComponent implements OnInit, OnDestroy {
 		this._resetSession();
 
 		let lookupArray: string[] = [];
-		const lines = this.decklist.split('\n').filter(l => l.length > 2);
+
+		const lines = this.decklist.split('\n');
+		const regex = /(?<_ls>[\s]+)?(?<count>[\d]+)?(?<_x>[xX]+[\s]+)?(?<_ms>[\s]+)?(?<name>.+)(?<_ts>[\s]+)?$/gm;
 
 		while (lines.length > 0) {
 			const line = lines.pop();
-			const bySpace = line.split(' ');
 
-			const count = parseInt(bySpace[0]);
-			const name = line.substring(count.toString().length + 1);
+			regex.lastIndex = 0;//reset to look from start of each line
+			const linesRx = regex.exec(line);
 
-			const card = new CardReference();
-			card.count = count;
-			card.name = this._transformCardsCache[name] ? this._transformCardsCache[name] : name;
+			if (linesRx) {
+				const name = linesRx.groups.name ? linesRx.groups.name.trim() : null;
+				if (name) {
+					const count = linesRx.groups.count ? parseInt(linesRx.groups.count) : 1;
 
-			lookupArray.push(card.name);
-			this._cards.push(card);
+					const card = new CardReference();
+					card.count = count;
+					card.name = (this._transformCardsCache[name] ? this._transformCardsCache[name] : name).toLowerCase();
 
-			if (lookupArray.length >= QUERY_BATCH_SIZE) {
-				this.oracle.getByNames(lookupArray).subscribe(cards => {
-					this._mixinOracleCards(cards);
-				});
+					lookupArray.push(card.name);
+					this._cards.push(card);
 
-				lookupArray = [];
-				SleepHelper.sleep(50);
+					if (lookupArray.length >= QUERY_BATCH_SIZE) {
+						this.oracle.getByNames(lookupArray).subscribe(cards => {
+							this._mixinOracleCards(cards);
+						});
+
+						lookupArray = [];
+						SleepHelper.sleep(50);
+					}
+				}
 			}
 		}
 
@@ -249,8 +257,10 @@ export class MainComponent implements OnInit, OnDestroy {
 	private _mixinOracleCards(oCards: MinOracleCard[]) {
 		// attach oracle results to each card reference
 		oCards.forEach(oCard => {
-			const dCard = this._cards.find(m => m.name === oCard.name);
+			const lowerName = oCard.name.toLowerCase();
+			const dCard = this._cards.find(m => m.name === lowerName);
 			if (dCard) {
+				dCard.name = oCard.name;
 				dCard.OracleCard = oCard;
 				this._oracleCardsCache[oCard.oracle_id] = dCard;
 			}
