@@ -534,46 +534,41 @@ export class MainComponent implements OnInit, OnDestroy {
 		dConfig.autoFocus = true;
 
 		const dRef = this.dialog.open(DialogAddTagComponent, dConfig);
-		dRef.afterClosed().subscribe(tagId => {
-			if (tagId) {
-				const cachedTag = this._tagsCache.find(m => m.id === tagId);
-				if (cachedTag) {
-					if (card.CardTagLinks && card.CardTagLinks.findIndex(m => m.TagId === tagId) !== -1) {
-						// don't add the same tag twice
-						this.messages.add(`"${card.name}" is already tagged with "${cachedTag.name}".`, MessageLevel.Alert);
-					} else {
-						const newLink = new CardTagLink();
-						newLink.oracle_id = card.OracleCard.oracle_id;
-						newLink.TagName = cachedTag.name;
-						newLink.TagId = tagId;
-
-						this.service.createCardTagLink(newLink).subscribe(result => {
-							if (result) {
-								if (result.id) {
-									newLink.id = result.id;
-
-									if (card.CardTagLinks) {
-										let index = 0;
-										while (index < card.CardTagLinks.length) {
-											if (newLink.TagName > card.CardTagLinks[index].TagName) {
-												index++;
-											} else {
-												break;
-											}
-										}
-
-										card.CardTagLinks.splice(index, 0, newLink);
-									} else {
-										card.CardTagLinks = [newLink];
-									}
-								} else {
-									this.messages.add(`Could not link Tag with id ${tagId} for "${card.name}."`, MessageLevel.Alert);
-								}
-							}
-						});
-					}
+		dRef.afterClosed().subscribe((tag: Tag) => {
+			if (tag) {
+				if (card.CardTagLinks && card.CardTagLinks.findIndex(m => m.TagId === tag.id) !== -1) {
+					// don't add the same tag twice
+					this.messages.add(`"${card.name}" is already tagged with [${tag.name}].`, MessageLevel.Alert);
 				} else {
-					this.messages.add(`Could not find Tag with id ${tagId} in cache.`, MessageLevel.Alert);
+					const newLink = new CardTagLink();
+					newLink.oracle_id = card.OracleCard.oracle_id;
+					newLink.TagName = tag.name;
+					newLink.TagId = tag.id;
+
+					this.service.createCardTagLink(newLink).subscribe(result => {
+						if (result) {
+							if (result.id) {
+								newLink.id = result.id;
+
+								if (card.CardTagLinks) {
+									let index = 0;
+									while (index < card.CardTagLinks.length) {
+										if (newLink.TagName > card.CardTagLinks[index].TagName) {
+											index++;
+										} else {
+											break;
+										}
+									}
+
+									card.CardTagLinks.splice(index, 0, newLink);
+								} else {
+									card.CardTagLinks = [newLink];
+								}
+							} else {
+								this.messages.add(`Could not attach [${tag.name}] to "${card.name}."`, MessageLevel.Alert);
+							}
+						}
+					});
 				}
 			}
 		});

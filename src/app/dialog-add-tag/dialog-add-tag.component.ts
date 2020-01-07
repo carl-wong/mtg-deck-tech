@@ -64,23 +64,22 @@ export class DialogAddTagComponent implements OnInit {
 		}
 
 		if (isAccept && this.tagName) {
-			const existing = this._tags.find(m => m.name === this.tagName);
-
-			if (existing) {
-				this.dialogRef.close(existing.id);
+			let tag = this._tags.find(m => m.name === this.tagName);
+			if (tag) {
+				this.dialogRef.close(tag);
 			} else {
-				const newTag = new Tag();
-				newTag.name = this.tagName;
+				tag = new Tag();
+				tag.name = this.tagName;
 
-				this.service.createTag(newTag).subscribe(result => {
+				this.service.createTag(tag).subscribe(result => {
 					if (result) {
 						if (result.id) {
-							newTag.id = result.id;
-							newTag.ProfileId = this.notify.getProfileId();
+							tag.id = result.id;
+							tag.ProfileId = this.notify.getProfileId();
 
 							const data: iTagsUpdated = {
 								type: EventType.Insert,
-								Tag: newTag,
+								Tag: tag,
 								fromId: -1,
 								toId: -1
 							};
@@ -88,7 +87,7 @@ export class DialogAddTagComponent implements OnInit {
 							this.notify.tagsUpdated(data);
 						}
 
-						this.dialogRef.close(result.id);
+						this.dialogRef.close(tag);
 					}
 				});
 			}
