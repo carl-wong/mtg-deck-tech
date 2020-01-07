@@ -7,7 +7,7 @@ import { Tag } from '../classes/tag';
 import { DialogRenameTagComponent, iDialogRenameTag } from '../dialog-rename-tag/dialog-rename-tag.component';
 import { LocalApiService } from '../services/local-api.service';
 import { iTagsUpdated, NotificationService, EventType } from '../services/notification.service';
-import { MessagesService } from '../services/messages.service';
+import { MessagesService, MessageLevel } from '../services/messages.service';
 
 @Component({
 	selector: 'app-dialog-manage-tags',
@@ -76,7 +76,7 @@ export class DialogManageTagsComponent implements OnInit, OnDestroy {
 				}
 
 				default:
-					this.messages.add('DialogManageTags received unexpected EventType: ' + event.type, 'warn');
+					this.messages.add('DialogManageTags received unexpected EventType: ' + event.type, MessageLevel.Alert);
 					break;
 			}
 
@@ -128,7 +128,7 @@ export class DialogManageTagsComponent implements OnInit, OnDestroy {
 			}
 
 			case 'delete': {
-				let confirmMsg = `Are you sure you want to delete ${model.name}?`;
+				let confirmMsg = `Are you sure you want to delete "[{model.name}]?`;
 
 				if (model.CardTagLinksCount > 0) {
 					confirmMsg = `There are ${model.CardTagLinksCount} cards linked to this tag. These links will also be removed if you proceed.\n` + confirmMsg;
@@ -138,7 +138,7 @@ export class DialogManageTagsComponent implements OnInit, OnDestroy {
 					this.service.deleteTag(model.id).subscribe(result => {
 						if (result) {
 							if (!result.isSuccess) {
-								this.messages.add(`Could not remove "${model.name}".`, 'warn');
+								this.messages.add(`Could not remove [${model.name}].`, MessageLevel.Alert);
 							} else {
 								let data: iTagsUpdated = {
 									type: EventType.Delete,

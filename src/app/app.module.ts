@@ -12,6 +12,7 @@ import { MatInputModule } from '@angular/material/input';
 import { MatMenuModule } from '@angular/material/menu';
 import { MatPaginatorModule } from '@angular/material/paginator';
 import { MatSelectModule } from '@angular/material/select';
+import { MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatTableModule } from '@angular/material/table';
 import { MatToolbarModule } from '@angular/material/toolbar';
 import { BrowserModule } from '@angular/platform-browser';
@@ -72,6 +73,7 @@ import { MessagesComponent } from './messages/messages.component';
         MatMenuModule,
         MatPaginatorModule,
         MatSelectModule,
+        MatSnackBarModule,
         MatTableModule,
         MatToolbarModule,
     ],

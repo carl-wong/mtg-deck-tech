@@ -1,26 +1,10 @@
 <ng-container *ngIf="service.messages">
-  <!-- <table mat-table [dataSource]="service.messages">
-    <ng-container matColumnDef="level">
-      <th mat-header-cell *matHeaderCellDef class="level-col">Level</th>
-      <td mat-cell *matCellDef="let element">
-        {{element[0]}}
-      </td>
-    </ng-container>
-    <ng-container matColumnDef="message">
-      <th mat-header-cell *matHeaderCellDef class="message-col">Message</th>
-      <td mat-cell *matCellDef="let element">
-        {{element[1]}}
-      </td>
-    </ng-container>
-    <tr mat-header-row *matHeaderRowDef="displayColumns; sticky: true;"></tr>
-    <tr mat-row *matRowDef="let row; columns: displayColumns;"></tr>
-  </table> -->
   <button mat-button color="primary" (click)="clear()">
     Clear
   </button>
   <ul>
     <li *ngFor="let msg of service.messages;">
-      <span class="{{msg[0]}}">{{msg[0] | uppercase}}</span> - {{msg[1]}}
+      <span class="{{msg[0]}}-msg">{{msg[0] | uppercase}}</span> - {{msg[1]}}
     </li>
   </ul>
 </ng-container>

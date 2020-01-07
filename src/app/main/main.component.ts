@@ -11,8 +11,8 @@ import { Tag } from '../classes/tag';
 import { DialogAddTagComponent } from '../dialog-add-tag/dialog-add-tag.component';
 import { DialogCardDetailsComponent } from '../dialog-card-details/dialog-card-details.component';
 import { LocalApiService } from '../services/local-api.service';
-import { MessagesService } from '../services/messages.service';
-import { NotificationService, EventType } from '../services/notification.service';
+import { MessageLevel, MessagesService } from '../services/messages.service';
+import { EventType, NotificationService } from '../services/notification.service';
 import { OracleApiService } from '../services/oracle-api.service';
 import { ChartCmc } from './chart-cmc/chart-cmc.component';
 import { ChartColorPie } from './chart-color-pie/chart-color-pie.component';
@@ -135,17 +135,15 @@ export class MainComponent implements OnInit, OnDestroy {
 		});
 
 		this._onFinishedStep.subscribe((step: FinishedStep) => {
-			// this.messages.add('Received signal for step ' + step.toString());
-
 			switch (step) {
 				case FinishedStep.Tags:
-					this.isTagsCacheReady = true;
 					this.messages.add('Tags cache loaded...');
+					this.isTagsCacheReady = true;
 					break;
 
 				case FinishedStep.Transform:
-					this.isTransformCardsCacheReady = true;
 					this.messages.add('Transform cards cache loaded...');
+					this.isTransformCardsCacheReady = true;
 					break;
 
 				case FinishedStep.Oracle:
@@ -158,6 +156,7 @@ export class MainComponent implements OnInit, OnDestroy {
 				case FinishedStep.CardTagLinks:
 					this.messages.add('CardTagLinks loaded...');
 					// group cards based on selected mode value
+					this._logMissingCards();
 					this._performGroupByMode(this.groupByMode);
 					break;
 
@@ -168,6 +167,12 @@ export class MainComponent implements OnInit, OnDestroy {
 
 		this._getTransformCache();
 		this._getTagsCache();
+	}
+
+	private _logMissingCards() {
+		this._cards.filter(m => !m.OracleCard).forEach(card => {
+			this.messages.add(`Could not find "${card.name}" in Oracle, please check spelling and/or capitalization.`, MessageLevel.Warn);
+		});
 	}
 
 	submitDecklist() {
@@ -525,7 +530,7 @@ export class MainComponent implements OnInit, OnDestroy {
 				if (cachedTag) {
 					if (card.CardTagLinks && card.CardTagLinks.findIndex(m => m.TagId === tagId) !== -1) {
 						// don't add the same tag twice
-						this.messages.add(`"${card.name}" is already tagged with "${cachedTag.name}".`, 'warn');
+						this.messages.add(`"${card.name}" is already tagged with "${cachedTag.name}".`, MessageLevel.Alert);
 					} else {
 						const newLink = new CardTagLink();
 						newLink.oracle_id = card.OracleCard.oracle_id;
@@ -552,13 +557,13 @@ export class MainComponent implements OnInit, OnDestroy {
 										card.CardTagLinks = [newLink];
 									}
 								} else {
-									this.messages.add(`Could not link Tag with id ${tagId} for "${card.name}."`, 'warn');
+									this.messages.add(`Could not link Tag with id ${tagId} for "${card.name}."`, MessageLevel.Alert);
 								}
 							}
 						});
 					}
 				} else {
-					this.messages.add(`Could not find Tag with id ${tagId} in cache.`, 'warn');
+					this.messages.add(`Could not find Tag with id ${tagId} in cache.`, MessageLevel.Alert);
 				}
 			}
 		});
@@ -568,7 +573,7 @@ export class MainComponent implements OnInit, OnDestroy {
 		this.service.deleteCardTagLink(link.id).subscribe(result => {
 			if (result) {
 				if (!result.isSuccess) {
-					this.messages.add(`Could not remove link to "${link.TagName}".`, 'warn');
+					this.messages.add(`Could not remove link to [${link.TagName}].`, MessageLevel.Alert);
 				} else {
 					const card = this._cards.find(m => m.OracleCard && m.OracleCard.oracle_id === link.oracle_id);
 					if (card) {
