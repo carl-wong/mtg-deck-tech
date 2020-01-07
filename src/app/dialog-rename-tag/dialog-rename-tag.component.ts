@@ -55,7 +55,7 @@ export class DialogRenameTagComponent implements OnInit {
 											this.messages.add(`Successfully removed [${this.model.name}].`);
 											// only send a single update notification
 											// EventType.Merge should handle EventType.Delete functionality too
-											let data: iTagsUpdated = {
+											const data: iTagsUpdated = {
 												type: EventType.Merge,
 												Tag: this.model,
 												fromId: this.model.id,
@@ -77,7 +77,7 @@ export class DialogRenameTagComponent implements OnInit {
 						if (!result.isSuccess) {
 							this.messages.add(`Failed to rename [${this.model.name}].`, MessageLevel.Alert);
 						} else {
-							let data: iTagsUpdated = {
+							const data: iTagsUpdated = {
 								type: EventType.Update,
 								Tag: this.model,
 								fromId: -1,

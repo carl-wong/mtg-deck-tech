@@ -10,7 +10,7 @@ import { AuthService } from '../services/auth.service';
 	styleUrls: ['./header.component.less']
 })
 export class HeaderComponent implements OnInit {
-	lastUpdated: string = '';
+	lastUpdated = '';
 
 	constructor(
 		public auth: AuthService,

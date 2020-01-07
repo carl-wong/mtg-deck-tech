@@ -7,7 +7,7 @@ export class ApiResult {
 }
 
 export class PostResult extends ApiResult {
-	id: number;// insertId on POST requests
+	id: number; // insertId on POST requests
 
 	constructor(values: Object = {}) {
 		super(values);

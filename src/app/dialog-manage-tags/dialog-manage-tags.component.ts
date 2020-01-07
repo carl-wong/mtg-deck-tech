@@ -39,7 +39,7 @@ export class DialogManageTagsComponent implements OnInit, OnDestroy {
 					break;
 
 				case EventType.Update: {
-					let tag = this.tags.find(m => m.id == event.Tag.id);
+					const tag = this.tags.find(m => m.id == event.Tag.id);
 					tag.name = event.Tag.name;
 					break;
 				}
@@ -61,7 +61,7 @@ export class DialogManageTagsComponent implements OnInit, OnDestroy {
 					// update the count of links for the merged to Tag
 					const fromTag = this.tags.find(m => m.id === event.fromId);
 					if (fromTag && fromTag.CardTagLinksCount > 0) {
-						let toTag = this.tags.find(m => m.id === event.toId);
+						const toTag = this.tags.find(m => m.id === event.toId);
 						if (toTag) {
 							toTag.CardTagLinksCount += fromTag.CardTagLinksCount;
 						}
@@ -140,7 +140,7 @@ export class DialogManageTagsComponent implements OnInit, OnDestroy {
 							if (!result.isSuccess) {
 								this.messages.add(`Could not remove [${model.name}].`, MessageLevel.Alert);
 							} else {
-								let data: iTagsUpdated = {
+								const data: iTagsUpdated = {
 									type: EventType.Delete,
 									Tag: model,
 									toId: -1,

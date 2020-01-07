@@ -78,12 +78,12 @@ export class DialogAddTagComponent implements OnInit {
 							newTag.id = result.id;
 							newTag.ProfileId = this.notify.getProfileId();
 
-							let data: iTagsUpdated = {
+							const data: iTagsUpdated = {
 								type: EventType.Insert,
 								Tag: newTag,
 								fromId: -1,
 								toId: -1
-							}
+							};
 
 							this.notify.tagsUpdated(data);
 						}

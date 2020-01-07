@@ -58,9 +58,9 @@ export class MainComponent implements OnInit, OnDestroy {
 	@Input() decklist = environment.defaultDecklist;
 	private _cards: CardReference[] = [];
 
-	totalCards: number = 0;
-	uniqueCards: number = 0;
-	missingCards: number = 0;
+	totalCards = 0;
+	uniqueCards = 0;
+	missingCards = 0;
 
 	cardsGrouped: [string, CardReference[], number][] = [];
 	chartCMCCurve: ChartCmc;
@@ -88,7 +88,7 @@ export class MainComponent implements OnInit, OnDestroy {
 					break;
 
 				case EventType.Update: {
-					let tag = this._tagsCache.find(m => m.id == event.Tag.id);
+					const tag = this._tagsCache.find(m => m.id == event.Tag.id);
 					tag.name = event.Tag.name;
 
 					this._cards.filter(m => m.CardTagLinks && m.CardTagLinks.length > 0)
@@ -361,7 +361,7 @@ export class MainComponent implements OnInit, OnDestroy {
 					const mainType = MAIN_TYPES[iType];
 
 					if (card.OracleCard.type_line.indexOf(mainType) !== -1) {
-						let type: [string, CardReference[], number] = result.find(m => m[0] === mainType);
+						const type: [string, CardReference[], number] = result.find(m => m[0] === mainType);
 
 						type[1].push(card);
 						type[2] += card.count;
