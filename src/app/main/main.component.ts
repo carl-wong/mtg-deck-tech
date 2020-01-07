@@ -193,7 +193,7 @@ export class MainComponent implements OnInit, OnDestroy {
 		while (lines.length > 0) {
 			const line = lines.pop();
 
-			regex.lastIndex = 0;//reset to look from start of each line
+			regex.lastIndex = 0; // reset to look from start of each line
 			const linesRx = regex.exec(line);
 
 			if (linesRx) {
