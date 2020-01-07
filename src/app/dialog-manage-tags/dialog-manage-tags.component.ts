@@ -15,7 +15,7 @@ import { MessagesService } from '../services/messages.service';
 	styleUrls: ['./dialog-manage-tags.component.less']
 })
 export class DialogManageTagsComponent implements OnInit, OnDestroy {
-	tags: Tag[];
+	tags: Tag[] = [];
 	displayColumns = ['name', 'count', 'actions'];
 	dataSource: MatTableDataSource<Tag>;
 
@@ -83,6 +83,8 @@ export class DialogManageTagsComponent implements OnInit, OnDestroy {
 			this.dataSource = new MatTableDataSource(this.tags);
 			this.dataSource.paginator = this.paginator;
 		});
+
+		this._loadTags();
 	}
 
 	ngOnDestroy() {
