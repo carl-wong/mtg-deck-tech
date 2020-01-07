@@ -1,12 +1,12 @@
 {
   "name": "mtg-deck-tech",
-  "version": "0.0.2",
+  "version": "0.0.1",
   "scripts": {
     "ng": "ng",
     "start": "node ./timestamp.js && ng serve --open",
     "start-dev": "node ./timestamp.js && ng serve -c dev --open",
     "build": "node ./timestamp.js && ng build",
-    "build-prod": "npm version patch && node ./build-version.js && node ./timestamp.js && ng build --prod && node ./deploy-archiver.js",
+    "build-prod": "npm version patch --force && node ./build-version.js && node ./timestamp.js && ng build --prod && node ./deploy-archiver.js",
     "test": "ng test",
     "lint": "ng lint",
     "e2e": "ng e2e"
