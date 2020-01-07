@@ -7,19 +7,19 @@ describe('CallbackComponent', () => {
   let fixture: ComponentFixture<CallbackComponent>;
 
   beforeEach(async(() => {
-    TestBed.configureTestingModule({
-      declarations: [ CallbackComponent ]
-    })
-    .compileComponents();
+	TestBed.configureTestingModule({
+		declarations: [ CallbackComponent ]
+	})
+	.compileComponents();
   }));
 
   beforeEach(() => {
-    fixture = TestBed.createComponent(CallbackComponent);
-    component = fixture.componentInstance;
-    fixture.detectChanges();
+	fixture = TestBed.createComponent(CallbackComponent);
+	component = fixture.componentInstance;
+	fixture.detectChanges();
   });
 
   it('should create', () => {
-    expect(component).toBeTruthy();
+	expect(component).toBeTruthy();
   });
 });

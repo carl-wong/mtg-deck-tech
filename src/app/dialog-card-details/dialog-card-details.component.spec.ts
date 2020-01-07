@@ -7,19 +7,19 @@ describe('DialogCardDetailsComponent', () => {
   let fixture: ComponentFixture<DialogCardDetailsComponent>;
 
   beforeEach(async(() => {
-    TestBed.configureTestingModule({
-      declarations: [ DialogCardDetailsComponent ]
-    })
-    .compileComponents();
+	TestBed.configureTestingModule({
+		declarations: [ DialogCardDetailsComponent ]
+	})
+	.compileComponents();
   }));
 
   beforeEach(() => {
-    fixture = TestBed.createComponent(DialogCardDetailsComponent);
-    component = fixture.componentInstance;
-    fixture.detectChanges();
+	fixture = TestBed.createComponent(DialogCardDetailsComponent);
+	component = fixture.componentInstance;
+	fixture.detectChanges();
   });
 
   it('should create', () => {
-    expect(component).toBeTruthy();
+	expect(component).toBeTruthy();
   });
 });

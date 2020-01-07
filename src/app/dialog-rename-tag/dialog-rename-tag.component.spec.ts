@@ -7,19 +7,19 @@ describe('DialogRenameTagComponent', () => {
   let fixture: ComponentFixture<DialogRenameTagComponent>;
 
   beforeEach(async(() => {
-    TestBed.configureTestingModule({
-      declarations: [ DialogRenameTagComponent ]
-    })
-    .compileComponents();
+	TestBed.configureTestingModule({
+		declarations: [ DialogRenameTagComponent ]
+	})
+	.compileComponents();
   }));
 
   beforeEach(() => {
-    fixture = TestBed.createComponent(DialogRenameTagComponent);
-    component = fixture.componentInstance;
-    fixture.detectChanges();
+	fixture = TestBed.createComponent(DialogRenameTagComponent);
+	component = fixture.componentInstance;
+	fixture.detectChanges();
   });
 
   it('should create', () => {
-    expect(component).toBeTruthy();
+	expect(component).toBeTruthy();
   });
 });
