@@ -20,12 +20,14 @@
       <mat-panel-title>
         Deck Results
       </mat-panel-title>
+      <ng-container *ngIf="totalCards > 0">
+          <mat-panel-description>
+            {{totalCards}} total, {{uniqueCards}} unique
+          </mat-panel-description>
+        </ng-container>
     </mat-expansion-panel-header>
-    <div>
-      PLACEHOLDER FOR RESULTS SUMMARY
-    </div>
-    <div style="text-align: right;">
-      <mat-form-field style="max-width: 25%;">
+    <div align="end">
+      <mat-form-field style="max-width: 300px;">
         <mat-label>Group By</mat-label>
         <mat-select [(ngModel)]="groupByMode" (selectionChange)="selectedMode($event)">
           <mat-option *ngFor="let mode of groupByModes" [value]="mode">
@@ -33,10 +35,13 @@
           </mat-option>
         </mat-select>
       </mat-form-field>
-      <button mat-icon-button color="accent" (click)="refreshGroups()">
+      <button mat-button color="accent" (click)="refreshGroups()">
         <mat-icon>refresh</mat-icon>
       </button>
     </div>
+    <ng-container *ngIf="missingCards > 0">
+      <p>There were {{missingCards}} missing cards; please check log for details.</p>
+    </ng-container>
     <ng-container *ngIf="cardsGrouped.length === 0">
       <ng-container *ngTemplateOutlet="noDataWarning;"></ng-container>
     </ng-container>

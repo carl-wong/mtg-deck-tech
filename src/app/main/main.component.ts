@@ -58,6 +58,10 @@ export class MainComponent implements OnInit, OnDestroy {
 	@Input() decklist = environment.defaultDecklist;
 	private _cards: CardReference[] = [];
 
+	totalCards: number = 0;
+	uniqueCards: number = 0;
+	missingCards: number = 0;
+
 	cardsGrouped: [string, CardReference[], number][] = [];
 	chartCMCCurve: ChartCmc;
 	chartColorPie: ChartColorPie;
@@ -170,9 +174,12 @@ export class MainComponent implements OnInit, OnDestroy {
 	}
 
 	private _logMissingCards() {
-		this._cards.filter(m => !m.OracleCard).forEach(card => {
+		const missing = this._cards.filter(m => !m.OracleCard);
+		missing.forEach(card => {
 			this.messages.add(`Could not find "${card.name}" in Oracle, please check spelling and/or capitalization.`, MessageLevel.Warn);
 		});
+
+		this.missingCards = missing.length;
 	}
 
 	submitDecklist() {
@@ -289,6 +296,9 @@ export class MainComponent implements OnInit, OnDestroy {
 	private _getStatistics() {
 		this._getCMCChart();
 		this._getColorsPieChart();
+
+		this.totalCards = this._cards.map(m => m.count).reduce((a, b) => a + b);
+		this.uniqueCards = this._cards.length;
 	}
 
 	private _getColorsPieChart() {
