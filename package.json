@@ -4,7 +4,8 @@
   "scripts": {
     "ng": "ng",
     "start": "node ./timestamp.js && ng serve --open",
-    "build": "node ./timestamp.js && ng build --prod",
+    "build": "node ./timestamp.js && ng build",
+    "build-prod": "node ./timestamp.js && ng build --prod && node ./deploy-archiver.js",
     "test": "ng test",
     "lint": "ng lint",
     "e2e": "ng e2e"
@@ -39,6 +40,7 @@
     "@types/jasmine": "~3.3.8",
     "@types/jasminewd2": "~2.0.3",
     "@types/node": "~8.9.4",
+    "archiver": "^3.1.1",
     "codelyzer": "^5.0.0",
     "jasmine-core": "^3.5.0",
     "jasmine-spec-reporter": "~4.2.1",
