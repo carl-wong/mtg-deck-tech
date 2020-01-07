@@ -4,6 +4,7 @@
   "scripts": {
     "ng": "ng",
     "start": "node ./timestamp.js && ng serve --open",
+    "start-dev": "node ./timestamp.js && ng serve -c dev --open",
     "build": "node ./timestamp.js && ng build",
     "build-prod": "node ./timestamp.js && ng build --prod && node ./deploy-archiver.js",
     "test": "ng test",

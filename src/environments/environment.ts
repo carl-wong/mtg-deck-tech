@@ -4,5 +4,5 @@ export const environment = {
   defaultDecklist: '1 Alesha, Who Smiles at Death\n1 Altar of Dementia\n1 Animate Dead',
   oracleApi: 'http://localhost:3000',
   localApi: 'http://localhost:3000',
-  timestamp: 'Updated: 2020-01-07 @ 01:24:12',
+  timestamp: 'Updated: 2020-01-07 @ 10:53:36',
 };
