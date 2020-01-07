@@ -15,6 +15,7 @@ import { MatSelectModule } from '@angular/material/select';
 import { MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatTableModule } from '@angular/material/table';
 import { MatToolbarModule } from '@angular/material/toolbar';
+import { MatTooltipModule } from '@angular/material/tooltip';
 import { BrowserModule } from '@angular/platform-browser';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { MDBBootstrapModule } from 'angular-bootstrap-md';
@@ -55,13 +56,12 @@ import { MessagesComponent } from './messages/messages.component';
     ],
     imports: [
         MDBBootstrapModule.forRoot(),
-        BrowserModule,
-        HttpClientModule,
         AppRoutingModule,
+        BrowserAnimationsModule,
+        BrowserModule,
         ChartsModule,
         FormsModule,
-        ReactiveFormsModule,
-        BrowserAnimationsModule,
+        HttpClientModule,
         MatAutocompleteModule,
         MatButtonModule,
         MatCardModule,
@@ -76,6 +76,8 @@ import { MessagesComponent } from './messages/messages.component';
         MatSnackBarModule,
         MatTableModule,
         MatToolbarModule,
+        MatTooltipModule,
+        ReactiveFormsModule,
     ],
     providers: [],
     bootstrap: [AppComponent]

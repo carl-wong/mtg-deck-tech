@@ -1,5 +1,5 @@
 <mat-toolbar color="primary">
-  <span title="{{lastUpdated}}">MTG DeckTech</span>
+  <span matTooltip="{{buildVersion}} {{lastUpdated}}" matTooltipPosition="right">MTG DeckTech</span>
   <span class="fill-space"></span>
   <button mat-button [matMenuTriggerFor]="profileMenu" *ngIf="auth.loggedIn">
     <mat-icon>account_box</mat-icon>

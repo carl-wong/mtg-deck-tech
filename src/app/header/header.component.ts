@@ -11,6 +11,7 @@ import { AuthService } from '../services/auth.service';
 })
 export class HeaderComponent implements OnInit {
 	lastUpdated = '';
+	buildVersion = '';
 
 	constructor(
 		public auth: AuthService,
@@ -19,6 +20,7 @@ export class HeaderComponent implements OnInit {
 
 	ngOnInit() {
 		this.lastUpdated = environment.timestamp;
+		this.buildVersion = environment.version;
 	}
 
 	openDialogManageTags() {

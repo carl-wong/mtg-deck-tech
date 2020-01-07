@@ -5,7 +5,7 @@ var buildVersion = package.version;
 const options = {
 	files: 'src/environments/environment.prod.ts',
 	from: /version: '(.*)'/g,
-	to: "version: '" + buildVersion + "'",
+	to: "version: 'v" + buildVersion + "'",
 	allowEmptyPaths: false,
 };
 
