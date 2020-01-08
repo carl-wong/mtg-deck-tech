@@ -6,7 +6,7 @@ var archiver = require('archiver');
 var ts = moment().format('YYYY-MM-DD_HHmmss');
 
 // create a file to stream archive data to.
-var output = fs.createWriteStream(__dirname + `/dist/payload-${ts}.zip`);
+var output = fs.createWriteStream(__dirname + `/dist/mtg-deck-tech-${ts}.zip`);
 var archive = archiver('zip', {
   zlib: { level: 9 } // Sets the compression level.
 });
