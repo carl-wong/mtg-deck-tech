@@ -20,7 +20,7 @@ export abstract class Statistics {
 
 		const result: ChartDataSets = {
 			data: [],
-			label: 'CMC Curve',
+			label: 'Curve',
 			backgroundColor: PALETTE_BLUE[5]
 		};
 
