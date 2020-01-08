@@ -1,4 +1,4 @@
-import { Component, Inject, OnInit } from '@angular/core';
+import { Component, HostListener, Inject, OnInit } from '@angular/core';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material';
 import { CardReference } from '../classes/card-reference';
 
@@ -32,6 +32,24 @@ export class DialogCardDetailsComponent implements OnInit {
 	changeShown() {
 		if (this.imageUris.length > 0) {
 			this.shownIndex = (this.shownIndex + 1) % this.imageUris.length;
+		}
+	}
+
+	@HostListener('document:keypress', ['$event'])
+	handleKeyboardEvent(event: KeyboardEvent) {
+		switch (event.code) {
+			case 'Space':
+				if (this.imageUris.length > 1) {
+					this.changeShown();
+				} else {
+					this.close();
+				}
+				break;
+			case 'Enter':
+				this.close();
+				break;
+			default:
+				break;
 		}
 	}
 
