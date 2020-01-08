@@ -78,7 +78,7 @@
                   </button>
                   <ng-container *ngIf="element.CardTagLinks">
                     <ng-container *ngFor="let link of element.CardTagLinks">
-                      <mat-chip *ngIf="link && link.TagName" color="warn" selected (removed)="removeCardTagLink(link)" matTooltip="Remove Tag" matTooltipPosition="above">
+                      <mat-chip *ngIf="link && link.TagName" color="warn" selected (removed)="removeCardTagLink(link)">
                         {{link.TagName}}
                         <mat-icon matChipRemove>cancel</mat-icon>
                       </mat-chip>
