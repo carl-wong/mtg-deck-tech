@@ -2,6 +2,7 @@
   <mat-expansion-panel [expanded]="accordionStep === 'input'" (opened)="open('input')">
     <mat-expansion-panel-header>
       <mat-panel-title>
+        <mat-icon>input</mat-icon>
         Decklist
       </mat-panel-title>
     </mat-expansion-panel-header>
@@ -18,6 +19,7 @@
   <mat-expansion-panel [expanded]="accordionStep === 'groups'" (opened)="open('groups')">
     <mat-expansion-panel-header>
       <mat-panel-title>
+        <mat-icon>label</mat-icon>
         Deck Results
       </mat-panel-title>
       <ng-container *ngIf="totalCards > 0">
@@ -98,6 +100,7 @@
   <mat-expansion-panel [expanded]="accordionStep === 'stats'" (opened)="open('stats')">
     <mat-expansion-panel-header>
       <mat-panel-title>
+        <mat-icon>insert_chart_outlined</mat-icon>
         Charts
       </mat-panel-title>
     </mat-expansion-panel-header>
@@ -118,6 +121,7 @@
   <mat-expansion-panel [expanded]="accordionStep === 'messages'" (opened)="open('messages')">
     <mat-expansion-panel-header>
       <mat-panel-title>
+        <mat-icon>insert_comment</mat-icon>
         Log Messages
       </mat-panel-title>
     </mat-expansion-panel-header>
