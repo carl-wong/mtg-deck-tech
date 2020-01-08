@@ -1,5 +1,6 @@
 <ng-container *ngIf="service.messages">
-  <button mat-button color="primary" (click)="clear()">
+  <button mat-raised-button color="warn" (click)="clear()">
+    <mat-icon>clear_all</mat-icon>
     Clear
   </button>
   <ul>
