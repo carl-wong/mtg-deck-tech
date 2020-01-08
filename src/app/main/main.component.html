@@ -72,16 +72,19 @@
             <ng-container matColumnDef="tags">
               <th mat-header-cell *matHeaderCellDef class="tags-col">Tags</th>
               <td mat-cell *matCellDef="let element">
-                <button mat-mini-fab (click)="openDialogAddTag(element)" matTooltip="Add Tag" matTooltipPosition="left">
-                  <mat-icon>add</mat-icon>
-                </button>
-                <ng-container *ngIf="element.CardTagLinks">
-                  <ng-container *ngFor="let link of element.CardTagLinks">
-                    <button *ngIf="link && link.TagName" mat-raised-button color="warn" (click)="removeCardTagLink(link)" matTooltip="Remove Tag" matTooltipPosition="above">
-                      {{link.TagName}}
-                    </button>
+                <mat-chip-list>
+                  <button mat-mini-fab (click)="openDialogAddTag(element)" matTooltip="Add Tag" matTooltipPosition="left">
+                    <mat-icon>add</mat-icon>
+                  </button>
+                  <ng-container *ngIf="element.CardTagLinks">
+                    <ng-container *ngFor="let link of element.CardTagLinks">
+                      <mat-chip *ngIf="link && link.TagName" color="warn" selected (removed)="removeCardTagLink(link)" matTooltip="Remove Tag" matTooltipPosition="above">
+                        {{link.TagName}}
+                        <mat-icon matChipRemove>cancel</mat-icon>
+                      </mat-chip>
+                    </ng-container>
                   </ng-container>
-                </ng-container>
+                </mat-chip-list>
               </td>
             </ng-container>
             <tr mat-header-row *matHeaderRowDef="['count', 'name', 'tags']"></tr>

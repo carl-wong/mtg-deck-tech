@@ -41,7 +41,7 @@ export class ChartCmcComponent implements OnInit {
 				label(tooltipItem: Chart.ChartTooltipItem, data: Chart.ChartData) {
 					const cmc = data.labels[tooltipItem.index];
 					const count = Number(data.datasets[tooltipItem.datasetIndex].data[tooltipItem.index]);
-					return cmc + ': ' + count + ' cards';
+					return cmc + ' CMC: ' + count + (count === 1 ? ' card' : ' cards');
 				}
 			}
 		}

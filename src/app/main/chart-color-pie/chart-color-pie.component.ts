@@ -38,7 +38,7 @@ export class ChartColorPieComponent implements OnInit {
 					const total = (data.datasets[tooltipItem.datasetIndex].data as number[]).reduce(sum);
 					const percent = total > 0 ? Math.round(count / total * 10000) / 100 : 0;
 
-					return [label, `${count} ${colorName} cards`, percent + '%'];
+					return [label, `${count} ${colorName}` + (count === 1 ? 'card' : 'cards'), percent + '%'];
 				}
 			}
 		}
