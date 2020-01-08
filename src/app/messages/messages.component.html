@@ -1,8 +1,10 @@
 <ng-container *ngIf="service.messages">
-  <button mat-raised-button color="warn" (click)="clear()">
-    <mat-icon>clear_all</mat-icon>
-    Clear
-  </button>
+  <div align="end">
+    <button mat-raised-button color="warn" (click)="clear()">
+      <mat-icon>clear_all</mat-icon>
+      Clear
+    </button>
+  </div>
   <ul>
     <li *ngFor="let msg of service.messages;">
       <span class="{{msg[0]}}-msg">{{msg[0] | uppercase}}</span> - {{msg[1]}}
