@@ -197,13 +197,13 @@ export class MainComponent implements OnInit, OnDestroy {
 			const linesRx = regex.exec(line);
 
 			if (linesRx) {
-				const name = linesRx.groups.name ? linesRx.groups.name.trim() : null;
+				const name = linesRx.groups.name ? linesRx.groups.name.trim().toLowerCase() : null;
 				if (name) {
 					const count = linesRx.groups.count ? parseInt(linesRx.groups.count) : 1;
 
 					const card = new CardReference();
 					card.count = count;
-					card.name = (this._transformCardsCache[name] ? this._transformCardsCache[name] : name).toLowerCase();
+					card.name = this._transformCardsCache[name] ? this._transformCardsCache[name] : name;
 
 					lookupArray.push(card.name);
 					this._cards.push(card);
@@ -233,9 +233,10 @@ export class MainComponent implements OnInit, OnDestroy {
 	private _getTransformCache() {
 		this.oracle.getTransform().subscribe(cards => {
 			if (cards) {
-				cards.forEach(card => {
-					const frontName = card.name.split(' // ')[0];
-					this._transformCardsCache[frontName] = card.name;
+				cards.filter(m => m.name && m.name.includes(' // ')).map(m => m.name.toLowerCase())
+				.forEach(name => {
+					const front = name.split(' // ')[0];
+					this._transformCardsCache[front] = name;
 				});
 
 				this._onFinishedStep.emit(FinishedStep.Transform);
