@@ -16,6 +16,7 @@ import { EventType, NotificationService } from '../services/notification.service
 import { OracleApiService } from '../services/oracle-api.service';
 import { ChartCmc } from './chart-cmc/chart-cmc.component';
 import { ChartColorPie } from './chart-color-pie/chart-color-pie.component';
+import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
 
 
 const MODE_TYPES = 'Types';
@@ -24,6 +25,8 @@ const MODE_CMC = 'CMC';
 
 const UNTAGGED_PLACEHOLDER = 'UNTAGGED';
 const QUERY_BATCH_SIZE = 10;
+
+const DECKBOX_TOKEN = 'deckbox.org/sets/';
 
 enum FinishedStep {
 	Transform,
@@ -69,6 +72,7 @@ export class MainComponent implements OnInit, OnDestroy {
 	private _tagsUpdatedSub: Subscription;
 
 	constructor(
+		private http: HttpClient,
 		private messages: MessagesService,
 		private oracle: OracleApiService,
 		private service: LocalApiService,
@@ -185,48 +189,63 @@ export class MainComponent implements OnInit, OnDestroy {
 	submitDecklist() {
 		this._resetSession();
 
-		let lookupArray: string[] = [];
+		if (this.decklist.indexOf(DECKBOX_TOKEN) !== -1) {
+			// deckbox set URL
+			const regex = /[\d]+/gm;
+			const setId = regex.exec(this.decklist);
+			const deckboxExportURL = `https://deckbox.org/sets/${setId}/export`;
 
-		const lines = this.decklist.split('\n');
-		const regex = /(?<_ls>[\s]+)?(?<count>[\d]+)?(?<_x>[xX]+[\s]+)?(?<_ms>[\s]+)?(?<name>.+)(?<_ts>[\s]+)?$/gm;
+			this.messages.add(`Attempting to fetch <${deckboxExportURL}>`);
 
-		while (lines.length > 0) {
-			const line = lines.pop();
+			const getResult = this.http.get(deckboxExportURL)
+				.subscribe(result => {
+					console.log(result);
+				});
+		} else {
+			// regular decklist importer
+			let lookupArray: string[] = [];
 
-			regex.lastIndex = 0; // reset to look from start of each line
-			const linesRx = regex.exec(line);
+			const lines = this.decklist.split('\n');
+			const regex = /(?<_ls>[\s]+)?(?<count>[\d]+)?(?<_x>[xX]+[\s]+)?(?<_ms>[\s]+)?(?<name>.+)(?<_ts>[\s]+)?$/gm;
 
-			if (linesRx) {
-				const name = linesRx.groups.name ? linesRx.groups.name.trim().toLowerCase() : null;
-				if (name) {
-					const count = linesRx.groups.count ? parseInt(linesRx.groups.count) : 1;
+			while (lines.length > 0) {
+				const line = lines.pop();
 
-					const card = new CardReference();
-					card.count = count;
-					card.name = this._transformCardsCache[name] ? this._transformCardsCache[name] : name;
+				regex.lastIndex = 0; // reset to look from start of each line
+				const linesRx = regex.exec(line);
 
-					lookupArray.push(card.name);
-					this._cards.push(card);
+				if (linesRx) {
+					const name = linesRx.groups.name ? linesRx.groups.name.trim().toLowerCase() : null;
+					if (name) {
+						const count = linesRx.groups.count ? parseInt(linesRx.groups.count) : 1;
 
-					if (lookupArray.length >= QUERY_BATCH_SIZE) {
-						this.oracle.getByNames(lookupArray).subscribe(cards => {
-							this._mixinOracleCards(cards);
-						});
+						const card = new CardReference();
+						card.count = count;
+						card.name = this._transformCardsCache[name] ? this._transformCardsCache[name] : name;
 
-						lookupArray = [];
-						SleepHelper.sleep(50);
+						lookupArray.push(card.name);
+						this._cards.push(card);
+
+						if (lookupArray.length >= QUERY_BATCH_SIZE) {
+							this.oracle.getByNames(lookupArray).subscribe(cards => {
+								this._mixinOracleCards(cards);
+							});
+
+							lookupArray = [];
+							SleepHelper.sleep(50);
+						}
 					}
 				}
 			}
-		}
 
-		if (lookupArray.length > 0) {
-			this.oracle.getByNames(lookupArray).subscribe(cards => {
-				this._mixinOracleCards(cards);
+			if (lookupArray.length > 0) {
+				this.oracle.getByNames(lookupArray).subscribe(cards => {
+					this._mixinOracleCards(cards);
+					this._onFinishedStep.emit(FinishedStep.Oracle);
+				});
+			} else {
 				this._onFinishedStep.emit(FinishedStep.Oracle);
-			});
-		} else {
-			this._onFinishedStep.emit(FinishedStep.Oracle);
+			}
 		}
 	}
 
@@ -234,10 +253,10 @@ export class MainComponent implements OnInit, OnDestroy {
 		this.oracle.getTransform().subscribe(cards => {
 			if (cards) {
 				cards.filter(m => m.name && m.name.includes(' // ')).map(m => m.name.toLowerCase())
-				.forEach(name => {
-					const front = name.split(' // ')[0];
-					this._transformCardsCache[front] = name;
-				});
+					.forEach(name => {
+						const front = name.split(' // ')[0];
+						this._transformCardsCache[front] = name;
+					});
 
 				this._onFinishedStep.emit(FinishedStep.Transform);
 			}
