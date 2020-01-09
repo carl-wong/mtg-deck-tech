@@ -3,6 +3,6 @@ export const environment = {
   defaultDecklist: '1 Plains\n1 Island\n1 Swamp\n1 Mountain\n1 Forest\n1 Wastes',
   oracleApi: 'https://decktech-api.narl.life',
   localApi: 'https://decktech-api.narl.life',
-  timestamp: 'Updated: 2020-01-09 @ 14:06:16',
-  version: 'v0.0.10',
+  timestamp: 'Updated: 2020-01-09 @ 14:57:38',
+  version: 'v0.0.11',
 };
