@@ -9,7 +9,8 @@ var moment = require('moment');
 var ts = moment().format('YYYY-MM-DD_HHmmss');
 
 // create a file to stream archive data to.
-var output = fs.createWriteStream(__dirname + `/dist/mtg-deck-tech-${buildVersion}-${ts}.zip`);
+var outputFile = `dist/mtg-deck-tech-${buildVersion}-${ts}.zip`;
+var output = fs.createWriteStream(`${__dirname}/${outputFile}`);
 var archive = archiver('zip', {
   zlib: { level: 9 } // Sets the compression level.
 });
@@ -17,7 +18,7 @@ var archive = archiver('zip', {
 // listen for all archive data to be written
 // 'close' event is fired only when a file descriptor is involved
 output.on('close', function() {
-  console.log(archive.pointer() + ' total bytes');
+  console.log(archive.pointer() + ' total bytes written to ' + outputFile);
   console.log('archiver has been finalized and the output file descriptor has closed.');
 });
 
