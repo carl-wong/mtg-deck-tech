@@ -27,6 +27,7 @@ const UNTAGGED_PLACEHOLDER = 'UNTAGGED';
 const QUERY_BATCH_SIZE = 10;
 
 const DECKBOX_TOKEN = 'deckbox.org/sets/';
+const UNCORS_GET_PREFIX = 'https://crossorigin.me/';
 
 enum FinishedStep {
 	Transform,
@@ -82,9 +83,50 @@ export class MainComponent implements OnInit, OnDestroy {
 
 	ngOnDestroy() {
 		this._tagsUpdatedSub.unsubscribe();
+		this._onFinishedStep.unsubscribe();
 	}
 
 	ngOnInit() {
+		this._subscribeToTagUpdateEvents();
+		this._subscribeToFinishedStepEvents();
+		this._getTransformCache();
+		this._getTagsCache();
+	}
+
+	private _subscribeToFinishedStepEvents() {
+		this._onFinishedStep.subscribe((step: FinishedStep) => {
+			switch (step) {
+				case FinishedStep.Tags:
+					this.messages.add('Tags cache loaded...');
+					this.isTagsCacheReady = true;
+					break;
+
+				case FinishedStep.Transform:
+					this.messages.add('Transform cards cache loaded...');
+					this.isTransformCardsCacheReady = true;
+					break;
+
+				case FinishedStep.Oracle:
+					this.messages.add('Oracle cards loaded...');
+					// mixin CardTagLinks
+					this._mixinTagLinks();
+					this._getStatistics();
+					break;
+
+				case FinishedStep.CardTagLinks:
+					this.messages.add('CardTagLinks loaded...');
+					// group cards based on selected mode value
+					this._logMissingCards();
+					this._performGroupByMode(this.groupByMode);
+					break;
+
+				default:
+					break;
+			}
+		});
+	}
+
+	private _subscribeToTagUpdateEvents() {
 		this._tagsUpdatedSub = this.notify.isTagsUpdated$.subscribe(event => {
 			switch (event.type) {
 				case EventType.Init:
@@ -141,40 +183,6 @@ export class MainComponent implements OnInit, OnDestroy {
 					break;
 			}
 		});
-
-		this._onFinishedStep.subscribe((step: FinishedStep) => {
-			switch (step) {
-				case FinishedStep.Tags:
-					this.messages.add('Tags cache loaded...');
-					this.isTagsCacheReady = true;
-					break;
-
-				case FinishedStep.Transform:
-					this.messages.add('Transform cards cache loaded...');
-					this.isTransformCardsCacheReady = true;
-					break;
-
-				case FinishedStep.Oracle:
-					this.messages.add('Oracle cards loaded...');
-					// mixin CardTagLinks
-					this._mixinTagLinks();
-					this._getStatistics();
-					break;
-
-				case FinishedStep.CardTagLinks:
-					this.messages.add('CardTagLinks loaded...');
-					// group cards based on selected mode value
-					this._logMissingCards();
-					this._performGroupByMode(this.groupByMode);
-					break;
-
-				default:
-					break;
-			}
-		});
-
-		this._getTransformCache();
-		this._getTagsCache();
 	}
 
 	private _logMissingCards() {
@@ -186,21 +194,32 @@ export class MainComponent implements OnInit, OnDestroy {
 		this.missingCards = missing.length;
 	}
 
-	submitDecklist() {
-		this._resetSession();
+	private async _getDeckboxURL() {
+		this.messages.add('<deckbox.org> integration is not supported at this time.', MessageLevel.Alert);
 
-		if (this.decklist.indexOf(DECKBOX_TOKEN) !== -1) {
-			// deckbox set URL
+		if (false) {
 			const regex = /[\d]+/gm;
 			const setId = regex.exec(this.decklist);
 			const deckboxExportURL = `https://deckbox.org/sets/${setId}/export`;
 
 			this.messages.add(`Attempting to fetch <${deckboxExportURL}>`);
+			const getResult = await fetch(deckboxExportURL, {
+				method: 'GET',
+				mode: 'no-cors',
+				cache: 'no-cache',
 
-			const getResult = this.http.get(deckboxExportURL)
-				.subscribe(result => {
-					console.log(result);
-				});
+			});
+
+			await console.log(getResult);
+		}
+	}
+
+	submitDecklist() {
+		this._resetSession();
+
+		if (this.decklist.indexOf(DECKBOX_TOKEN) !== -1) {
+			// deckbox set URL
+			this._getDeckboxURL();
 		} else {
 			// regular decklist importer
 			let lookupArray: string[] = [];
