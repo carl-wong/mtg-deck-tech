@@ -49,8 +49,11 @@ export class ChartTagsComponent implements OnInit {
 	};
 
 	legend = false;
-
 	type: ChartType = 'radar';
+	colors: Color[] = [{
+		backgroundColor: Statistics.hexToRgbA(Statistics.PALETTE_GREEN[5], 0.4),
+		borderColor: Statistics.hexToRgbA(Statistics.PALETTE_GREEN[4], 0.8),
+	}];
 
 	constructor() { }
 

@@ -1,6 +1,6 @@
 <ng-container *ngIf="model">
   <h4>{{model.title}}</h4>
   <div class="chart">
-    <canvas baseChart [datasets]="model.data" [labels]="model.labels" [options]="options" [legend]="legend" [chartType]="type"></canvas>
+    <canvas baseChart [datasets]="model.data" [labels]="model.labels" [colors]="colors" [options]="options" [legend]="legend" [chartType]="type"></canvas>
   </div>
 </ng-container>

@@ -45,6 +45,8 @@ enum FinishedStep {
 	styleUrls: ['./main.component.less']
 })
 export class MainComponent implements OnInit, OnDestroy {
+	chartsColumns = 2;
+	
 	accordionStep = 'input';
 	_onFinishedStep = new EventEmitter();
 
@@ -352,46 +354,71 @@ export class MainComponent implements OnInit, OnDestroy {
 		this.uniqueCards = this._cards.length;
 	}
 
+	isChartTagsRadar: boolean = false;
 	chartTagsRadar: iChartTags;
 	private _getTagsRadarChart() {
-		const stats: { sets: ChartDataSets[], labels: Label[] } = Statistics.getChartTagsRadar(this._cards);
+		if (this._cards && this._cards.length > 0) {
+			const stats: { sets: ChartDataSets[], labels: Label[] } = Statistics.getChartTagsRadar(this._cards);
 
-		const chart: iChartTags = {
-			title: 'Tags',
-			data: stats.sets,
-			labels: stats.labels
-		};
+			const chart: iChartTags = {
+				title: 'Tags',
+				data: stats.sets,
+				labels: stats.labels
+			};
 
-		this.chartTagsRadar = chart;
+			let dataPoints = 0;
+			chart.data.forEach(set => {
+				if (set.data) {
+					dataPoints += set.data.length;
+				}
+			});
+
+			this.chartTagsRadar = chart;
+			this.isChartTagsRadar = dataPoints > 0;
+		} else {
+			this.isChartTagsRadar = false;
+		}
 	}
 
+	isChartColorPie: boolean = false;
 	chartColorPie: iChartColorPie;
 	private _getColorsPieChart() {
-		const chart: iChartColorPie = {
-			title: 'Color Breakdown',
-			data: Statistics.getChartColorPie(this._cards),
-		};
+		if (this._cards && this._cards.length > 0) {
+			const chart: iChartColorPie = {
+				title: 'Color Breakdown',
+				data: Statistics.getChartColorPie(this._cards),
+			};
 
-		this.chartColorPie = chart;
+			this.chartColorPie = chart;
+			this.isChartColorPie = true;
+		} else {
+			this.isChartColorPie = false;
+		}
 	}
 
+	isChartCMCCurve: boolean = false;
 	chartCMCCurve: iChartCmc;
 	private _getCMCChart() {
-		const chart: iChartCmc = {
-			title: 'CMC',
-			data: [Statistics.getChartCMC(this._cards)],
-			labels: [],
-		};
+		if (this._cards && this._cards.length > 0) {
+			const chart: iChartCmc = {
+				title: 'CMC',
+				data: Statistics.getChartCMC(this._cards),
+				labels: [],
+			};
 
-		for (let cmc = 0; cmc < 8; cmc++) {
-			if (cmc === 7) {
-				chart.labels.push('7+');
-			} else {
-				chart.labels.push(cmc.toString());
+			for (let cmc = 0; cmc <= Statistics.MAX_CMC_BUCKET; cmc++) {
+				if (cmc === Statistics.MAX_CMC_BUCKET) {
+					chart.labels.push(`${cmc}+`);
+				} else {
+					chart.labels.push(cmc.toString());
+				}
 			}
-		}
 
-		this.chartCMCCurve = chart;
+			this.chartCMCCurve = chart;
+			this.isChartCMCCurve = true;
+		} else {
+			this.isChartCMCCurve = false;
+		}
 	}
 
 	private _resetSession() {

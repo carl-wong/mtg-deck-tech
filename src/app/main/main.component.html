@@ -107,17 +107,17 @@
         Charts
       </mat-panel-title>
     </mat-expansion-panel-header>
-    <mat-grid-list cols="3" rowHeight="2:1">
-      <mat-grid-tile *ngIf="!chartCMCCurve && !chartColorPie && !chartTagsRadar" colspan="3">
+    <mat-grid-list [cols]="chartsColumns" rowHeight="3:2" id="charts-grid">
+      <mat-grid-tile *ngIf="!(isChartCMCCurve || isChartColorPie || isChartTagsRadar)" [colspan]="chartsColumns">
         <ng-container *ngTemplateOutlet="noDataWarning;"></ng-container>
       </mat-grid-tile>
-      <mat-grid-tile *ngIf="chartCMCCurve">
+      <mat-grid-tile *ngIf="isChartCMCCurve">
         <app-chart-cmc [model]="chartCMCCurve"></app-chart-cmc>
       </mat-grid-tile>
-      <mat-grid-tile *ngIf="chartColorPie">
+      <mat-grid-tile *ngIf="isChartColorPie">
         <app-chart-color-pie [model]="chartColorPie"></app-chart-color-pie>
       </mat-grid-tile>
-      <mat-grid-tile *ngIf="chartTagsRadar">
+      <mat-grid-tile *ngIf="isChartTagsRadar">
         <app-chart-tags [model]="chartTagsRadar"></app-chart-tags>
       </mat-grid-tile>
     </mat-grid-list>

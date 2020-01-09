@@ -58,6 +58,19 @@ export abstract class Statistics {
 		'#ffb287',
 	];
 
+	static hexToRgbA(hex: string, alpha: number) {
+		var c;
+		if (/^#([A-Fa-f0-9]{3}){1,2}$/.test(hex)) {
+			c = hex.substring(1).split('');
+			if (c.length == 3) {
+				c = [c[0], c[0], c[1], c[1], c[2], c[2]];
+			}
+			c = '0x' + c.join('');
+			return 'rgba(' + [(c >> 16) & 255, (c >> 8) & 255, c & 255].join(',') + `, ${alpha})`;
+		}
+		throw new Error('Bad Hex');
+	}
+
 	static getChartTagsRadar(deck: CardReference[]): { sets: ChartDataSets[], labels: Label[] } {
 		const dict: { [tag: string]: number } = {};
 		deck.filter(m => m.count > 0 && m.CardTagLinks && m.CardTagLinks.length > 0).forEach(card => {
@@ -102,18 +115,16 @@ export abstract class Statistics {
 		return result;
 	}
 
-	static getChartCMC(deck: CardReference[]): ChartDataSets {
-		function sum(total, num) {
-			return total + num;
-		}
+	static MAX_CMC_BUCKET = 7;// CMCs will range from [0..6, 7+]
 
+	static getChartCMC(deck: CardReference[]): ChartDataSets[] {
 		const result: ChartDataSets = {
 			data: [],
 			label: 'Curve',
 			backgroundColor: this.PALETTE_BLUE[5]
 		};
 
-		for (let i = 0; i < 8; i++) {
+		for (let i = 0; i <= this.MAX_CMC_BUCKET; i++) {
 			let filtered: CardReference[];
 
 			if (i === 0) {
@@ -126,17 +137,16 @@ export abstract class Statistics {
 			}
 
 			if (filtered && filtered.length > 0) {
-				result.data.push(filtered.map(m => m.count).reduce(sum));
+				result.data.push(filtered.map(m => m.count).reduce((a, b) => a + b));
 			} else {
 				result.data.push(0);
 			}
 		}
 
-		return result;
+		return [result];
 	}
 
 	static getChartColorPie(deck: CardReference[]): MultiDataSet {
-
 		const cardCounts: { [color: string]: number } = {};
 		const landCounts: { [color: string]: number } = {};
 

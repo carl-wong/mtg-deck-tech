@@ -1,5 +1,20 @@
-// this must be place in the component styles
+// this must be placed in the component styles
 .mat-expansion-panel-header-description {
   text-align: right;
   flex: 0 0 auto;
+}
+
+#charts-grid {
+
+  app-chart-cmc,
+  app-chart-color-pie,
+  app-chart-tags {
+    width: 90%;
+    height: 90%;
+
+    canvas {
+      width: 100%;
+      height: 100%;
+    }
+  }
 }
