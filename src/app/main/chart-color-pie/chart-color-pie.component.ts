@@ -3,11 +3,11 @@ import { ChartOptions, ChartType } from 'chart.js';
 import { BaseChartDirective, Color, Label, MultiDataSet } from 'ng2-charts';
 import { Statistics } from '../../classes/statistics';
 
-export interface ChartColorPie {
+
+export interface iChartColorPie {
 	title: string;
 	data: MultiDataSet;
 }
-
 
 @Component({
 	selector: 'app-chart-color-pie',
@@ -15,7 +15,7 @@ export interface ChartColorPie {
 	styleUrls: ['./chart-color-pie.component.less']
 })
 export class ChartColorPieComponent implements OnInit {
-	@Input() model: ChartColorPie;
+	@Input() model: iChartColorPie;
 	@ViewChild(BaseChartDirective, { static: true }) baseChart: BaseChartDirective;
 
 	options: ChartOptions = {

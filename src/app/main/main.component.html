@@ -107,19 +107,20 @@
         Charts
       </mat-panel-title>
     </mat-expansion-panel-header>
-    <ng-container *ngIf="!chartCMCCurve">
-      <ng-container *ngTemplateOutlet="noDataWarning;"></ng-container>
-    </ng-container>
-    <div class="container">
-      <div class="row">
-        <div class="col-md" *ngIf="chartCMCCurve">
-          <app-chart-cmc [model]="chartCMCCurve"></app-chart-cmc>
-        </div>
-        <div class="col-md" *ngIf="chartColorPie">
-          <app-chart-color-pie [model]="chartColorPie"></app-chart-color-pie>
-        </div>
-      </div>
-    </div>
+    <mat-grid-list cols="3" rowHeight="2:1">
+      <mat-grid-tile *ngIf="!chartCMCCurve && !chartColorPie && !chartTagsRadar" colspan="3">
+        <ng-container *ngTemplateOutlet="noDataWarning;"></ng-container>
+      </mat-grid-tile>
+      <mat-grid-tile *ngIf="chartCMCCurve">
+        <app-chart-cmc [model]="chartCMCCurve"></app-chart-cmc>
+      </mat-grid-tile>
+      <mat-grid-tile *ngIf="chartColorPie">
+        <app-chart-color-pie [model]="chartColorPie"></app-chart-color-pie>
+      </mat-grid-tile>
+      <mat-grid-tile *ngIf="chartTagsRadar">
+        <app-chart-tags [model]="chartTagsRadar"></app-chart-tags>
+      </mat-grid-tile>
+    </mat-grid-list>
   </mat-expansion-panel>
   <mat-expansion-panel [expanded]="accordionStep === 'messages'" (opened)="open('messages')">
     <mat-expansion-panel-header>

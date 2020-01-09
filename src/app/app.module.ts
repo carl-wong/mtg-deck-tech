@@ -8,6 +8,7 @@ import { MatChipsModule } from '@angular/material/chips';
 import { MatDialogModule } from '@angular/material/dialog';
 import { MatExpansionModule } from '@angular/material/expansion';
 import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatGridListModule } from '@angular/material/grid-list';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { MatMenuModule } from '@angular/material/menu';
@@ -31,6 +32,7 @@ import { DialogRenameTagComponent } from './dialog-rename-tag/dialog-rename-tag.
 import { HeaderComponent } from './header/header.component';
 import { ChartCmcComponent } from './main/chart-cmc/chart-cmc.component';
 import { ChartColorPieComponent } from './main/chart-color-pie/chart-color-pie.component';
+import { ChartTagsComponent } from './main/chart-tags/chart-tags.component';
 import { MainComponent } from './main/main.component';
 import { MessagesComponent } from './messages/messages.component';
 
@@ -47,7 +49,8 @@ import { MessagesComponent } from './messages/messages.component';
 		CallbackComponent,
 		DialogManageTagsComponent,
 		DialogRenameTagComponent,
-		MessagesComponent
+		MessagesComponent,
+		ChartTagsComponent
 	],
 	entryComponents: [
 		DialogAddTagComponent,
@@ -70,6 +73,7 @@ import { MessagesComponent } from './messages/messages.component';
 		MatDialogModule,
 		MatExpansionModule,
 		MatFormFieldModule,
+		MatGridListModule,
 		MatIconModule,
 		MatInputModule,
 		MatMenuModule,

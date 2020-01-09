@@ -1,6 +1,6 @@
 import { ChartDataSets } from 'chart.js';
-import { MultiDataSet } from 'ng2-charts';
 import { CardReference } from './card-reference';
+import { BaseChartDirective, Color, Label, MultiDataSet } from 'ng2-charts';
 
 
 export abstract class Statistics {
@@ -12,6 +12,40 @@ export abstract class Statistics {
 		['G', 'Green'],
 		['C', 'Colorless']
 	];
+
+	static getChartTagsRadar(deck: CardReference[]): { sets: ChartDataSets[], labels: Label[] } {
+		const dict: { [tag: string]: number } = {};
+		deck.filter(m => m.count > 0 && m.CardTagLinks && m.CardTagLinks.length > 0).forEach(card => {
+			card.CardTagLinks.forEach(link => {
+				if (!dict[link.TagName]) {
+					dict[link.TagName] = card.count;
+				} else {
+					dict[link.TagName] += card.count;
+				}
+			});
+		});
+
+		const sortedTags = Object.entries(dict).sort(([tag1, count1], [tag2, count2]) => {
+			if (count1 < count2) {
+				return 1;
+			} else if (count2 < count1) {
+				return -1;
+			} else {
+				return 0;
+			}
+		});
+		console.log(sortedTags);
+
+		const result: { sets: ChartDataSets[], labels: Label[] } = { sets: [{ data: [], label: 'Tags' }], labels: [] };
+
+		for (let i = 0; i < 10 && i < sortedTags.length; i++) {
+			const tagCount: [string, number] = sortedTags[i];
+			result.labels.push(tagCount[0]);
+			result.sets[0].data.push(tagCount[1]);
+		}
+
+		return result;
+	}
 
 	static getChartCMC(deck: CardReference[]): ChartDataSets {
 		function sum(total, num) {

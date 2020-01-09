@@ -4,18 +4,21 @@ import { Subscription } from 'rxjs';
 import { environment } from '../../environments/environment';
 import { CardReference } from '../classes/card-reference';
 import { CardTagLink } from '../classes/card-tag-link';
+import { ChartOptions, ChartType, RadialChartOptions, ChartDataSets } from 'chart.js';
 import { MinOracleCard } from '../classes/min-oracle-card';
 import { SleepHelper } from '../classes/sleep-helper';
 import { Statistics } from '../classes/statistics';
 import { Tag } from '../classes/tag';
 import { DialogAddTagComponent } from '../dialog-add-tag/dialog-add-tag.component';
+import { BaseChartDirective, Color, Label, MultiDataSet } from 'ng2-charts';
 import { DialogCardDetailsComponent } from '../dialog-card-details/dialog-card-details.component';
 import { LocalApiService } from '../services/local-api.service';
 import { MessageLevel, MessagesService } from '../services/messages.service';
 import { EventType, NotificationService } from '../services/notification.service';
 import { OracleApiService } from '../services/oracle-api.service';
-import { ChartCmc } from './chart-cmc/chart-cmc.component';
-import { ChartColorPie } from './chart-color-pie/chart-color-pie.component';
+import { iChartCmc } from './chart-cmc/chart-cmc.component';
+import { iChartTags } from './chart-tags/chart-tags.component';
+import { iChartColorPie } from './chart-color-pie/chart-color-pie.component';
 import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
 
 
@@ -67,8 +70,6 @@ export class MainComponent implements OnInit, OnDestroy {
 	missingCards = 0;
 
 	cardsGrouped: [string, CardReference[], number][] = [];
-	chartCMCCurve: ChartCmc;
-	chartColorPie: ChartColorPie;
 
 	private _tagsUpdatedSub: Subscription;
 
@@ -110,12 +111,12 @@ export class MainComponent implements OnInit, OnDestroy {
 					this.messages.add('Oracle cards loaded...');
 					// mixin CardTagLinks
 					this._mixinTagLinks();
-					this._getStatistics();
 					break;
 
 				case FinishedStep.CardTagLinks:
 					this.messages.add('CardTagLinks loaded...');
 					// group cards based on selected mode value
+					this._getStatistics();
 					this._logMissingCards();
 					this._performGroupByMode(this.groupByMode);
 					break;
@@ -345,13 +346,28 @@ export class MainComponent implements OnInit, OnDestroy {
 	private _getStatistics() {
 		this._getCMCChart();
 		this._getColorsPieChart();
+		this._getTagsRadarChart();
 
 		this.totalCards = this._cards.map(m => m.count).reduce((a, b) => a + b);
 		this.uniqueCards = this._cards.length;
 	}
 
+	chartTagsRadar: iChartTags;
+	private _getTagsRadarChart() {
+		const stats: { sets: ChartDataSets[], labels: Label[] } = Statistics.getChartTagsRadar(this._cards);
+
+		const chart: iChartTags = {
+			title: 'Tags',
+			data: stats.sets,
+			labels: stats.labels
+		};
+
+		this.chartTagsRadar = chart;
+	}
+
+	chartColorPie: iChartColorPie;
 	private _getColorsPieChart() {
-		const chart: ChartColorPie = {
+		const chart: iChartColorPie = {
 			title: 'Color Breakdown',
 			data: Statistics.getChartColorPie(this._cards),
 		};
@@ -359,8 +375,9 @@ export class MainComponent implements OnInit, OnDestroy {
 		this.chartColorPie = chart;
 	}
 
+	chartCMCCurve: iChartCmc;
 	private _getCMCChart() {
-		const chart: ChartCmc = {
+		const chart: iChartCmc = {
 			title: 'CMC',
 			data: [Statistics.getChartCMC(this._cards)],
 			labels: [],
