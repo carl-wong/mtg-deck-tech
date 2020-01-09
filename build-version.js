@@ -1,6 +1,6 @@
 var replace = require('replace-in-file');
-var package = require('./package.json');
 
+var package = require('./package.json');
 var buildVersion = package.version;
 
 const envOpt = {
