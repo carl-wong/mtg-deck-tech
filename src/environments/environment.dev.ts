@@ -6,6 +6,6 @@ export const environment = {
   // localApi: 'https://system.repvisor.com/decktech.api',
   oracleApi: 'https://decktech-api.narl.life',
   localApi: 'https://decktech-api.narl.life',
-  timestamp: 'Updated: 2020-01-09 @ 14:57:38',
+  timestamp: 'Updated: 2020-01-09 @ 15:31:54',
   version: 'DEV',
 };

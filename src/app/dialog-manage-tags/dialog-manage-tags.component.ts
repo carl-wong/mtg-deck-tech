@@ -128,7 +128,7 @@ export class DialogManageTagsComponent implements OnInit, OnDestroy {
 			}
 
 			case 'delete': {
-				let confirmMsg = `Are you sure you want to delete "[{model.name}]?`;
+				let confirmMsg = `Are you sure you want to delete "[${model.name}]?`;
 
 				if (model.CardTagLinksCount > 0) {
 					confirmMsg = `There are ${model.CardTagLinksCount} cards linked to this tag. These links will also be removed if you proceed.\n` + confirmMsg;
