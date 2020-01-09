@@ -1,6 +1,6 @@
 {
   "name": "mtg-deck-tech",
-  "version": "0.0.10",
+  "version": "0.0.11",
   "scripts": {
     "ng": "ng",
     "start": "node ./timestamp.js && ng serve --open",
