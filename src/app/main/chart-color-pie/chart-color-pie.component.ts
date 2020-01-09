@@ -27,18 +27,18 @@ export class ChartColorPieComponent implements OnInit {
 			},
 			callbacks: {
 				label(tooltipItem, data) {
-					function sum(a, b) {
-						return a + b;
-					}
-
-					const label = data.labels[tooltipItem.datasetIndex] as string;
+					const seriesName = data.labels[tooltipItem.datasetIndex] as string;
 					const colorName = Statistics.COLORS[tooltipItem.index][1];
 
 					const count = data.datasets[tooltipItem.datasetIndex].data[tooltipItem.index] as number;
-					const total = (data.datasets[tooltipItem.datasetIndex].data as number[]).reduce(sum);
+					const occ = count === 1 ?
+						(seriesName === 'Lands' ? 'Land' : 'Card') :
+						(seriesName === 'Lands' ? 'Lands' : 'Cards');
+
+					const total = (data.datasets[tooltipItem.datasetIndex].data as number[]).reduce((a, b) => a + b);
 					const percent = total > 0 ? Math.round(count / total * 10000) / 100 : 0;
 
-					return [label, `${count} ${colorName}` + (count === 1 ? ' card' : ' cards'), percent + '%'];
+					return [seriesName, `${count} ${colorName} ${occ}`, percent + '%'];
 				}
 			}
 		}

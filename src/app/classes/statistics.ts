@@ -13,6 +13,51 @@ export abstract class Statistics {
 		['C', 'Colorless']
 	];
 
+	static PALETTE_BLUE = [
+		'#a2c0c7',
+		'#7da7b0',
+		'#61949f',
+		'#45818e',
+		'#3e7986',
+		'#366e7b',
+		'#2e6471',
+		'#1f515f',
+		'#9fe9ff',
+		'#6cddff',
+		'#39d2ff',
+		'#1fccff',
+	];
+
+	static PALETTE_GREEN = [
+		'#b5d4a7',
+		'#97c284',
+		'#80b569',
+		'#6aa84f',
+		'#62a048',
+		'#57973f',
+		'#4d8d36',
+		'#3c7d26',
+		'#cdffbe',
+		'#a6ff8b',
+		'#7fff58',
+		'#6cff3f',
+	];
+
+	static PALETTE_ORANGE = [
+		'#f3c89c',
+		'#eeb274',
+		'#eaa256',
+		'#e69138',
+		'#e38932',
+		'#df7e2b',
+		'#db7424',
+		'#d56217',
+		'#ffffff',
+		'#ffe3d4',
+		'#ffc3a1',
+		'#ffb287',
+	];
+
 	static getChartTagsRadar(deck: CardReference[]): { sets: ChartDataSets[], labels: Label[] } {
 		const dict: { [tag: string]: number } = {};
 		deck.filter(m => m.count > 0 && m.CardTagLinks && m.CardTagLinks.length > 0).forEach(card => {
@@ -25,6 +70,7 @@ export abstract class Statistics {
 			});
 		});
 
+		// sort the tags by descending count
 		const sortedTags = Object.entries(dict).sort(([tag1, count1], [tag2, count2]) => {
 			if (count1 < count2) {
 				return 1;
@@ -34,15 +80,24 @@ export abstract class Statistics {
 				return 0;
 			}
 		});
-		console.log(sortedTags);
+
+		// take at most the first 10 tags and sort them by tag name this time
+		const topTags = sortedTags.slice(0, Math.min(10, sortedTags.length)).sort(([tag1, count1], [tag2, count2]) => {
+			if (tag1 > tag2) {
+				return 1;
+			} else if (tag2 > tag1) {
+				return -1;
+			} else {
+				return 0;
+			}
+		});
 
 		const result: { sets: ChartDataSets[], labels: Label[] } = { sets: [{ data: [], label: 'Tags' }], labels: [] };
 
-		for (let i = 0; i < 10 && i < sortedTags.length; i++) {
-			const tagCount: [string, number] = sortedTags[i];
-			result.labels.push(tagCount[0]);
-			result.sets[0].data.push(tagCount[1]);
-		}
+		topTags.forEach((item: [string, number]) => {
+			result.labels.push(item[0]);
+			result.sets[0].data.push(item[1]);
+		});
 
 		return result;
 	}
@@ -55,7 +110,7 @@ export abstract class Statistics {
 		const result: ChartDataSets = {
 			data: [],
 			label: 'Curve',
-			backgroundColor: PALETTE_BLUE[5]
+			backgroundColor: this.PALETTE_BLUE[5]
 		};
 
 		for (let i = 0; i < 8; i++) {
@@ -125,49 +180,3 @@ export abstract class Statistics {
 		return result;
 	}
 }
-
-
-const PALETTE_BLUE = [
-	'#a2c0c7',
-	'#7da7b0',
-	'#61949f',
-	'#45818e',
-	'#3e7986',
-	'#366e7b',
-	'#2e6471',
-	'#1f515f',
-	'#9fe9ff',
-	'#6cddff',
-	'#39d2ff',
-	'#1fccff',
-];
-
-const PALETTE_GREEN = [
-	'#b5d4a7',
-	'#97c284',
-	'#80b569',
-	'#6aa84f',
-	'#62a048',
-	'#57973f',
-	'#4d8d36',
-	'#3c7d26',
-	'#cdffbe',
-	'#a6ff8b',
-	'#7fff58',
-	'#6cff3f',
-];
-
-const PALETTE_ORANGE = [
-	'#f3c89c',
-	'#eeb274',
-	'#eaa256',
-	'#e69138',
-	'#e38932',
-	'#df7e2b',
-	'#db7424',
-	'#d56217',
-	'#ffffff',
-	'#ffe3d4',
-	'#ffc3a1',
-	'#ffb287',
-];

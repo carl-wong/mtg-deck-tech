@@ -39,8 +39,9 @@ export class ChartTagsComponent implements OnInit {
 				},
 				label(tooltipItem, data) {
 					const tag = data.labels[tooltipItem.index] as string;
-					const count = data.datasets[tooltipItem.datasetIndex].data[tooltipItem.index];
-					const occ = count === 1 ? 'occurrence' : 'occurences';
+					const count = data.datasets[tooltipItem.datasetIndex].data[tooltipItem.index] as number;
+					const occ = count === 1 ? 'Card Tagged' : 'Cards Tagged';
+
 					return [tag, `${count} ${occ}`];
 				}
 			}

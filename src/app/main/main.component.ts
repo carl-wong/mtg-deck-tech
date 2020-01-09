@@ -1,25 +1,25 @@
+import { HttpClient } from '@angular/common/http';
 import { Component, EventEmitter, Input, OnDestroy, OnInit } from '@angular/core';
 import { MatDialog, MatDialogConfig } from '@angular/material/dialog';
+import { ChartDataSets } from 'chart.js';
+import { Label } from 'ng2-charts';
 import { Subscription } from 'rxjs';
 import { environment } from '../../environments/environment';
 import { CardReference } from '../classes/card-reference';
 import { CardTagLink } from '../classes/card-tag-link';
-import { ChartOptions, ChartType, RadialChartOptions, ChartDataSets } from 'chart.js';
 import { MinOracleCard } from '../classes/min-oracle-card';
 import { SleepHelper } from '../classes/sleep-helper';
 import { Statistics } from '../classes/statistics';
 import { Tag } from '../classes/tag';
 import { DialogAddTagComponent } from '../dialog-add-tag/dialog-add-tag.component';
-import { BaseChartDirective, Color, Label, MultiDataSet } from 'ng2-charts';
 import { DialogCardDetailsComponent } from '../dialog-card-details/dialog-card-details.component';
 import { LocalApiService } from '../services/local-api.service';
 import { MessageLevel, MessagesService } from '../services/messages.service';
 import { EventType, NotificationService } from '../services/notification.service';
 import { OracleApiService } from '../services/oracle-api.service';
 import { iChartCmc } from './chart-cmc/chart-cmc.component';
-import { iChartTags } from './chart-tags/chart-tags.component';
 import { iChartColorPie } from './chart-color-pie/chart-color-pie.component';
-import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
+import { iChartTags } from './chart-tags/chart-tags.component';
 
 
 const MODE_TYPES = 'Types';
@@ -381,7 +381,6 @@ export class MainComponent implements OnInit, OnDestroy {
 			title: 'CMC',
 			data: [Statistics.getChartCMC(this._cards)],
 			labels: [],
-			colors: [],
 		};
 
 		for (let cmc = 0; cmc < 8; cmc++) {
@@ -391,10 +390,6 @@ export class MainComponent implements OnInit, OnDestroy {
 				chart.labels.push(cmc.toString());
 			}
 		}
-
-		chart.colors.push({
-			backgroundColor: chart.data[0].backgroundColor.toString()
-		});
 
 		this.chartCMCCurve = chart;
 	}
