@@ -58,7 +58,6 @@ export class ChartTagsComponent implements OnInit {
 	constructor() { }
 
 	ngOnInit() {
-		console.log(this.model);
 	}
 
 }
