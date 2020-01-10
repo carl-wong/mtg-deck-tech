@@ -2,6 +2,23 @@ import { Injectable } from '@angular/core';
 import { BehaviorSubject } from 'rxjs';
 import { Tag } from '../classes/tag';
 
+
+export enum EventType {
+	Init,
+	Insert,
+	Delete,
+	Update,
+	Merge,
+}
+
+export interface iTagsUpdated {
+	type: EventType;
+	Tag: Tag;
+
+	fromId: number;// for Merge
+	toId: number;// for Merge
+}
+
 @Injectable({
 	providedIn: 'root'
 })
@@ -24,20 +41,4 @@ export class NotificationService {
 	getProfileId(): number {
 		return parseInt(sessionStorage.getItem('ProfileId'));
 	}
-}
-
-export enum EventType {
-	Init,
-	Insert,
-	Delete,
-	Update,
-	Merge,
-}
-
-export interface iTagsUpdated {
-	type: EventType;
-	Tag: Tag;
-
-	fromId: number;// for Merge
-	toId: number;// for Merge
 }

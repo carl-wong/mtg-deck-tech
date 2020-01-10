@@ -6,8 +6,9 @@ import { Subscription } from 'rxjs';
 import { Tag } from '../classes/tag';
 import { DialogRenameTagComponent, iDialogRenameTag } from '../dialog-rename-tag/dialog-rename-tag.component';
 import { LocalApiService } from '../services/local-api.service';
-import { iTagsUpdated, NotificationService, EventType } from '../services/notification.service';
-import { MessagesService, MessageLevel } from '../services/messages.service';
+import { MessageLevel, MessagesService } from '../services/messages.service';
+import { EventType, iTagsUpdated, NotificationService } from '../services/notification.service';
+
 
 @Component({
 	selector: 'app-dialog-manage-tags',
@@ -15,13 +16,13 @@ import { MessagesService, MessageLevel } from '../services/messages.service';
 	styleUrls: ['./dialog-manage-tags.component.less']
 })
 export class DialogManageTagsComponent implements OnInit, OnDestroy {
+	private _tagsUpdatedSub: Subscription;
+
 	tags: Tag[] = [];
 	displayColumns = ['name', 'count', 'actions'];
 	dataSource: MatTableDataSource<Tag>;
 
 	@ViewChild(MatPaginator, { static: false }) paginator: MatPaginator;
-
-	private _tagsUpdatedSub: Subscription;
 
 	constructor(
 		private service: LocalApiService,
@@ -76,12 +77,11 @@ export class DialogManageTagsComponent implements OnInit, OnDestroy {
 				}
 
 				default:
-					this.messages.add('DialogManageTags received unexpected EventType: ' + event.type, MessageLevel.Alert);
+					this.messages.send('DialogManageTags received unexpected EventType: ' + event.type, MessageLevel.Alert);
 					break;
 			}
 
-			this.dataSource = new MatTableDataSource(this.tags);
-			this.dataSource.paginator = this.paginator;
+			this._refreshTable();
 		});
 
 		this._loadTags();
@@ -89,6 +89,11 @@ export class DialogManageTagsComponent implements OnInit, OnDestroy {
 
 	ngOnDestroy() {
 		this._tagsUpdatedSub.unsubscribe();
+	}
+
+	private _refreshTable() {
+		this.dataSource = new MatTableDataSource(this.tags);
+		this.dataSource.paginator = this.paginator;
 	}
 
 	private _loadTags() {
@@ -103,8 +108,7 @@ export class DialogManageTagsComponent implements OnInit, OnDestroy {
 				}
 			});
 
-			this.dataSource = new MatTableDataSource(this.tags);
-			this.dataSource.paginator = this.paginator;
+			this._refreshTable();
 		});
 	}
 
@@ -138,7 +142,7 @@ export class DialogManageTagsComponent implements OnInit, OnDestroy {
 					this.service.deleteTag(model.id).subscribe(result => {
 						if (result) {
 							if (!result.isSuccess) {
-								this.messages.add(`Could not remove [${model.name}].`, MessageLevel.Alert);
+								this.messages.send(`Could not remove [${model.name}].`, MessageLevel.Alert);
 							} else {
 								const data: iTagsUpdated = {
 									type: EventType.Delete,

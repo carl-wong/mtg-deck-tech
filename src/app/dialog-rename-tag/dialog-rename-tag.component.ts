@@ -44,15 +44,15 @@ export class DialogRenameTagComponent implements OnInit {
 					this.service.mergeTags(this.model, mergeInto).subscribe(mergeResult => {
 						if (mergeResult) {
 							if (!mergeResult.isSuccess) {
-								this.messages.add(`Failed to merge [${this.model.name}] into [${mergeInto.name}].`, MessageLevel.Alert);
+								this.messages.send(`Failed to merge [${this.model.name}] into [${mergeInto.name}].`, MessageLevel.Alert);
 							} else {
-								this.messages.add(`Successfully merged [${this.model.name}] into [${mergeInto.name}].`);
+								this.messages.send(`Successfully merged [${this.model.name}] into [${mergeInto.name}].`);
 								this.service.deleteTag(this.model.id).subscribe(deleteResult => {
 									if (deleteResult) {
 										if (!deleteResult.isSuccess) {
-											this.messages.add(`Failed to remove [${this.model.name}]...`, MessageLevel.Alert);
+											this.messages.send(`Failed to remove [${this.model.name}]...`, MessageLevel.Alert);
 										} else {
-											this.messages.add(`Successfully removed [${this.model.name}].`);
+											this.messages.send(`Successfully removed [${this.model.name}].`);
 											// only send a single update notification
 											// EventType.Merge should handle EventType.Delete functionality too
 											const data: iTagsUpdated = {
@@ -75,7 +75,7 @@ export class DialogRenameTagComponent implements OnInit {
 				this.service.updateTag(this.model).subscribe(result => {
 					if (result) {
 						if (!result.isSuccess) {
-							this.messages.add(`Failed to rename [${this.model.name}].`, MessageLevel.Alert);
+							this.messages.send(`Failed to rename [${this.model.name}].`, MessageLevel.Alert);
 						} else {
 							const data: iTagsUpdated = {
 								type: EventType.Update,
@@ -90,7 +90,7 @@ export class DialogRenameTagComponent implements OnInit {
 				});
 			}
 		} else {
-			this.messages.add('Tag name cannot be empty!', MessageLevel.Alert);
+			this.messages.send('Tag name cannot be empty!', MessageLevel.Alert);
 		}
 	}
 

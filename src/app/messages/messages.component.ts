@@ -1,22 +1,49 @@
-import { Component, OnInit } from '@angular/core';
-import { MessagesService } from '../services/messages.service';
+import { Component, OnDestroy, OnInit, ViewChild } from '@angular/core';
+import { MatTableDataSource } from '@angular/material';
+import { MatPaginator } from '@angular/material/paginator';
+import { Subscription } from 'rxjs';
+import { iMessage, MessageLevel, MessagesService } from '../services/messages.service';
+
 
 @Component({
 	selector: 'app-messages',
 	templateUrl: './messages.component.html',
 	styleUrls: ['./messages.component.less']
 })
-export class MessagesComponent implements OnInit {
-	displayColumns = ['level', 'message'];
+export class MessagesComponent implements OnInit, OnDestroy {
+	displayColumns = ['level', 'timestamp', 'text'];
+	dataSource: MatTableDataSource<iMessage>;
+
+	private _addedMessage: Subscription;
+	private _messages: iMessage[] = [];
+
+	@ViewChild(MatPaginator, { static: false }) paginator: MatPaginator;
 
 	constructor(
-		public service: MessagesService
-	) { }
+		private service: MessagesService,
+	) {
+	}
 
 	ngOnInit() {
+		this._addedMessage = this.service.addedMessage$.subscribe(message => {
+			if (message.level !== MessageLevel.Init) {
+				this._messages.push(message);
+				this._refreshTable();
+			}
+		});
+	}
+
+	ngOnDestroy() {
+		this._addedMessage.unsubscribe();
+	}
+
+	private _refreshTable() {
+		this.dataSource = new MatTableDataSource(this._messages);
+		this.dataSource.paginator = this.paginator;
 	}
 
 	clear() {
-		this.service.clear();
+		this._messages = [];
+		this._refreshTable();
 	}
 }

@@ -22,21 +22,21 @@ import { iChartColorPie } from './chart-color-pie/chart-color-pie.component';
 import { iChartTags } from './chart-tags/chart-tags.component';
 
 
+const TOTAL_PROGRESS_STEPS = 5.0;
 const MODE_TYPES = 'Types';
 const MODE_TAGS = 'Tags';
 const MODE_CMC = 'CMC';
 
 const UNTAGGED_PLACEHOLDER = 'UNTAGGED';
-const QUERY_BATCH_SIZE = 10;
+const QUERY_BATCH_SIZE = 20;
 
 const DECKBOX_TOKEN = 'deckbox.org/sets/';
-const UNCORS_GET_PREFIX = 'https://crossorigin.me/';
 
 enum FinishedStep {
-	Transform,
-	Oracle,
-	Tags,
-	CardTagLinks
+	Transform = 'Transform Name Dictionary',
+	Oracle = 'Oracle Definitions',
+	CardTagLinks = 'CardTagLinks',
+	PostProcessing = 'Post Processing',
 }
 
 @Component({
@@ -46,9 +46,9 @@ enum FinishedStep {
 })
 export class MainComponent implements OnInit, OnDestroy {
 	chartsColumns = 2;
-	
+
 	accordionStep = 'input';
-	_onFinishedStep = new EventEmitter();
+	private _emitFinishedStep = new EventEmitter();
 
 	groupByModes = [
 		MODE_TYPES,
@@ -56,20 +56,18 @@ export class MainComponent implements OnInit, OnDestroy {
 		MODE_CMC,
 	];
 
-	isTagsCacheReady = false;
-	private _tagsCache: Tag[];
-
-	isTransformCardsCacheReady = false;
-	private _transformCardsCache: { [name: string]: string } = {};
-	private _oracleCardsCache: { [oracle_id: string]: CardReference } = {};
+	isTransformNameDictReady = false;
+	private _transformNameDict: { [name: string]: string } = {};
 
 	@Input() groupByMode: string = this.groupByModes[0];
 	@Input() decklist = environment.defaultDecklist;
 	private _cards: CardReference[] = [];
 
-	totalCards = 0;
-	uniqueCards = 0;
-	missingCards = 0;
+	cardCounts = {
+		total: 0,
+		unique: 0,
+		missing: 0,
+	}
 
 	cardsGrouped: [string, CardReference[], number][] = [];
 
@@ -86,41 +84,33 @@ export class MainComponent implements OnInit, OnDestroy {
 
 	ngOnDestroy() {
 		this._tagsUpdatedSub.unsubscribe();
-		this._onFinishedStep.unsubscribe();
+		this._emitFinishedStep.unsubscribe();
 	}
 
 	ngOnInit() {
 		this._subscribeToTagUpdateEvents();
 		this._subscribeToFinishedStepEvents();
-		this._getTransformCache();
-		this._getTagsCache();
 	}
 
 	private _subscribeToFinishedStepEvents() {
-		this._onFinishedStep.subscribe((step: FinishedStep) => {
+		this._emitFinishedStep.subscribe((step: FinishedStep) => {
+			this.messages.send(`${step.toString()} loaded...`);
+
 			switch (step) {
-				case FinishedStep.Tags:
-					this.messages.add('Tags cache loaded...');
-					this.isTagsCacheReady = true;
-					break;
-
-				case FinishedStep.Transform:
-					this.messages.add('Transform cards cache loaded...');
-					this.isTransformCardsCacheReady = true;
-					break;
-
 				case FinishedStep.Oracle:
-					this.messages.add('Oracle cards loaded...');
-					// mixin CardTagLinks
+					this._updateProgress();
 					this._mixinTagLinks();
 					break;
 
 				case FinishedStep.CardTagLinks:
-					this.messages.add('CardTagLinks loaded...');
-					// group cards based on selected mode value
-					this._getStatistics();
-					this._logMissingCards();
-					this._performGroupByMode(this.groupByMode);
+					this._updateProgress();
+					this._decklistPostProcessing();
+					break;
+
+				case FinishedStep.PostProcessing:
+					this._updateProgress();
+					this.isProgressSpinnerActive = false;
+					this.messages.send('Decklist processed!');
 					break;
 
 				default:
@@ -129,20 +119,21 @@ export class MainComponent implements OnInit, OnDestroy {
 		});
 	}
 
+	private _decklistPostProcessing() {
+		this._getStatistics();
+		this._logMissingCards();
+		this._performGroupByMode(this.groupByMode);
+
+		this._emitFinishedStep.emit(FinishedStep.PostProcessing);
+	}
+
 	private _subscribeToTagUpdateEvents() {
 		this._tagsUpdatedSub = this.notify.isTagsUpdated$.subscribe(event => {
 			switch (event.type) {
-				case EventType.Init:
-					// do nothing
-					break;
-
 				case EventType.Update: {
-					const tag = this._tagsCache.find(m => m.id == event.Tag.id);
-					tag.name = event.Tag.name;
-
 					this._cards.filter(m => m.CardTagLinks && m.CardTagLinks.length > 0)
 						.forEach(card => {
-							const link = card.CardTagLinks.find(m => m.TagId === tag.id);
+							const link = card.CardTagLinks.find(m => m.TagId === event.Tag.id);
 							if (link) {
 								link.TagName = event.Tag.name;
 							}
@@ -150,39 +141,32 @@ export class MainComponent implements OnInit, OnDestroy {
 					break;
 				}
 
-				case EventType.Insert: {
-					this._tagsCache.push(event.Tag);
-					break;
-				}
-
 				case EventType.Delete: {
-					const tagIndex = this._tagsCache.findIndex(m => m.id === event.Tag.id);
-					if (tagIndex !== -1) {
-						this._tagsCache.splice(tagIndex, 1);
-					}
+					this._cards.filter(m => m.CardTagLinks && m.CardTagLinks.length > 0)
+						.forEach(card => {
+							const linkIndex = card.CardTagLinks.findIndex(m => m.TagId === event.Tag.id);
+							if (linkIndex !== -1) {
+								card.CardTagLinks.splice(linkIndex, 1);
+							}
+						});
 					break;
 				}
 
 				case EventType.Merge: {
-					// remove the merged tag
-					const tagIndex = this._tagsCache.findIndex(m => m.id == event.fromId);
-					if (tagIndex !== -1) {
-						this._tagsCache.splice(tagIndex, 1);
-					}
-
 					// update the TagId and TagName of all links referencing the merged from Tag
-					this._cards.filter(m => m.CardTagLinks).forEach(card => {
-						const link = card.CardTagLinks.find(m => m.TagId === event.fromId);
-						if (link) {
-							link.TagName = event.Tag.name;
-							link.TagId = event.toId;
-						}
-					});
+					this._cards.filter(m => m.CardTagLinks)
+						.forEach(card => {
+							const link = card.CardTagLinks.find(m => m.TagId === event.fromId);
+							if (link) {
+								link.TagName = event.Tag.name;
+								link.TagId = event.toId;
+							}
+						});
 					break;
 				}
 
 				default:
-					this.messages.add('Received unexpected EventType: ' + event.type);
+					// no action required
 					break;
 			}
 		});
@@ -191,21 +175,21 @@ export class MainComponent implements OnInit, OnDestroy {
 	private _logMissingCards() {
 		const missing = this._cards.filter(m => !m.OracleCard);
 		missing.forEach(card => {
-			this.messages.add(`Could not find "${card.name}" in Oracle, please check spelling and/or capitalization.`, MessageLevel.Warn);
+			this.messages.send(`Could not find "${card.name}" in Oracle, please check spelling and/or capitalization.`, MessageLevel.Warn);
 		});
 
-		this.missingCards = missing.length;
+		this.cardCounts.missing = missing.length;
 	}
 
 	private async _getDeckboxURL() {
-		this.messages.add('<deckbox.org> integration is not supported at this time.', MessageLevel.Alert);
+		this.messages.send('<deckbox.org> integration is not supported at this time.', MessageLevel.Alert);
 
 		if (false) {
 			const regex = /[\d]+/gm;
 			const setId = regex.exec(this.decklist);
 			const deckboxExportURL = `https://deckbox.org/sets/${setId}/export`;
 
-			this.messages.add(`Attempting to fetch <${deckboxExportURL}>`);
+			this.messages.send(`Attempting to fetch <${deckboxExportURL}>`);
 			const getResult = await fetch(deckboxExportURL, {
 				method: 'GET',
 				mode: 'no-cors',
@@ -217,83 +201,101 @@ export class MainComponent implements OnInit, OnDestroy {
 		}
 	}
 
-	submitDecklist() {
-		this._resetSession();
+	isProgressSpinnerActive: boolean = false;
+	progressSpinnerValue: number = 0;
+	private _stepNumber: number = 0;
+	private _updateProgress() {
+		if (this._stepNumber < TOTAL_PROGRESS_STEPS) {
+			this._stepNumber++;
+		}
 
-		if (this.decklist.indexOf(DECKBOX_TOKEN) !== -1) {
-			// deckbox set URL
-			this._getDeckboxURL();
-		} else {
-			// regular decklist importer
-			let lookupArray: string[] = [];
+		this.progressSpinnerValue = Math.min(100, (this._stepNumber / TOTAL_PROGRESS_STEPS) * 100);
+		console.log(`Progress updated to ${this.progressSpinnerValue}`);
+	}
 
-			const lines = this.decklist.split('\n');
-			const regex = /(?<_ls>[\s]+)?(?<count>[\d]+)?(?<_x>[xX]+[\s]+)?(?<_ms>[\s]+)?(?<name>.+)(?<_ts>[\s]+)?$/gm;
+	submitDecklist(isFromClick: boolean = false) {
+		if (isFromClick) {
+			this._stepNumber = this.isTransformNameDictReady ? 1 : 0;
+			this.isProgressSpinnerActive = true;
+		}
 
-			while (lines.length > 0) {
-				const line = lines.pop();
+		if (this.isTransformNameDictReady) {
+			this._updateProgress();
 
-				regex.lastIndex = 0; // reset to look from start of each line
-				const linesRx = regex.exec(line);
+			this.messages.send('Processing decklist, please wait...', MessageLevel.Notify);
 
-				if (linesRx) {
-					const name = linesRx.groups.name ? linesRx.groups.name.trim().toLowerCase() : null;
-					if (name) {
-						const count = linesRx.groups.count ? parseInt(linesRx.groups.count) : 1;
+			// reset output containers
+			this._cards = [];
+			this.cardsGrouped = [];
 
-						const card = new CardReference();
-						card.count = count;
-						card.name = this._transformCardsCache[name] ? this._transformCardsCache[name] : name;
+			if (this.decklist.indexOf(DECKBOX_TOKEN) !== -1) {
+				// deckbox set URL
+				this._getDeckboxURL();
+			} else {
+				// regular decklist importer
+				let lookupArray: string[] = [];
 
-						lookupArray.push(card.name);
-						this._cards.push(card);
+				const lines = this.decklist.split('\n');
+				const regex = /(?<_ls>[\s]+)?(?<count>[\d]+)?(?<_x>[xX]+[\s]+)?(?<_ms>[\s]+)?(?<name>.+)(?<_ts>[\s]+)?$/gm;
 
-						if (lookupArray.length >= QUERY_BATCH_SIZE) {
-							this.oracle.getByNames(lookupArray).subscribe(cards => {
-								this._mixinOracleCards(cards);
-							});
+				while (lines.length > 0) {
+					const line = lines.pop();
 
-							lookupArray = [];
-							SleepHelper.sleep(50);
+					regex.lastIndex = 0; // reset to look from start of each line
+					const linesRx = regex.exec(line);
+
+					if (linesRx) {
+						const name = linesRx.groups.name ? linesRx.groups.name.trim().toLowerCase() : null;
+						if (name) {
+							const count = linesRx.groups.count ? parseInt(linesRx.groups.count) : 1;
+
+							const card = new CardReference();
+							card.count = count;
+							card.name = this._transformNameDict[name] ? this._transformNameDict[name] : name;
+
+							lookupArray.push(card.name);
+							this._cards.push(card);
+
+							if (lookupArray.length >= QUERY_BATCH_SIZE) {
+								this.oracle.getByNames(lookupArray).subscribe(cards => {
+									this._mixinOracleCards(cards);
+								});
+
+								lookupArray = [];
+								SleepHelper.sleep(50);
+							}
 						}
 					}
 				}
-			}
 
-			if (lookupArray.length > 0) {
-				this.oracle.getByNames(lookupArray).subscribe(cards => {
-					this._mixinOracleCards(cards);
-					this._onFinishedStep.emit(FinishedStep.Oracle);
-				});
-			} else {
-				this._onFinishedStep.emit(FinishedStep.Oracle);
-			}
-		}
-	}
-
-	private _getTransformCache() {
-		this.oracle.getTransform().subscribe(cards => {
-			if (cards) {
-				cards.filter(m => m.name && m.name.includes(' // ')).map(m => m.name.toLowerCase())
-					.forEach(name => {
-						const front = name.split(' // ')[0];
-						this._transformCardsCache[front] = name;
+				if (lookupArray.length > 0) {
+					this.oracle.getByNames(lookupArray).subscribe(cards => {
+						this._mixinOracleCards(cards);
+						this._emitFinishedStep.emit(FinishedStep.Oracle);
 					});
-
-				this._onFinishedStep.emit(FinishedStep.Transform);
+				} else {
+					this._emitFinishedStep.emit(FinishedStep.Oracle);
+				}
 			}
-		});
-	}
+		} else {
+			this._updateProgress();
 
-	private _getTagsCache() {
-		this.service.getTags().subscribe(tags => {
-			this._tagsCache = tags;
-			this._onFinishedStep.emit(FinishedStep.Tags);
+			this.oracle.getTransform()
+				.subscribe(cards => {
+					if (cards) {
+						cards.filter(m => m.name && m.name.includes(' // ')).map(m => m.name.toLowerCase())
+							.forEach(name => {
+								const front = name.split(' // ')[0];
+								this._transformNameDict[front] = name;
+							});
 
-			if (this._cards.length > 0) {
+						this.isTransformNameDictReady = true;
+						this._emitFinishedStep.emit(FinishedStep.Transform);
 
-			}
-		});
+						this.submitDecklist();
+					}
+				});
+		}
 	}
 
 	private _mixinOracleCards(oCards: MinOracleCard[]) {
@@ -304,7 +306,6 @@ export class MainComponent implements OnInit, OnDestroy {
 			if (dCard) {
 				dCard.name = oCard.name;
 				dCard.OracleCard = oCard;
-				this._oracleCardsCache[oCard.oracle_id] = dCard;
 			}
 		});
 	}
@@ -318,7 +319,7 @@ export class MainComponent implements OnInit, OnDestroy {
 			if (lookupArray.length >= QUERY_BATCH_SIZE) {
 				this.service.getCardTagLinks(lookupArray).subscribe(links => {
 					links.forEach(link => {
-						const dCard = this._oracleCardsCache[link.oracle_id];
+						const dCard = this._cards.find(m => m.OracleCard && m.OracleCard.oracle_id === link.oracle_id);
 						if (dCard) {
 							dCard.CardTagLinks ? dCard.CardTagLinks.push(link) : dCard.CardTagLinks = [link];
 						}
@@ -333,15 +334,15 @@ export class MainComponent implements OnInit, OnDestroy {
 		if (lookupArray.length > 0) {
 			this.service.getCardTagLinks(lookupArray).subscribe(links => {
 				links.forEach(link => {
-					const dCard = this._oracleCardsCache[link.oracle_id];
+					const dCard = this._cards.find(m => m.OracleCard && m.OracleCard.oracle_id === link.oracle_id);
 					if (dCard) {
 						dCard.CardTagLinks ? dCard.CardTagLinks.push(link) : dCard.CardTagLinks = [link];
 					}
 				});
-				this._onFinishedStep.emit(FinishedStep.CardTagLinks);
+				this._emitFinishedStep.emit(FinishedStep.CardTagLinks);
 			});
 		} else {
-			this._onFinishedStep.emit(FinishedStep.CardTagLinks);
+			this._emitFinishedStep.emit(FinishedStep.CardTagLinks);
 		}
 	}
 
@@ -350,8 +351,8 @@ export class MainComponent implements OnInit, OnDestroy {
 		this._getColorsPieChart();
 		this._getTagsRadarChart();
 
-		this.totalCards = this._cards.map(m => m.count).reduce((a, b) => a + b);
-		this.uniqueCards = this._cards.length;
+		this.cardCounts.total = this._cards.map(m => m.count).reduce((a, b) => a + b);
+		this.cardCounts.unique = this._cards.length;
 	}
 
 	isChartTagsRadar: boolean = false;
@@ -419,11 +420,6 @@ export class MainComponent implements OnInit, OnDestroy {
 		} else {
 			this.isChartCMCCurve = false;
 		}
-	}
-
-	private _resetSession() {
-		this._cards = [];
-		this.cardsGrouped = [];
 	}
 
 	private _groupByType() {
@@ -551,7 +547,7 @@ export class MainComponent implements OnInit, OnDestroy {
 					group[2] += card.count;
 				}
 			} else {
-				this.messages.add('Could not find Oracle entry for ' + card.name);
+				this.messages.send('Could not find Oracle entry for ' + card.name);
 			}
 		});
 
@@ -626,7 +622,7 @@ export class MainComponent implements OnInit, OnDestroy {
 			if (tag) {
 				if (card.CardTagLinks && card.CardTagLinks.findIndex(m => m.TagId === tag.id) !== -1) {
 					// don't add the same tag twice
-					this.messages.add(`"${card.name}" is already tagged with [${tag.name}].`, MessageLevel.Alert);
+					this.messages.send(`"${card.name}" is already tagged with [${tag.name}].`, MessageLevel.Alert);
 				} else {
 					const newLink = new CardTagLink();
 					newLink.oracle_id = card.OracleCard.oracle_id;
@@ -653,7 +649,7 @@ export class MainComponent implements OnInit, OnDestroy {
 									card.CardTagLinks = [newLink];
 								}
 							} else {
-								this.messages.add(`Could not attach [${tag.name}] to "${card.name}."`, MessageLevel.Alert);
+								this.messages.send(`Could not attach [${tag.name}] to "${card.name}."`, MessageLevel.Alert);
 							}
 						}
 					});
@@ -666,7 +662,7 @@ export class MainComponent implements OnInit, OnDestroy {
 		this.service.deleteCardTagLink(link.id).subscribe(result => {
 			if (result) {
 				if (!result.isSuccess) {
-					this.messages.add(`Could not remove link to [${link.TagName}].`, MessageLevel.Alert);
+					this.messages.send(`Could not remove link to [${link.TagName}].`, MessageLevel.Alert);
 				} else {
 					const card = this._cards.find(m => m.OracleCard && m.OracleCard.oracle_id === link.oracle_id);
 					if (card) {
