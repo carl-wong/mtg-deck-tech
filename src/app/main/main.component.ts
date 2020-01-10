@@ -23,6 +23,7 @@ import { iChartTags } from './chart-tags/chart-tags.component';
 
 
 const TOTAL_PROGRESS_STEPS = 5.0;
+
 const MODE_TYPES = 'Types';
 const MODE_TAGS = 'Tags';
 const MODE_CMC = 'CMC';
@@ -98,6 +99,7 @@ export class MainComponent implements OnInit, OnDestroy {
 
 			switch (step) {
 				case FinishedStep.Oracle:
+					this._countCards();
 					this._updateProgress();
 					this._mixinTagLinks();
 					break;
@@ -119,8 +121,12 @@ export class MainComponent implements OnInit, OnDestroy {
 		});
 	}
 
+	private _countCards() {
+		this.cardCounts.total = this._cards.map(m => m.count).reduce((a, b) => a + b);
+		this.cardCounts.unique = this._cards.length;
+	}
+
 	private _decklistPostProcessing() {
-		this._getStatistics();
 		this._logMissingCards();
 		this._performGroupByMode(this.groupByMode);
 
@@ -346,13 +352,10 @@ export class MainComponent implements OnInit, OnDestroy {
 		}
 	}
 
-	private _getStatistics() {
+	private _getCharts() {
 		this._getCMCChart();
 		this._getColorsPieChart();
 		this._getTagsRadarChart();
-
-		this.cardCounts.total = this._cards.map(m => m.count).reduce((a, b) => a + b);
-		this.cardCounts.unique = this._cards.length;
 	}
 
 	isChartTagsRadar: boolean = false;
@@ -677,6 +680,11 @@ export class MainComponent implements OnInit, OnDestroy {
 	}
 
 	open(panel: string) {
-		this.accordionStep = panel;
+		if (panel === 'charts') {
+			this._getCharts();
+			this.accordionStep = panel;
+		} else {
+			this.accordionStep = panel;
+		}
 	}
 }
