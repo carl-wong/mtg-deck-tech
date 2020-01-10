@@ -219,7 +219,6 @@ export class MainComponent implements OnInit, OnDestroy {
 		}
 
 		this.progressSpinnerValue = Math.min(100, (this._stepNumber / TOTAL_PROGRESS_STEPS) * 100);
-		console.log(`Progress updated to ${this.progressSpinnerValue}`);
 	}
 
 	submitDecklist(isFromClick: boolean = false) {
@@ -323,7 +322,6 @@ export class MainComponent implements OnInit, OnDestroy {
 	private _mixinTagLinks() {
 		let lookupArray = [];
 		const oracle_ids = this._cards.filter(m => m.OracleCard).map(a => a.OracleCard.oracle_id);
-		console.log(oracle_ids);
 
 		while (oracle_ids.length > 0) {
 			lookupArray.push(oracle_ids.pop());
