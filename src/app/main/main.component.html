@@ -50,10 +50,10 @@
     <ng-container *ngIf="cardCounts.missing > 0">
       <p>There were {{cardCounts.missing}} missing cards; please check log for details.</p>
     </ng-container>
-    <ng-container *ngIf="cardsGrouped.length === 0">
+    <ng-container *ngIf="!isDecklistReady || cardsGrouped.length === 0">
       <ng-container *ngTemplateOutlet="noDataWarning;"></ng-container>
     </ng-container>
-    <ng-container *ngIf="cardsGrouped.length > 0">
+    <ng-container *ngIf="isDecklistReady && cardsGrouped.length > 0">
       <mat-accordion multi="true">
         <mat-expansion-panel *ngFor="let group of cardsGrouped; first as isFirst;" [expanded]="isFirst">
           <mat-expansion-panel-header>

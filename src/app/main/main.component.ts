@@ -62,6 +62,8 @@ export class MainComponent implements OnInit, OnDestroy {
 
 	@Input() groupByMode: string = this.groupByModes[0];
 	@Input() decklist = environment.defaultDecklist;
+
+	isDecklistReady: boolean = false;
 	private _cards: CardReference[] = [];
 
 	cardCounts = {
@@ -112,6 +114,7 @@ export class MainComponent implements OnInit, OnDestroy {
 				case FinishedStep.PostProcessing:
 					this._updateProgress();
 					this.isProgressSpinnerActive = false;
+					this.isDecklistReady = true;
 					this.messages.send('Decklist processed!');
 					break;
 
@@ -221,6 +224,7 @@ export class MainComponent implements OnInit, OnDestroy {
 
 	submitDecklist(isFromClick: boolean = false) {
 		if (isFromClick) {
+			this.isDecklistReady = false;
 			this._stepNumber = this.isTransformNameDictReady ? 1 : 0;
 			this.isProgressSpinnerActive = true;
 		}
@@ -319,6 +323,7 @@ export class MainComponent implements OnInit, OnDestroy {
 	private _mixinTagLinks() {
 		let lookupArray = [];
 		const oracle_ids = this._cards.filter(m => m.OracleCard).map(a => a.OracleCard.oracle_id);
+		console.log(oracle_ids);
 
 		while (oracle_ids.length > 0) {
 			lookupArray.push(oracle_ids.pop());
