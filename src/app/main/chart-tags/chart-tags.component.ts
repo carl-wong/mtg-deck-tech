@@ -23,7 +23,7 @@ export class ChartTagsComponent implements OnInit {
 		responsive: true,
 		scale: {
 			ticks: {
-				stepSize: 1,
+				stepSize: 2,
 				precision: 0,
 				suggestedMin: 0,
 			}
