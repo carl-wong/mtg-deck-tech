@@ -30,6 +30,7 @@ const MODE_CMC = 'CMC';
 
 const UNTAGGED_PLACEHOLDER = 'UNTAGGED';
 const QUERY_BATCH_SIZE = 10;
+const QUERY_SLEEP_MS = 100;
 
 const DECKBOX_TOKEN = 'deckbox.org/sets/';
 
@@ -271,7 +272,7 @@ export class MainComponent implements OnInit, OnDestroy {
 								});
 
 								lookupArray = [];
-								SleepHelper.sleep(50);
+								SleepHelper.sleep(QUERY_SLEEP_MS);
 							}
 						}
 					}
@@ -336,7 +337,7 @@ export class MainComponent implements OnInit, OnDestroy {
 				});
 
 				lookupArray = [];
-				SleepHelper.sleep(50);
+				SleepHelper.sleep(QUERY_SLEEP_MS);
 			}
 		}
 
