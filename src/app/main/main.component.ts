@@ -29,7 +29,7 @@ const MODE_TAGS = 'Tags';
 const MODE_CMC = 'CMC';
 
 const UNTAGGED_PLACEHOLDER = 'UNTAGGED';
-const QUERY_BATCH_SIZE = 20;
+const QUERY_BATCH_SIZE = 10;
 
 const DECKBOX_TOKEN = 'deckbox.org/sets/';
 
