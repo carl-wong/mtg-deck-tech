@@ -4,6 +4,7 @@ import createAuth0Client from '@auth0/auth0-spa-js';
 import Auth0Client from '@auth0/auth0-spa-js/dist/typings/Auth0Client';
 import { BehaviorSubject, combineLatest, from, Observable, of, throwError } from 'rxjs';
 import { catchError, concatMap, shareReplay, tap } from 'rxjs/operators';
+import { environment } from '../../environments/environment';
 import { Auth0User } from '../classes/auth0-user';
 import { Profile } from '../classes/profile';
 import { LocalApiService } from './local-api.service';
@@ -21,7 +22,7 @@ export class AuthService {
 		createAuth0Client({
 			domain: DOMAIN,
 			client_id: CLIENT_ID,
-			redirect_uri: `${window.location.origin}/callback`
+			redirect_uri: `${window.location.origin}${environment.baseHref}callback`
 		})
 	) as Observable<Auth0Client>).pipe(
 		shareReplay(1), // Every subscription receives the same shared value
@@ -119,7 +120,7 @@ export class AuthService {
 		this.auth0Client$.subscribe((client: Auth0Client) => {
 			// Call method to log in
 			client.loginWithRedirect({
-				redirect_uri: `${window.location.origin}/callback`,
+				redirect_uri: `${window.location.origin}${environment.baseHref}callback`,
 				appState: { target: redirectPath }
 			});
 		});
@@ -159,7 +160,7 @@ export class AuthService {
 			// Call method to log out
 			client.logout({
 				client_id: CLIENT_ID,
-				returnTo: `${window.location.origin}`
+				returnTo: `${window.location.origin}${environment.baseHref}`
 			});
 		});
 	}
