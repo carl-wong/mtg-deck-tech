@@ -10,7 +10,7 @@ import { MinOracleCard } from '../classes/min-oracle-card';
 	providedIn: 'root'
 })
 export class OracleApiService {
-	private _api = environment.oracleApi;
+	private _api = environment.apiUrl;
 
 	constructor(
 		private http: HttpClient,

@@ -12,7 +12,7 @@ import { ApiResult, PostResult } from '../classes/api-result';
 	providedIn: 'root'
 })
 export class LocalApiService {
-	private _api = environment.localApi;
+	private _api = environment.apiUrl;
 
 	httpOptions = {
 		headers: new HttpHeaders({
