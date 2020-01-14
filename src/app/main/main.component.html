@@ -13,7 +13,7 @@
       </mat-panel-title>
     </mat-expansion-panel-header>
     <mat-form-field>
-      <textarea matInput [(ngModel)]="decklist" (click)="$event.target.select()" placeholder="Decklist (Simple Format)" rows="10"></textarea>
+      <textarea matInput [(ngModel)]="decklist" (click)="$event.target.select()" (paste)="$event.target.blur()"placeholder="Decklist (Simple Format)" rows="10"></textarea>
     </mat-form-field>
     <mat-action-row>
       <button mat-raised-button color="accent" (click)="submitDecklist(true)">
