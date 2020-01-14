@@ -59,37 +59,39 @@ export class DialogAddTagComponent implements OnInit {
 	}
 
 	close(isAccept: boolean = false) {
-		if (!this.tagName) {
-			this.tagName = this.tagInput.value.trim().toUpperCase();
-		}
+		if (isAccept) {
+			if (!this.tagName) {
+				this.tagName = this.tagInput.value.trim().toUpperCase();
+			}
 
-		if (isAccept && this.tagName) {
-			let tag = this._tags.find(m => m.name === this.tagName);
-			if (tag) {
-				this.dialogRef.close(tag);
-			} else {
-				tag = new Tag();
-				tag.name = this.tagName;
+			if (this.tagName) {
+				let tag = this._tags.find(m => m.name === this.tagName);
+				if (tag) {
+					this.dialogRef.close(tag);
+				} else {
+					tag = new Tag();
+					tag.name = this.tagName;
 
-				this.service.createTag(tag).subscribe(result => {
-					if (result) {
-						if (result.id) {
-							tag.id = result.id;
-							tag.ProfileId = this.notify.getProfileId();
+					this.service.createTag(tag).subscribe(result => {
+						if (result) {
+							if (result.id) {
+								tag.id = result.id;
+								tag.ProfileId = this.notify.getProfileId();
 
-							const data: iTagsUpdated = {
-								type: EventType.Insert,
-								Tag: tag,
-								fromId: -1,
-								toId: -1
-							};
+								const data: iTagsUpdated = {
+									type: EventType.Insert,
+									Tag: tag,
+									fromId: -1,
+									toId: -1
+								};
 
-							this.notify.tagsUpdated(data);
+								this.notify.tagsUpdated(data);
+							}
+
+							this.dialogRef.close(tag);
 						}
-
-						this.dialogRef.close(tag);
-					}
-				});
+					});
+				}
 			}
 		} else {
 			this.dialogRef.close();

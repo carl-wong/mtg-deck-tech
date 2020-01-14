@@ -10,7 +10,10 @@
   </mat-autocomplete>
 </mat-dialog-content>
 <mat-dialog-actions align="end">
-  <button mat-raised-button color="accent" (click)="close(true)">
+  <button mat-button color="accent" (click)="close(true)">
     Save
+  </button>
+  <button mat-button color="warn" (click)="close()">
+    Cancel
   </button>
 </mat-dialog-actions>
