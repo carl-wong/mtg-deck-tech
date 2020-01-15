@@ -23,9 +23,6 @@ export class StatsCalculatorComponent implements OnInit {
 	maxSampleSuccesses: number;
 
 	limits = {
-		sampleSize: {
-			max: 0
-		},
 		sampleSuccesses: {
 			max: 0
 		}
@@ -56,6 +53,19 @@ export class StatsCalculatorComponent implements OnInit {
 
 			this.params.populationSize += card.count;
 		});
+
+		//set form default value
+		this.params.mode = Statistics.GROUP_MODES[0].toString();
+		this._selectMode(this.params.mode);
+		this._enforceLimits();
+	}
+
+	private _enforceLimits() {
+		// hand size <= deck size
+		this.params.sampleSize = Math.min(this.params.populationSize, this.params.sampleSize);
+
+		// hits <= hand size
+		this.params.sampleSuccesses = Math.min(this.limits.sampleSuccesses.max, this.params.sampleSize, this.params.sampleSuccesses);
 	}
 
 	private _countByTypes(card: CardReference) {
@@ -107,16 +117,22 @@ export class StatsCalculatorComponent implements OnInit {
 		}
 	}
 
-	onSelectMode($event) {
-		const mode = $event.value;
-
+	private _selectMode(mode: string) {
 		switch (mode as GroupByMode) {
 			case GroupByMode.Types:
 				this.valueOptions = Statistics.MAIN_TYPES;
 				break;
 
 			case GroupByMode.Tags:
-				this.valueOptions = Object.keys(this._tagsDict);
+				this.valueOptions = Object.keys(this._tagsDict).sort((a, b) => {
+					if (a < b) {
+						return 1;
+					} else if (b < a) {
+						return -1;
+					} else {
+						return 0;
+					}
+				});
 				break;
 
 			case GroupByMode.CMC:
@@ -127,15 +143,50 @@ export class StatsCalculatorComponent implements OnInit {
 				this.valueOptions = [];
 				break;
 		}
+
+		this.params.value = this.valueOptions[0];
+		this._selectValue(this.params.value);
+	}
+
+	onSelectMode($event) {
+		this._selectMode($event.value);
+		this._enforceLimits();
+	}
+
+	private _selectValue(value: string) {
+		let dict = {};
+
+		switch (this.params.mode as GroupByMode) {
+			case GroupByMode.Types:
+				dict = this._typesDict;
+				break;
+
+			case GroupByMode.Tags:
+				dict = this._tagsDict;
+				break;
+
+			case GroupByMode.CMC:
+				dict = this._cmcDict;
+				break;
+
+			default:
+				break;
+		}
+
+		if (dict[this.params.value]) {
+			this.limits.sampleSuccesses.max = Math.min(this.params.sampleSize, dict[this.params.value]);
+		} else {
+			//notify of invalid selection
+		}
 	}
 
 	onSelectValue($event) {
-		console.log(this.params);
-		const value = $event.value;
+		this._selectValue($event.value);
+		this._enforceLimits();
+	}
 
-
-
-
-
+	onChangeSampleSize($event) {
+		this._selectValue(this.params.value);
+		this._enforceLimits();
 	}
 }

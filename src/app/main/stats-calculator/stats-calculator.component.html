@@ -20,7 +20,7 @@
       </mat-form-field>
       <mat-form-field>
         <mat-label>Hand Size</mat-label>
-        <input matInput type="number" [(ngModel)]="params.sampleSize" pattern="[0-9]*" min="0" [max]="limits.sampleSize.max">
+        <input matInput type="number" (change)="onChangeSampleSize($event)" [(ngModel)]="params.sampleSize" pattern="[0-9]*" min="0" [max]="params.populationSize">
       </mat-form-field>
       <mat-form-field>
         <mat-label># Drawn</mat-label>
