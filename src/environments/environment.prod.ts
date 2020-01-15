@@ -3,6 +3,6 @@ export const environment = {
   defaultDecklist: '1 Plains\n1 Island\n1 Swamp\n1 Mountain\n1 Forest\n1 Wastes',
   baseHref: '/decktech/',
   apiUrl: 'https://scry-x.com/decktech-api',
-  timestamp: 'Updated: 2020-01-14 @ 22:06:36',
-  version: 'v0.0.23',
+  timestamp: 'Updated: 2020-01-15 @ 13:42:05',
+  version: 'v0.0.24',
 };

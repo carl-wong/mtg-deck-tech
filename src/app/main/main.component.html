@@ -78,10 +78,10 @@
               <th mat-header-cell *matHeaderCellDef class="tags-col">Tags</th>
               <td mat-cell *matCellDef="let element">
                 <mat-chip-list>
+                  <mat-chip (click)="openDialogAddTag(element)" (keydown.space)="openDialogAddTag(element)" (keydown.enter)="openDialogAddTag(element)" color="accent" selected [selectable]="false">
+                    <mat-icon>add</mat-icon>
+                  </mat-chip>
                   <ng-container *ngIf="element.CardTagLinks">
-                    <mat-chip (click)="openDialogAddTag(element)" (keydown.space)="openDialogAddTag(element)" (keydown.enter)="openDialogAddTag(element)" color="accent" selected [selectable]="false">
-                      <mat-icon>add</mat-icon>
-                    </mat-chip>
                     <ng-container *ngFor="let link of element.CardTagLinks">
                       <mat-chip *ngIf="link && link.TagName" color="warn" selected [selectable]="false" (keydown.space)="removeCardTagLink(link)" (keydown.enter)="removeCardTagLink(link)" (removed)="removeCardTagLink(link)">
                         {{link.TagName | titlecase}}
