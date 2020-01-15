@@ -35,6 +35,7 @@ import { ChartCmcComponent } from './main/chart-cmc/chart-cmc.component';
 import { ChartColorPieComponent } from './main/chart-color-pie/chart-color-pie.component';
 import { ChartTagsComponent } from './main/chart-tags/chart-tags.component';
 import { MainComponent } from './main/main.component';
+import { StatsCalculatorComponent } from './main/stats-calculator/stats-calculator.component';
 import { MessagesComponent } from './messages/messages.component';
 
 
@@ -51,7 +52,8 @@ import { MessagesComponent } from './messages/messages.component';
 		DialogManageTagsComponent,
 		DialogRenameTagComponent,
 		MessagesComponent,
-		ChartTagsComponent
+		ChartTagsComponent,
+		StatsCalculatorComponent
 	],
 	entryComponents: [
 		DialogAddTagComponent,

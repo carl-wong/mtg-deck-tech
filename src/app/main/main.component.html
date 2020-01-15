@@ -129,6 +129,20 @@
       </div>
     </div>
   </mat-expansion-panel>
+  <mat-expansion-panel [expanded]="accordionStep === 'stats'" (opened)="open('stats')">
+    <mat-expansion-panel-header>
+      <mat-panel-title>
+        <mat-icon>bubble_chart</mat-icon>
+        Statistics
+      </mat-panel-title>
+    </mat-expansion-panel-header>
+    <ng-container *ngIf="!isDecklistReady || cardsGrouped.length === 0">
+      <ng-container *ngTemplateOutlet="noDataWarning;"></ng-container>
+    </ng-container>
+    <ng-container *ngIf="isDecklistReady">
+      <app-stats-calculator [model]="deck"></app-stats-calculator>
+    </ng-container>
+  </mat-expansion-panel>
   <mat-expansion-panel [expanded]="accordionStep === 'messages'" (opened)="open('messages')">
     <mat-expansion-panel-header>
       <mat-panel-title>

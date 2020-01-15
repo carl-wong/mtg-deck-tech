@@ -3,7 +3,39 @@ import { CardReference } from './card-reference';
 import { BaseChartDirective, Color, Label, MultiDataSet } from 'ng2-charts';
 
 
+export enum GroupByMode {
+	Types = 'Types',
+	Tags = 'Tags',
+	CMC = 'CMC',
+}
+
+export enum MainCardTypes {
+	Creature = 'Creature',
+	Sorcery = 'Sorcery',
+	Instant = 'Instant',
+	Enchantment = 'Enchantment',
+	Artifact = 'Artifact',
+	Planeswalker = 'Planeswalker',
+	Land = 'Land',
+};
+
 export abstract class Statistics {
+	static GROUP_MODES = [
+		GroupByMode.Types,
+		GroupByMode.Tags,
+		GroupByMode.CMC,
+	];
+
+	static MAIN_TYPES = [
+		MainCardTypes.Creature,
+		MainCardTypes.Sorcery,
+		MainCardTypes.Instant,
+		MainCardTypes.Enchantment,
+		MainCardTypes.Artifact,
+		MainCardTypes.Planeswalker,
+		MainCardTypes.Land,
+	];
+
 	static COLORS = [
 		['W', 'White'],
 		['U', 'Blue'],
@@ -12,6 +44,8 @@ export abstract class Statistics {
 		['G', 'Green'],
 		['C', 'Colorless']
 	];
+
+	static MAX_CMC_BUCKET = 7;// CMCs will range from [0..6, 7+]
 
 	static PALETTE_BLUE = [
 		'#a2c0c7',
@@ -115,7 +149,27 @@ export abstract class Statistics {
 		return result;
 	}
 
-	static MAX_CMC_BUCKET = 7;// CMCs will range from [0..6, 7+]
+	static cmcToString(cmc: number) {
+		if (cmc >= this.MAX_CMC_BUCKET) {
+			return `${this.MAX_CMC_BUCKET}+ CMC`;
+		} else {
+			return `${cmc} CMC`;
+		}
+	}
+
+	static getCMCOptions(): string[] {
+		const output = [];
+
+		for (let cmc = 0; cmc <= this.MAX_CMC_BUCKET; cmc++) {
+			if (cmc === this.MAX_CMC_BUCKET) {
+				output.push(`${cmc}+`);
+			} else {
+				output.push(cmc.toString());
+			}
+		}
+
+		return output;
+	}
 
 	static getChartCMC(deck: CardReference[]): ChartDataSets[] {
 		const result: ChartDataSets = {
@@ -130,8 +184,8 @@ export abstract class Statistics {
 			if (i === 0) {
 				filtered = deck.filter(m => m.OracleCard && m.OracleCard.cmc === i)
 					.filter(m => !m.OracleCard.type_line.includes('Land'));
-			} else if (i === 7) {
-				filtered = deck.filter(m => m.OracleCard && m.OracleCard.cmc > 6);
+			} else if (i === this.MAX_CMC_BUCKET) {
+				filtered = deck.filter(m => m.OracleCard && m.OracleCard.cmc >= this.MAX_CMC_BUCKET);
 			} else {
 				filtered = deck.filter(m => m.OracleCard && m.OracleCard.cmc === i);
 			}
