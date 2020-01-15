@@ -7,7 +7,7 @@
     "start-dev": "node ./timestamp.js && ng serve -c dev --open",
     "build": "npm version patch --force && node ./timestamp.js && ng build",
     "build-prod": "npm version patch --force && node ./build-version.js && node ./timestamp.js && ng build --base-href '/decktech/' --prod && rm dist/mtg-deck-tech-*.zip && node ./deploy-archiver.js",
-    "upload-prod": "scp -r dist/mtg-deck-tech-*.zip root@scry-x.com:/var/www/scry-x.com/public_html/app",
+    "upload-prod": "scp -r dist/mtg-deck-tech-*.zip root@scry-x.com:/var/www/scry-x.com/app/",
     "test": "ng test",
     "lint": "ng lint",
     "e2e": "ng e2e"
