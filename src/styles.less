@@ -45,7 +45,13 @@ table {
   width: 100%;
 
   .name-col {
-    width: 40%;
+    width: 200px;
+  }
+
+  td.name-col {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
 
   .tags-col,

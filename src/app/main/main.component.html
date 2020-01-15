@@ -16,7 +16,7 @@
       <textarea matInput [(ngModel)]="decklist" (click)="$event.target.select()" placeholder="Decklist (Simple Format)" rows="10"></textarea>
     </mat-form-field>
     <mat-action-row>
-      <button mat-raised-button color="accent" (click)="submitDecklist(true)">
+      <button mat-button color="accent" (click)="submitDecklist(true)">
         <mat-icon>save_alt</mat-icon>
         Submit
       </button>
@@ -64,10 +64,9 @@
           <table mat-table [dataSource]="group[1]">
             <ng-container matColumnDef="name">
               <th mat-header-cell *matHeaderCellDef class="name-col">Name</th>
-              <td mat-cell *matCellDef="let element">
-                {{element.name}}
-                <button mat-icon-button color="accent" (click)="openDialogCardDetails(element)">
-                  <mat-icon>zoom_in</mat-icon>
+              <td mat-cell *matCellDef="let element" class="name-col">
+                <button mat-button color="primary" (click)="openDialogCardDetails(element)">
+                  {{element.name}}
                 </button>
               </td>
             </ng-container>
@@ -79,13 +78,13 @@
               <th mat-header-cell *matHeaderCellDef class="tags-col">Tags</th>
               <td mat-cell *matCellDef="let element">
                 <mat-chip-list>
-                  <button mat-mini-fab (click)="openDialogAddTag(element)">
-                    <mat-icon>add</mat-icon>
-                  </button>
                   <ng-container *ngIf="element.CardTagLinks">
+                    <mat-chip (click)="openDialogAddTag(element)" (keydown.space)="openDialogAddTag(element)" (keydown.enter)="openDialogAddTag(element)" color="accent" selected [selectable]="false">
+                      <mat-icon>add</mat-icon>
+                    </mat-chip>
                     <ng-container *ngFor="let link of element.CardTagLinks">
-                      <mat-chip *ngIf="link && link.TagName" color="warn" selected (removed)="removeCardTagLink(link)">
-                        {{link.TagName}}
+                      <mat-chip *ngIf="link && link.TagName" color="warn" selected [selectable]="false" (keydown.space)="removeCardTagLink(link)" (keydown.enter)="removeCardTagLink(link)" (removed)="removeCardTagLink(link)">
+                        {{link.TagName | titlecase}}
                         <mat-icon matChipRemove>cancel</mat-icon>
                       </mat-chip>
                     </ng-container>
@@ -100,7 +99,7 @@
       </mat-accordion>
     </ng-container>
     <mat-action-row>
-      <button mat-raised-button color="accent" (click)="refreshGroups()">
+      <button mat-button color="accent" (click)="refreshGroups()">
         <mat-icon>refresh</mat-icon>
         Refresh
       </button>
