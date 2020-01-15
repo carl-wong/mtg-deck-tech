@@ -13,7 +13,7 @@
       </mat-panel-title>
     </mat-expansion-panel-header>
     <mat-form-field>
-      <textarea matInput [(ngModel)]="decklist" (click)="$event.target.select()" (paste)="$event.target.blur()"placeholder="Decklist (Simple Format)" rows="10"></textarea>
+      <textarea matInput [(ngModel)]="decklist" (click)="$event.target.select()" placeholder="Decklist (Simple Format)" rows="10"></textarea>
     </mat-form-field>
     <mat-action-row>
       <button mat-raised-button color="accent" (click)="submitDecklist(true)">
@@ -113,20 +113,22 @@
         Charts
       </mat-panel-title>
     </mat-expansion-panel-header>
-    <mat-grid-list [cols]="chartsColumns" rowHeight="3:2" id="charts-grid">
-      <mat-grid-tile *ngIf="!(isChartCMCCurve || isChartColorPie || isChartTagsRadar)" [colspan]="chartsColumns">
-        <ng-container *ngTemplateOutlet="noDataWarning;"></ng-container>
-      </mat-grid-tile>
-      <mat-grid-tile *ngIf="isChartCMCCurve">
-        <app-chart-cmc [model]="chartCMCCurve"></app-chart-cmc>
-      </mat-grid-tile>
-      <mat-grid-tile *ngIf="isChartColorPie">
-        <app-chart-color-pie [model]="chartColorPie"></app-chart-color-pie>
-      </mat-grid-tile>
-      <mat-grid-tile *ngIf="isChartTagsRadar">
-        <app-chart-tags [model]="chartTagsRadar"></app-chart-tags>
-      </mat-grid-tile>
-    </mat-grid-list>
+    <div class="container">
+      <div class="row">
+        <div class="col-12" *ngIf="!(isChartCMCCurve || isChartColorPie || isChartTagsRadar)">
+          <ng-container *ngTemplateOutlet="noDataWarning;"></ng-container>
+        </div>
+        <div class="col-md-6 col-lg-4" *ngIf="isChartCMCCurve">
+          <app-chart-cmc [model]="chartCMCCurve"></app-chart-cmc>
+        </div>
+        <div class="col-md-6 col-lg-4" *ngIf="isChartColorPie">
+          <app-chart-color-pie [model]="chartColorPie"></app-chart-color-pie>
+        </div>
+        <div class="col-md-6 col-lg-4" *ngIf="isChartTagsRadar">
+          <app-chart-tags [model]="chartTagsRadar"></app-chart-tags>
+        </div>
+      </div>
+    </div>
   </mat-expansion-panel>
   <mat-expansion-panel [expanded]="accordionStep === 'messages'" (opened)="open('messages')">
     <mat-expansion-panel-header>
