@@ -9,7 +9,7 @@ import { CardReference } from '../classes/card-reference';
 import { CardTagLink } from '../classes/card-tag-link';
 import { MinOracleCard } from '../classes/min-oracle-card';
 import { SleepHelper } from '../classes/sleep-helper';
-import { Statistics, GroupByMode, MainCardTypes } from '../classes/statistics';
+import { GroupByMode, MainCardTypes, Statistics } from '../classes/statistics';
 import { Tag } from '../classes/tag';
 import { DialogAddTagComponent } from '../dialog-add-tag/dialog-add-tag.component';
 import { DialogCardDetailsComponent } from '../dialog-card-details/dialog-card-details.component';

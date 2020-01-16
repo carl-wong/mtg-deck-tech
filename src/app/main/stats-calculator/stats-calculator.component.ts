@@ -1,15 +1,23 @@
 import { Component, OnInit, Input } from '@angular/core';
 import { CardReference } from '../../classes/card-reference';
 import { Statistics, GroupByMode, MainCardTypes } from '../../classes/statistics';
+import { create, all } from 'mathjs';
 
-
-interface iStatistics {
+interface iHypergeometricParams {
 	mode: string;
-	value: string;
-	populationSize: number;
-	populationSuccesses: number;
-	sampleSize: number;
-	sampleSuccesses: number;
+	modeValue: string;
+	populationSize: number;			//N
+	populationSuccesses: number;	//k
+	sampleSize: number;				//n
+	sampleSuccesses: number;		//x
+}
+
+interface iHypergeometricOutputs {
+	X_eq_x: number;
+	X_lt_x: number;
+	X_lte_x: number;
+	X_gt_x: number;
+	X_gte_x: number;
 }
 
 @Component({
@@ -19,7 +27,7 @@ interface iStatistics {
 })
 export class StatsCalculatorComponent implements OnInit {
 	modeOptions = Statistics.GROUP_MODES;
-	valueOptions: string[] = [];
+	modeValueOptions: string[] = [];
 	maxSampleSuccesses: number;
 
 	limits = {
@@ -32,15 +40,25 @@ export class StatsCalculatorComponent implements OnInit {
 	private _typesDict: { [typeName: string]: number } = {};
 	private _cmcDict: { [cmcString: string]: number } = {};
 
+	private _math: Partial<math.MathJsStatic> = create(all, {});
+
 	@Input() model: CardReference[];
 
-	@Input() params: iStatistics = {
+	@Input() params: iHypergeometricParams = {
 		mode: null,
-		value: null,
+		modeValue: null,
 		populationSize: 0,
 		populationSuccesses: 0,
 		sampleSize: 7,
 		sampleSuccesses: 0,
+	};
+
+	outputs: iHypergeometricOutputs = {
+		X_eq_x: 0,
+		X_lt_x: 0,
+		X_lte_x: 0,
+		X_gt_x: 0,
+		X_gte_x: 0,
 	};
 
 	constructor() { }
@@ -99,14 +117,13 @@ export class StatsCalculatorComponent implements OnInit {
 		if (card.OracleCard) {
 			let cmcString = null;
 
-			if (card.OracleCard.cmc === 0 &&
-				card.OracleCard.type_line &&
+			if (typeof card.OracleCard.cmc === 'number') {
+				cmcString = Statistics.cmcToString(card.OracleCard.cmc);
+			} else if (card.OracleCard.type_line &&
 				card.OracleCard.type_line.includes('Land')) {
 				cmcString = 'Land';
 			} else {
-				cmcString = typeof card.OracleCard.cmc === 'number' ?
-					Statistics.cmcToString(card.OracleCard.cmc) :
-					Statistics.cmcToString(0);
+				cmcString = Statistics.cmcToString(0);
 			}
 
 			if (!this._cmcDict[cmcString]) {
@@ -117,35 +134,36 @@ export class StatsCalculatorComponent implements OnInit {
 		}
 	}
 
-	private _selectMode(mode: string) {
+	private _getDictByMode(mode: GroupByMode) {
 		switch (mode as GroupByMode) {
 			case GroupByMode.Types:
-				this.valueOptions = Statistics.MAIN_TYPES;
-				break;
+				return this._typesDict;
 
 			case GroupByMode.Tags:
-				this.valueOptions = Object.keys(this._tagsDict).sort((a, b) => {
-					if (a < b) {
-						return 1;
-					} else if (b < a) {
-						return -1;
-					} else {
-						return 0;
-					}
-				});
-				break;
+				return this._tagsDict;
 
 			case GroupByMode.CMC:
-				this.valueOptions = Statistics.getCMCOptions();
-				break;
+				return this._cmcDict;
 
 			default:
-				this.valueOptions = [];
-				break;
+				return {};
 		}
+	}
 
-		this.params.value = this.valueOptions[0];
-		this._selectValue(this.params.value);
+	private _selectMode(mode: string) {
+		function sort(a, b) {
+			if (a > b) {
+				return 1;
+			} else if (b > a) {
+				return -1;
+			} else {
+				return 0;
+			}
+		};
+
+		this.modeValueOptions = Object.keys(this._getDictByMode(mode as GroupByMode)).sort(sort);
+		this.params.modeValue = this.modeValueOptions[0];
+		this._selectModeValue(this.modeValueOptions[0]);
 	}
 
 	onSelectMode($event) {
@@ -153,40 +171,65 @@ export class StatsCalculatorComponent implements OnInit {
 		this._enforceLimits();
 	}
 
-	private _selectValue(value: string) {
-		let dict = {};
+	private _selectModeValue(value: string) {
+		const dict = this._getDictByMode(this.params.mode as GroupByMode);
 
-		switch (this.params.mode as GroupByMode) {
-			case GroupByMode.Types:
-				dict = this._typesDict;
-				break;
-
-			case GroupByMode.Tags:
-				dict = this._tagsDict;
-				break;
-
-			case GroupByMode.CMC:
-				dict = this._cmcDict;
-				break;
-
-			default:
-				break;
-		}
-
-		if (dict[this.params.value]) {
-			this.limits.sampleSuccesses.max = Math.min(this.params.sampleSize, dict[this.params.value]);
+		// update params
+		if (dict[this.params.modeValue]) {
+			this.params.populationSuccesses = dict[this.params.modeValue];
 		} else {
-			//notify of invalid selection
+			this.params.populationSuccesses = 0;
 		}
+
+		this.limits.sampleSuccesses.max = Math.min(this.params.sampleSize, this.params.populationSuccesses);
 	}
 
-	onSelectValue($event) {
-		this._selectValue($event.value);
+	onSelectModeValue($event) {
+		this._selectModeValue($event.value);
 		this._enforceLimits();
 	}
 
 	onChangeSampleSize($event) {
-		this._selectValue(this.params.value);
+		this._selectModeValue(this.params.modeValue);
 		this._enforceLimits();
+	}
+
+	calculate() {
+		const _N = this.params.populationSize;
+		const _k = this.params.populationSuccesses;
+		const _n = this.params.sampleSize;
+		const _x = this.params.sampleSuccesses;
+
+		const results: iHypergeometricOutputs = {
+			X_eq_x: 0,
+			X_lt_x: 0,
+			X_lte_x: 0,
+			X_gt_x: 0,
+			X_gte_x: 0,
+		};
+
+		for (let iX = 0; iX <= _n && iX <= _k; iX++) {
+			const prob = (this._math.combinations(_k, iX) as number) *
+				(this._math.combinations(_N - _k, _n - iX) as number) /
+				(this._math.combinations(_N, _n) as number);
+
+			if (iX < _x) {
+				results.X_lt_x += prob;
+				results.X_lte_x += prob;
+			} else if (iX === _x) {
+				results.X_lte_x += prob;
+				results.X_eq_x = prob;
+				results.X_gte_x += prob;
+			} else if (iX > _x) {
+				results.X_gte_x += prob;
+				results.X_gt_x += prob;
+			}
+		}
+
+		Object.keys(results).forEach(key => {
+			results[key] = Math.round(results[key] * 10000) / 100;
+		});
+
+		this.outputs = results;
 	}
 }

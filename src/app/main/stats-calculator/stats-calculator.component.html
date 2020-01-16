@@ -11,24 +11,68 @@
         </mat-select>
       </mat-form-field>
       <mat-form-field>
-        <mat-label>Value</mat-label>
-        <mat-select [(ngModel)]="params.value" (selectionChange)="onSelectValue($event)">
-          <mat-option *ngFor="let element of valueOptions" [value]="element">
+        <mat-label>Mode Value</mat-label>
+        <mat-select [(ngModel)]="params.modeValue" (selectionChange)="onSelectModeValue($event)">
+          <mat-option *ngFor="let element of modeValueOptions" [value]="element">
             {{element | titlecase}}
           </mat-option>
         </mat-select>
+      </mat-form-field>
+      <mat-form-field>
+        <mat-label>Deck Size</mat-label>
+        <input matInput [(ngModel)]="params.populationSize" disabled>
+      </mat-form-field>
+      <mat-form-field>
+        <mat-label># Cards (Deck)</mat-label>
+        <input matInput [(ngModel)]="params.populationSuccesses" disabled>
       </mat-form-field>
       <mat-form-field>
         <mat-label>Hand Size</mat-label>
         <input matInput type="number" (change)="onChangeSampleSize($event)" [(ngModel)]="params.sampleSize" pattern="[0-9]*" min="0" [max]="params.populationSize">
       </mat-form-field>
       <mat-form-field>
-        <mat-label># Drawn</mat-label>
+        <mat-label># Cards (Drawn)</mat-label>
         <input matInput type="number" [(ngModel)]="params.sampleSuccesses" pattern="[0-9]*" min="0" [max]="limits.sampleSuccesses.max">
       </mat-form-field>
+      <div align="end">
+        <button mat-button color="primary" (click)="calculate()">
+          <mat-icon>style</mat-icon>
+          Calculate
+        </button>
+      </div>
     </div>
     <div class="col-sm-6 col-md-4 col-lg-3">
-      <!-- area to display calculated results -->
+      <!-- area to display this.outputs -->
+      <mat-form-field>
+        <mat-label matTooltip="i.e. P(X &lt; x)">
+          % Hands w/ Fewer Than {{params.sampleSuccesses}}
+        </mat-label>
+        <input matInput [(ngModel)]="outputs.X_lt_x" disabled>
+      </mat-form-field>
+      <mat-form-field>
+        <mat-label matTooltip="i.e. P(X &lt;= x)">
+          % Hands w/ {{params.sampleSuccesses}} or fewer
+        </mat-label>
+        <input matInput [(ngModel)]="outputs.X_lte_x" disabled>
+      </mat-form-field>
+      <mat-form-field>
+        <mat-label matTooltip="i.e. P(X = x)">
+          % Hands w/ Exactly {{params.sampleSuccesses}}
+        </mat-label>
+        <input matInput [(ngModel)]="outputs.X_eq_x" disabled>
+      </mat-form-field>
+      <mat-form-field>
+        <mat-label matTooltip="i.e. P(X &gt; x)">
+          % Hands w/ {{params.sampleSuccesses}} or more
+        </mat-label>
+        <input matInput [(ngModel)]="outputs.X_gt_x" disabled>
+      </mat-form-field>
+      <mat-form-field>
+        <mat-label matTooltip="i.e. P(X &gt;= x)">
+          % Hands w/ more than {{params.sampleSuccesses}}
+        </mat-label>
+        <input matInput [(ngModel)]="outputs.X_gte_x" disabled>
+      </mat-form-field>
     </div>
   </div>
 </div>
