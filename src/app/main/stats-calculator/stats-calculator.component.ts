@@ -6,10 +6,10 @@ import { create, all } from 'mathjs';
 interface iHypergeometricParams {
 	mode: string;
 	modeValue: string;
-	populationSize: number;			//N
-	populationSuccesses: number;	//k
-	sampleSize: number;				//n
-	sampleSuccesses: number;		//x
+	populationSize: number;			// N
+	populationSuccesses: number;	// k
+	sampleSize: number;				// n
+	sampleSuccesses: number;		// x
 }
 
 interface iHypergeometricOutputs {
@@ -72,7 +72,7 @@ export class StatsCalculatorComponent implements OnInit {
 			this.params.populationSize += card.count;
 		});
 
-		//set form default value
+		// set form default value
 		this.params.mode = Statistics.GROUP_MODES[0].toString();
 		this._selectMode(this.params.mode);
 		this._enforceLimits();
@@ -159,7 +159,7 @@ export class StatsCalculatorComponent implements OnInit {
 			} else {
 				return 0;
 			}
-		};
+		}
 
 		this.modeValueOptions = Object.keys(this._getDictByMode(mode as GroupByMode)).sort(sort);
 		this.params.modeValue = this.modeValueOptions[0];

@@ -43,6 +43,15 @@ enum FinishedStep {
 	styleUrls: ['./main.component.less']
 })
 export class MainComponent implements OnInit, OnDestroy {
+
+	constructor(
+		private http: HttpClient,
+		private messages: MessagesService,
+		private oracle: OracleApiService,
+		private service: LocalApiService,
+		private notify: NotificationService,
+		private dialog: MatDialog,
+	) { }
 	chartsColumns = 2;
 
 	accordionStep = 'input';
@@ -56,27 +65,31 @@ export class MainComponent implements OnInit, OnDestroy {
 	@Input() groupByMode: string = this.groupByModes[0].toString();
 	@Input() decklist = environment.defaultDecklist;
 
-	isDecklistReady: boolean = false;
+	isDecklistReady = false;
 	deck: CardReference[] = [];
 
 	cardCounts = {
 		total: 0,
 		unique: 0,
 		missing: 0,
-	}
+	};
 
 	cardsGrouped: [string, CardReference[], number][] = [];
 
 	private _tagsUpdatedSub: Subscription;
 
-	constructor(
-		private http: HttpClient,
-		private messages: MessagesService,
-		private oracle: OracleApiService,
-		private service: LocalApiService,
-		private notify: NotificationService,
-		private dialog: MatDialog,
-	) { }
+	isProgressSpinnerActive = false;
+	progressSpinnerValue = 0;
+	private _stepNumber = 0;
+
+	isChartTagsRadar = false;
+	chartTagsRadar: iChartTags;
+
+	isChartColorPie = false;
+	chartColorPie: iChartColorPie;
+
+	isChartCMCCurve = false;
+	chartCMCCurve: iChartCmc;
 
 	ngOnDestroy() {
 		this._tagsUpdatedSub.unsubscribe();
@@ -202,10 +215,6 @@ export class MainComponent implements OnInit, OnDestroy {
 			await console.log(getResult);
 		}
 	}
-
-	isProgressSpinnerActive: boolean = false;
-	progressSpinnerValue: number = 0;
-	private _stepNumber: number = 0;
 	private _updateProgress() {
 		if (this._stepNumber < TOTAL_PROGRESS_STEPS) {
 			this._stepNumber++;
@@ -353,9 +362,6 @@ export class MainComponent implements OnInit, OnDestroy {
 		this._getColorsPieChart();
 		this._getTagsRadarChart();
 	}
-
-	isChartTagsRadar: boolean = false;
-	chartTagsRadar: iChartTags;
 	private _getTagsRadarChart() {
 		if (this.deck && this.deck.length > 0) {
 			const stats: { sets: ChartDataSets[], labels: Label[] } = Statistics.getChartTagsRadar(this.deck);
@@ -379,9 +385,6 @@ export class MainComponent implements OnInit, OnDestroy {
 			this.isChartTagsRadar = false;
 		}
 	}
-
-	isChartColorPie: boolean = false;
-	chartColorPie: iChartColorPie;
 	private _getColorsPieChart() {
 		if (this.deck && this.deck.length > 0) {
 			const chart: iChartColorPie = {
@@ -395,9 +398,6 @@ export class MainComponent implements OnInit, OnDestroy {
 			this.isChartColorPie = false;
 		}
 	}
-
-	isChartCMCCurve: boolean = false;
-	chartCMCCurve: iChartCmc;
 	private _getCMCChart() {
 		if (this.deck && this.deck.length > 0) {
 			const chart: iChartCmc = {

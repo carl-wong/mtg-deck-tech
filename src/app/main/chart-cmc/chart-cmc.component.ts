@@ -37,7 +37,7 @@ export class ChartCmcComponent implements OnInit {
 			},
 			callbacks: {
 				title(item: Chart.ChartTooltipItem[], data: Chart.ChartData) {
-					return '';// no title
+					return ''; // no title
 				},
 				label(tooltipItem: Chart.ChartTooltipItem, data: Chart.ChartData) {
 					const cmc = data.labels[tooltipItem.index];

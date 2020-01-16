@@ -17,7 +17,7 @@ export enum MainCardTypes {
 	Artifact = 'Artifact',
 	Planeswalker = 'Planeswalker',
 	Land = 'Land',
-};
+}
 
 export abstract class Statistics {
 	static GROUP_MODES = [
@@ -45,7 +45,7 @@ export abstract class Statistics {
 		['C', 'Colorless']
 	];
 
-	static MAX_CMC_BUCKET = 7;// CMCs will range from [0..6, 7+]
+	static MAX_CMC_BUCKET = 7; // CMCs will range from [0..6, 7+]
 
 	static PALETTE_BLUE = [
 		'#a2c0c7',
@@ -93,7 +93,7 @@ export abstract class Statistics {
 	];
 
 	static hexToRgbA(hex: string, alpha: number) {
-		var c;
+		let c;
 		if (/^#([A-Fa-f0-9]{3}){1,2}$/.test(hex)) {
 			c = hex.substring(1).split('');
 			if (c.length == 3) {
