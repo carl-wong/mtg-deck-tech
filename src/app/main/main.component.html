@@ -65,9 +65,7 @@
             <ng-container matColumnDef="name">
               <th mat-header-cell *matHeaderCellDef class="name-col">Name</th>
               <td mat-cell *matCellDef="let element" class="name-col">
-                <button mat-button color="primary" (click)="openDialogCardDetails(element)">
-                  {{element.name}}
-                </button>
+                <span class="clickable" (click)="openDialogCardDetails(element)">{{element.name}}</span>
               </td>
             </ng-container>
             <ng-container matColumnDef="count">
