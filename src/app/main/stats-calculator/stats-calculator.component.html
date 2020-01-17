@@ -34,12 +34,6 @@
         <mat-label># Cards (Drawn)</mat-label>
         <input matInput type="number" [(ngModel)]="params.sampleSuccesses" pattern="[0-9]*" min="0" [max]="limits.sampleSuccesses.max">
       </mat-form-field>
-      <div align="end">
-        <button mat-button color="primary" (click)="calculate()">
-          <mat-icon>style</mat-icon>
-          Calculate
-        </button>
-      </div>
     </div>
     <div class="col-sm-6 col-md-4 col-lg-3">
       <!-- area to display this.outputs -->
@@ -73,6 +67,12 @@
         </mat-label>
         <input matInput [(ngModel)]="outputs.X_gte_x" disabled>
       </mat-form-field>
+      <div align="end">
+        <button mat-button color="primary" (click)="calculate()">
+          <mat-icon>style</mat-icon>
+          Calculate
+        </button>
+      </div>
     </div>
   </div>
 </div>
