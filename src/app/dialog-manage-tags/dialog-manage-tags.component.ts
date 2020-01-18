@@ -163,7 +163,7 @@ export class DialogManageTagsComponent implements OnInit, OnDestroy {
 				break;
 		}
 
-		$event.writeValue(null);
+		$event.source.writeValue(null);
 	}
 
 	close() {
