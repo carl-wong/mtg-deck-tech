@@ -3,7 +3,7 @@
   <mat-form-field>
     <input type="text" matInput [formControl]="tagInput" [matAutocomplete]="auto" (keydown.enter)="onKeyEnter()">
   </mat-form-field>
-  <mat-autocomplete #auto="matAutocomplete" (optionSelected)="onOptionSelected($event)">
+  <mat-autocomplete #auto="matAutocomplete" autoActiveFirstOption>
     <mat-option *ngFor="let option of filteredOptions | async" [value]="option">
       {{option | titlecase}}
     </mat-option>

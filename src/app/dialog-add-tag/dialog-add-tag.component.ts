@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ViewChild } from '@angular/core';
 import { FormControl } from '@angular/forms';
 import { MatDialogRef } from '@angular/material';
 import { Observable } from 'rxjs';
@@ -6,6 +6,7 @@ import { map, startWith } from 'rxjs/operators';
 import { Tag } from '../classes/tag';
 import { LocalApiService } from '../services/local-api.service';
 import { NotificationService, iTagsUpdated, EventType } from '../services/notification.service';
+import { MatAutocomplete } from '@angular/material/autocomplete';
 
 
 @Component({
@@ -20,6 +21,8 @@ export class DialogAddTagComponent implements OnInit {
 	tagInput = new FormControl();
 
 	private tagName = '';
+
+	@ViewChild(MatAutocomplete, { static: false }) autoComplete: MatAutocomplete;
 
 	constructor(
 		private service: LocalApiService,
@@ -44,18 +47,10 @@ export class DialogAddTagComponent implements OnInit {
 		return this.options.filter(option => option.toLowerCase().startsWith(filterValue));
 	}
 
-	onOptionSelected($event) {
-		this.close(true);
-	}
-
 	onKeyEnter() {
-		const filteredOptions = this._filter(this.tagInput.value);
-
-		if (filteredOptions.length > 0) {
-			this.tagName = filteredOptions[0];
+		if (!this.autoComplete.isOpen) {
+			this.close(true);
 		}
-
-		this.close(true);
 	}
 
 	close(isAccept: boolean = false) {
