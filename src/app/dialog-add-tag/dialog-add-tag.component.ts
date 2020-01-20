@@ -1,12 +1,12 @@
-import { Component, OnInit, ViewChild } from '@angular/core';
+import { Component, Inject, OnInit, ViewChild } from '@angular/core';
 import { FormControl } from '@angular/forms';
-import { MatDialogRef } from '@angular/material';
+import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material';
+import { MatAutocomplete } from '@angular/material/autocomplete';
 import { Observable } from 'rxjs';
 import { map, startWith } from 'rxjs/operators';
 import { Tag } from '../classes/tag';
 import { LocalApiService } from '../services/local-api.service';
-import { NotificationService, iTagsUpdated, EventType } from '../services/notification.service';
-import { MatAutocomplete } from '@angular/material/autocomplete';
+import { EventType, iTagsUpdated, NotificationService } from '../services/notification.service';
 
 
 @Component({
@@ -28,18 +28,18 @@ export class DialogAddTagComponent implements OnInit {
 		private service: LocalApiService,
 		private dialogRef: MatDialogRef<DialogAddTagComponent>,
 		private notify: NotificationService,
-	) { }
+		@Inject(MAT_DIALOG_DATA) data: { tags: Tag[] },
+	) {
+		this._tags = data.tags;
+	}
 
 	ngOnInit() {
-		this.service.getTags().subscribe(tags => {
-			this._tags = tags;
-			this.options = tags.map(a => a.name).sort();
-			this.filteredOptions = this.tagInput.valueChanges
-				.pipe(
-					startWith(''),
-					map(value => this._filter(value))
-				);
-		});
+		this.options = this._tags.map(a => a.name).sort();
+		this.filteredOptions = this.tagInput.valueChanges
+			.pipe(
+				startWith(''),
+				map(value => this._filter(value))
+			);
 	}
 
 	private _filter(value: string): string[] {

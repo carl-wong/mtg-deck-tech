@@ -31,7 +31,7 @@ const QUERY_SLEEP_MS = 100;
 const DECKBOX_TOKEN = 'deckbox.org/sets/';
 
 enum FinishedStep {
-	Transform = 'Transform Name Dictionary',
+	Cache = 'Transform Name Dictionary',
 	Oracle = 'Oracle Definitions',
 	CardTagLinks = 'CardTagLinks',
 	PostProcessing = 'Post Processing',
@@ -43,30 +43,22 @@ enum FinishedStep {
 	styleUrls: ['./main.component.less']
 })
 export class MainComponent implements OnInit, OnDestroy {
-
-	constructor(
-		private http: HttpClient,
-		private messages: MessagesService,
-		private oracle: OracleApiService,
-		private service: LocalApiService,
-		private notify: NotificationService,
-		private dialog: MatDialog,
-	) { }
-	chartsColumns = 2;
+	groupByModes = Statistics.GROUP_MODES;
+	@Input() groupByMode: string = this.groupByModes[0].toString();
 
 	accordionStep = 'input';
-	private _emitFinishedStep = new EventEmitter();
-
-	groupByModes = Statistics.GROUP_MODES;
-
-	isTransformNameDictReady = false;
-	private _transformNameDict: { [name: string]: string } = {};
-
-	@Input() groupByMode: string = this.groupByModes[0].toString();
 	@Input() decklist = environment.defaultDecklist;
 
 	isDecklistReady = false;
 	deck: CardReference[] = [];
+
+	private _emitFinishedStep = new EventEmitter();
+
+	private _isCacheReady = false;// true only after _tags and _transformNameDict are loaded
+	private _tags: Tag[];
+	private _transformNameDict: { [name: string]: string } = {};
+
+	chartsColumns = 2;
 
 	cardCounts = {
 		total: 0,
@@ -91,14 +83,23 @@ export class MainComponent implements OnInit, OnDestroy {
 	isChartCMCCurve = false;
 	chartCMCCurve: iChartCmc;
 
-	ngOnDestroy() {
-		this._tagsUpdatedSub.unsubscribe();
-		this._emitFinishedStep.unsubscribe();
-	}
+	constructor(
+		private http: HttpClient,
+		private messages: MessagesService,
+		private oracle: OracleApiService,
+		private service: LocalApiService,
+		private notify: NotificationService,
+		private dialog: MatDialog,
+	) { }
 
 	ngOnInit() {
 		this._subscribeToTagUpdateEvents();
 		this._subscribeToFinishedStepEvents();
+	}
+
+	ngOnDestroy() {
+		this._tagsUpdatedSub.unsubscribe();
+		this._emitFinishedStep.unsubscribe();
 	}
 
 	private _subscribeToFinishedStepEvents() {
@@ -145,7 +146,30 @@ export class MainComponent implements OnInit, OnDestroy {
 	private _subscribeToTagUpdateEvents() {
 		this._tagsUpdatedSub = this.notify.isTagsUpdated$.subscribe(event => {
 			switch (event.type) {
+				case EventType.Insert: {
+					// update list of tags
+					let tagIndex = 0;
+					while (tagIndex < this._tags.length) {
+						if (event.Tag.name > this._tags[tagIndex].name) {
+							tagIndex++;
+						} else {
+							break;
+						}
+					}
+
+					this._tags.splice(tagIndex, 0, event.Tag);
+
+					break;
+				}
+
 				case EventType.Update: {
+					// update list of tags
+					const tag = this._tags.find(m => m.id === event.Tag.id);
+					if (tag) {
+						tag.name = event.Tag.name;
+					}
+
+					// update tags attached to cards in deck
 					this.deck.filter(m => m.CardTagLinks && m.CardTagLinks.length > 0)
 						.forEach(card => {
 							const link = card.CardTagLinks.find(m => m.TagId === event.Tag.id);
@@ -157,6 +181,13 @@ export class MainComponent implements OnInit, OnDestroy {
 				}
 
 				case EventType.Delete: {
+					// update list of tags
+					const tagIndex = this._tags.findIndex(m => m.id === event.Tag.id);
+					if (tagIndex !== -1) {
+						this._tags.splice(tagIndex, 1);
+					}
+
+					// update tags attached to cards in deck
 					this.deck.filter(m => m.CardTagLinks && m.CardTagLinks.length > 0)
 						.forEach(card => {
 							const linkIndex = card.CardTagLinks.findIndex(m => m.TagId === event.Tag.id);
@@ -168,7 +199,13 @@ export class MainComponent implements OnInit, OnDestroy {
 				}
 
 				case EventType.Merge: {
-					// update the TagId and TagName of all links referencing the merged from Tag
+					// update list of tags
+					const fromIndex = this._tags.findIndex(m => m.id === event.fromId);
+					if (fromIndex !== -1) {
+						this._tags.splice(fromIndex, 1);
+					}
+
+					// update tags attached to cards in deck
 					this.deck.filter(m => m.CardTagLinks)
 						.forEach(card => {
 							const link = card.CardTagLinks.find(m => m.TagId === event.fromId);
@@ -226,11 +263,11 @@ export class MainComponent implements OnInit, OnDestroy {
 	submitDecklist(isFromClick: boolean = false) {
 		if (isFromClick) {
 			this.isDecklistReady = false;
-			this._stepNumber = this.isTransformNameDictReady ? 1 : 0;
+			this._stepNumber = (this._isCacheReady) ? 1 : 0;
 			this.isProgressSpinnerActive = true;
 		}
 
-		if (this.isTransformNameDictReady) {
+		if (this._isCacheReady) {
 			this._updateProgress();
 
 			this.messages.send('Processing decklist, please wait...', MessageLevel.Notify);
@@ -291,20 +328,25 @@ export class MainComponent implements OnInit, OnDestroy {
 		} else {
 			this._updateProgress();
 
-			this.oracle.getTransform()
-				.subscribe(cards => {
-					if (cards) {
-						cards.filter(m => m.name && m.name.includes(' // ')).map(m => m.name.toLowerCase())
-							.forEach(name => {
-								const front = name.split(' // ')[0];
-								this._transformNameDict[front] = name;
-							});
+			this.service.getTags()
+				.subscribe(tags => {
+					this._tags = tags;
 
-						this.isTransformNameDictReady = true;
-						this._emitFinishedStep.emit(FinishedStep.Transform);
+					this.oracle.getTransform()
+						.subscribe(cards => {
+							if (cards) {
+								cards.filter(m => m.name && m.name.includes(' // ')).map(m => m.name.toLowerCase())
+									.forEach(name => {
+										const front = name.split(' // ')[0];
+										this._transformNameDict[front] = name;
+									});
 
-						this.submitDecklist();
-					}
+								this._isCacheReady = true;
+								this._emitFinishedStep.emit(FinishedStep.Cache);
+
+								this.submitDecklist();
+							}
+						});
 				});
 		}
 	}
@@ -593,6 +635,8 @@ export class MainComponent implements OnInit, OnDestroy {
 
 		dConfig.disableClose = false;
 		dConfig.autoFocus = true;
+
+		dConfig.data = { tags: this._tags };
 
 		const dRef = this.dialog.open(DialogAddTagComponent, dConfig);
 		dRef.afterClosed().subscribe((tag: Tag) => {
