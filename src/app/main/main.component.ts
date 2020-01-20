@@ -44,7 +44,7 @@ enum FinishedStep {
 	styleUrls: ['./main.component.less']
 })
 export class MainComponent implements OnInit, OnDestroy {
-	@ViewChild(StatsCalculatorComponent, { static: true }) statsPanel: StatsCalculatorComponent;
+	@ViewChild('statsCalculator', { static: false }) statsCalculator: StatsCalculatorComponent;
 
 	groupByModes = Statistics.GROUP_MODES;
 	@Input() groupByMode: string = this.groupByModes[0].toString();
@@ -707,7 +707,7 @@ export class MainComponent implements OnInit, OnDestroy {
 				break;
 
 			case 'stats':
-				this.statsPanel.updateOptions();
+				this.statsCalculator.updateOptions();
 				break;
 
 			default:

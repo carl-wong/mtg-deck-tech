@@ -138,7 +138,7 @@
       <ng-container *ngTemplateOutlet="noDataWarning;"></ng-container>
     </ng-container>
     <ng-container *ngIf="isDecklistReady">
-      <app-stats-calculator [model]="deck"></app-stats-calculator>
+      <app-stats-calculator [model]="deck" #statsCalculator></app-stats-calculator>
     </ng-container>
   </mat-expansion-panel>
   <mat-expansion-panel [expanded]="accordionStep === 'messages'" (opened)="open('messages')">
