@@ -1,5 +1,5 @@
 import { HttpClient } from '@angular/common/http';
-import { Component, EventEmitter, Input, OnDestroy, OnInit } from '@angular/core';
+import { Component, EventEmitter, Input, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { MatDialog, MatDialogConfig } from '@angular/material/dialog';
 import { ChartDataSets } from 'chart.js';
 import { Label } from 'ng2-charts';
@@ -11,6 +11,7 @@ import { MinOracleCard } from '../classes/min-oracle-card';
 import { SleepHelper } from '../classes/sleep-helper';
 import { GroupByMode, MainCardTypes, Statistics } from '../classes/statistics';
 import { Tag } from '../classes/tag';
+import { StatsCalculatorComponent } from './stats-calculator/stats-calculator.component';
 import { DialogAddTagComponent } from '../dialog-add-tag/dialog-add-tag.component';
 import { DialogCardDetailsComponent } from '../dialog-card-details/dialog-card-details.component';
 import { LocalApiService } from '../services/local-api.service';
@@ -43,6 +44,8 @@ enum FinishedStep {
 	styleUrls: ['./main.component.less']
 })
 export class MainComponent implements OnInit, OnDestroy {
+	@ViewChild(StatsCalculatorComponent, { static: true }) statsPanel: StatsCalculatorComponent;
+
 	groupByModes = Statistics.GROUP_MODES;
 	@Input() groupByMode: string = this.groupByModes[0].toString();
 
@@ -698,11 +701,20 @@ export class MainComponent implements OnInit, OnDestroy {
 	}
 
 	open(panel: string) {
-		if (panel === 'charts') {
-			this._getCharts();
-			this.accordionStep = panel;
-		} else {
-			this.accordionStep = panel;
+		switch (panel) {
+			case 'charts':
+				this._getCharts();
+				break;
+
+			case 'stats':
+				this.statsPanel.updateOptions();
+				break;
+
+			default:
+				break;
+
 		}
+
+		this.accordionStep = panel;
 	}
 }

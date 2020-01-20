@@ -64,6 +64,13 @@ export class StatsCalculatorComponent implements OnInit {
 	constructor() { }
 
 	ngOnInit() {
+		// set form default value
+		this.params.mode = Statistics.GROUP_MODES[0].toString();
+	}
+
+	updateOptions() {
+		this.params.populationSize = 0;
+
 		this.model.forEach(card => {
 			this._countByTypes(card);
 			this._countByTags(card);
@@ -72,8 +79,6 @@ export class StatsCalculatorComponent implements OnInit {
 			this.params.populationSize += card.count;
 		});
 
-		// set form default value
-		this.params.mode = Statistics.GROUP_MODES[0].toString();
 		this._selectMode(this.params.mode);
 		this._enforceLimits();
 	}
