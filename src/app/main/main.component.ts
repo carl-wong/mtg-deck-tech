@@ -111,6 +111,7 @@ export class MainComponent implements OnInit, OnDestroy {
 
 			switch (step) {
 				case FinishedStep.Oracle:
+					this._removeMissingCards();
 					this._countCards();
 					this._updateProgress();
 					this._mixinTagLinks();
@@ -132,6 +133,16 @@ export class MainComponent implements OnInit, OnDestroy {
 					break;
 			}
 		});
+	}
+
+	private _removeMissingCards() {
+		this.deck.filter(m => !m.OracleCard).map(m => m.name)
+			.forEach(name => {
+				const index = this.deck.findIndex(m => m.name === name);
+				if (index !== -1) {
+					this.deck.splice(index, 1);
+				}
+			});
 	}
 
 	private _countCards() {
