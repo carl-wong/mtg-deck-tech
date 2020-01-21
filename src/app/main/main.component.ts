@@ -418,6 +418,7 @@ export class MainComponent implements OnInit, OnDestroy {
 		this._getColorsPieChart();
 		this._getTagsRadarChart();
 	}
+
 	private _getTagsRadarChart() {
 		if (this.deck && this.deck.length > 0) {
 			const stats: { sets: ChartDataSets[], labels: Label[] } = Statistics.getChartTagsRadar(this.deck);
@@ -441,6 +442,7 @@ export class MainComponent implements OnInit, OnDestroy {
 			this.isChartTagsRadar = false;
 		}
 	}
+
 	private _getColorsPieChart() {
 		if (this.deck && this.deck.length > 0) {
 			const chart: iChartColorPie = {
@@ -454,6 +456,7 @@ export class MainComponent implements OnInit, OnDestroy {
 			this.isChartColorPie = false;
 		}
 	}
+	
 	private _getCMCChart() {
 		if (this.deck && this.deck.length > 0) {
 			const chart: iChartCmc = {

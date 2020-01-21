@@ -146,6 +146,11 @@ export abstract class Statistics {
 			result.sets[0].data.push(item[1]);
 		});
 
+		if (topTags.length === 0) {
+			result.labels.push('No Tags');
+			result.sets[0].data.push(deck.map(m => m.count).reduce((a, b) => a + b));
+		}
+
 		return result;
 	}
 
