@@ -5,9 +5,9 @@ import { MatPaginator } from '@angular/material/paginator';
 import { Subscription } from 'rxjs';
 import { Tag } from '../classes/tag';
 import { DialogRenameTagComponent, iDialogRenameTag } from '../dialog-rename-tag/dialog-rename-tag.component';
-import { LocalApiService } from '../services/local-api.service';
 import { MessageLevel, MessagesService } from '../services/messages.service';
 import { EventType, iTagsUpdated, NotificationService } from '../services/notification.service';
+import { TagApiService } from '../services/tag-api.service';
 
 
 @Component({
@@ -25,7 +25,7 @@ export class DialogManageTagsComponent implements OnInit, OnDestroy {
 	@ViewChild(MatPaginator, { static: false }) paginator: MatPaginator;
 
 	constructor(
-		private service: LocalApiService,
+		private service: TagApiService,
 		private messages: MessagesService,
 		private dialog: MatDialog,
 		private notify: NotificationService,

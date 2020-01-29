@@ -1,25 +1,24 @@
-import { HttpClient, HttpParams } from '@angular/common/http';
+import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { Observable, of } from 'rxjs';
+import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
-import { environment } from '../../environments/environment';
 import { MinOracleCard } from '../classes/min-oracle-card';
+import { BaseApiService } from './base-api.service';
 
 
 @Injectable({
 	providedIn: 'root'
 })
-export class OracleApiService {
-	private _api = environment.apiUrl;
-
+export class OracleApiService extends BaseApiService {
 	constructor(
 		private http: HttpClient,
 	) {
+		super();
 	}
 
 	// API: GET /OracleCards
 	public getTransform(): Observable<MinOracleCard[]> {
-		return this.http.get(this._api + '/OracleCards?layout=transform')
+		return this.http.get(this._api + '/OracleCards/Transform')
 			.pipe(
 				map(res => {
 					res['payload'] = res;
@@ -28,38 +27,14 @@ export class OracleApiService {
 			);
 	}
 
-	// API: GET /OracleCards
-	public getByNames(names: string[]): Observable<MinOracleCard[]> {
-		const queries: string[] = [];
-
-		names.forEach(name => {
-			queries.push('name=' + encodeURIComponent(name));
-		});
-
-		const suffix = queries.length > 0 ? '?' + queries.join('&') : '';
-		return this.http.get(this._api + '/OracleCards' + suffix)
+	// API: POST /OracleCards
+	public postNames(names: string[]): Observable<MinOracleCard[]> {
+		return this.http.post<MinOracleCard[]>(this._api + '/OracleCards', { cards: names }, this.httpOptions)
 			.pipe(
 				map(res => {
 					res['payload'] = res;
 					return res['payload'];
 				})
 			);
-	}
-
-	/**
-	   * Handle Http operation that failed.
-	   * Let the app continue.
-	   * @param operation - name of the operation that failed
-	   * @param result - optional value to return as the observable result
-	   */
-	private handleError<T>(operation = 'operation', result?: T) {
-		return (error: any): Observable<T> => {
-
-			// TODO: send the error to remote logging infrastructure
-			console.error(error); // log to console instead
-
-			// Let the app keep running by returning an empty result.
-			return of(result as T);
-		};
 	}
 }

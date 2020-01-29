@@ -5,8 +5,8 @@ import { MatAutocomplete } from '@angular/material/autocomplete';
 import { Observable } from 'rxjs';
 import { map, startWith } from 'rxjs/operators';
 import { Tag } from '../classes/tag';
-import { LocalApiService } from '../services/local-api.service';
 import { EventType, iTagsUpdated, NotificationService } from '../services/notification.service';
+import { TagApiService } from '../services/tag-api.service';
 
 
 @Component({
@@ -25,7 +25,7 @@ export class DialogAddTagComponent implements OnInit {
 	@ViewChild(MatAutocomplete, { static: false }) autoComplete: MatAutocomplete;
 
 	constructor(
-		private service: LocalApiService,
+		private service: TagApiService,
 		private dialogRef: MatDialogRef<DialogAddTagComponent>,
 		private notify: NotificationService,
 		@Inject(MAT_DIALOG_DATA) data: { tags: Tag[] },

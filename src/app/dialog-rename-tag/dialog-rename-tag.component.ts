@@ -1,9 +1,9 @@
 import { Component, Inject, OnInit } from '@angular/core';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material';
 import { Tag } from '../classes/tag';
-import { LocalApiService } from '../services/local-api.service';
 import { MessageLevel, MessagesService } from '../services/messages.service';
 import { EventType, iTagsUpdated, NotificationService } from '../services/notification.service';
+import { TagApiService } from '../services/tag-api.service';
 
 
 export interface iDialogRenameTag {
@@ -22,7 +22,7 @@ export class DialogRenameTagComponent implements OnInit {
 
 	constructor(
 		private messages: MessagesService,
-		private service: LocalApiService,
+		private service: TagApiService,
 		private notify: NotificationService,
 		private dialogRef: MatDialogRef<DialogRenameTagComponent>,
 		@Inject(MAT_DIALOG_DATA) data: iDialogRenameTag

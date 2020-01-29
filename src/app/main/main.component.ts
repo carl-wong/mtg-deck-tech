@@ -11,16 +11,17 @@ import { MinOracleCard } from '../classes/min-oracle-card';
 import { SleepHelper } from '../classes/sleep-helper';
 import { GroupByMode, MainCardTypes, Statistics } from '../classes/statistics';
 import { Tag } from '../classes/tag';
-import { StatsCalculatorComponent } from './stats-calculator/stats-calculator.component';
 import { DialogAddTagComponent } from '../dialog-add-tag/dialog-add-tag.component';
 import { DialogCardDetailsComponent } from '../dialog-card-details/dialog-card-details.component';
-import { LocalApiService } from '../services/local-api.service';
+import { CardTagLinkApiService } from '../services/card-tag-link-api.service';
 import { MessageLevel, MessagesService } from '../services/messages.service';
 import { EventType, NotificationService } from '../services/notification.service';
 import { OracleApiService } from '../services/oracle-api.service';
+import { TagApiService } from '../services/tag-api.service';
 import { iChartCmc } from './chart-cmc/chart-cmc.component';
 import { iChartColorPie } from './chart-color-pie/chart-color-pie.component';
 import { iChartTags } from './chart-tags/chart-tags.component';
+import { StatsCalculatorComponent } from './stats-calculator/stats-calculator.component';
 
 
 const TOTAL_PROGRESS_STEPS = 5.0;
@@ -90,7 +91,8 @@ export class MainComponent implements OnInit, OnDestroy {
 		private http: HttpClient,
 		private messages: MessagesService,
 		private oracle: OracleApiService,
-		private service: LocalApiService,
+		private tagService: TagApiService,
+		private cardTagLinkService: CardTagLinkApiService,
 		private notify: NotificationService,
 		private dialog: MatDialog,
 	) { }
@@ -247,25 +249,6 @@ export class MainComponent implements OnInit, OnDestroy {
 		this.cardCounts.missing = missing.length;
 	}
 
-	private async _getDeckboxURL() {
-		this.messages.send('<deckbox.org> integration is not supported at this time.', MessageLevel.Alert);
-
-		if (false) {
-			const regex = /[\d]+/gm;
-			const setId = regex.exec(this.decklist);
-			const deckboxExportURL = `https://deckbox.org/sets/${setId}/export`;
-
-			this.messages.send(`Attempting to fetch <${deckboxExportURL}>`);
-			const getResult = await fetch(deckboxExportURL, {
-				method: 'GET',
-				mode: 'no-cors',
-				cache: 'no-cache',
-
-			});
-
-			await console.log(getResult);
-		}
-	}
 	private _updateProgress() {
 		if (this._stepNumber < TOTAL_PROGRESS_STEPS) {
 			this._stepNumber++;
@@ -290,59 +273,53 @@ export class MainComponent implements OnInit, OnDestroy {
 			this.deck = [];
 			this.cardsGrouped = [];
 
-			if (this.decklist.indexOf(DECKBOX_TOKEN) !== -1) {
-				// deckbox set URL
-				this._getDeckboxURL();
-			} else {
-				// regular decklist importer
-				let lookupArray: string[] = [];
+			// regular decklist importer
+			let lookupArray: string[] = [];
 
-				const lines = this.decklist.split('\n');
-				const regex = /(?<_ls>[\s]+)?(?<count>[\d]+)?(?<_x>[xX]+[\s]+)?(?<_ms>[\s]+)?(?<name>.+)(?<_ts>[\s]+)?$/gm;
+			const lines = this.decklist.split('\n');
+			const regex = /(?<_ls>[\s]+)?(?<count>[\d]+)?(?<_x>[xX]+[\s]+)?(?<_ms>[\s]+)?(?<name>.+)(?<_ts>[\s]+)?$/gm;
 
-				while (lines.length > 0) {
-					const line = lines.pop();
+			while (lines.length > 0) {
+				const line = lines.pop();
 
-					regex.lastIndex = 0; // reset to look from start of each line
-					const linesRx = regex.exec(line);
+				regex.lastIndex = 0; // reset to look from start of each line
+				const linesRx = regex.exec(line);
 
-					if (linesRx) {
-						const name = linesRx.groups.name ? linesRx.groups.name.trim().toLowerCase() : null;
-						if (name) {
-							const count = linesRx.groups.count ? parseInt(linesRx.groups.count) : 1;
+				if (linesRx) {
+					const name = linesRx.groups.name ? linesRx.groups.name.trim().toLowerCase() : null;
+					if (name) {
+						const count = linesRx.groups.count ? parseInt(linesRx.groups.count) : 1;
 
-							const card = new CardReference();
-							card.count = count;
-							card.name = this._transformNameDict[name] ? this._transformNameDict[name] : name;
+						const card = new CardReference();
+						card.count = count;
+						card.name = this._transformNameDict[name] ? this._transformNameDict[name] : name;
 
-							lookupArray.push(card.name);
-							this.deck.push(card);
+						lookupArray.push(card.name);
+						this.deck.push(card);
 
-							if (lookupArray.length >= QUERY_BATCH_SIZE) {
-								this.oracle.getByNames(lookupArray).subscribe(cards => {
-									this._mixinOracleCards(cards);
-								});
+						if (lookupArray.length >= QUERY_BATCH_SIZE || lines.length === 0) {
+							const isFinalRun = lines.length === 0;
 
+							this.oracle.postNames(lookupArray).subscribe(cards => {
+								this._mixinOracleCards(cards);
+
+								if (isFinalRun) {
+									this._emitFinishedStep.emit(FinishedStep.Oracle);
+								}
+							});
+
+							if (!isFinalRun) {
 								lookupArray = [];
 								SleepHelper.sleep(QUERY_SLEEP_MS);
 							}
 						}
 					}
 				}
-
-				if (lookupArray.length > 0) {
-					this.oracle.getByNames(lookupArray).subscribe(cards => {
-						this._mixinOracleCards(cards);
-						this._emitFinishedStep.emit(FinishedStep.Oracle);
-					});
-				} else {
-					this._emitFinishedStep.emit(FinishedStep.Oracle);
-				}
 			}
 		} else {
 			this._updateProgress();
 
-			this.service.getTags()
+			this.tagService.getTags()
 				.subscribe(tags => {
 					this._tags = tags;
 
@@ -383,33 +360,27 @@ export class MainComponent implements OnInit, OnDestroy {
 
 		while (oracle_ids.length > 0) {
 			lookupArray.push(oracle_ids.pop());
-			if (lookupArray.length >= QUERY_BATCH_SIZE) {
-				this.service.getCardTagLinks(lookupArray).subscribe(links => {
+			if (lookupArray.length >= QUERY_BATCH_SIZE || oracle_ids.length === 0) {
+				const isFinalRun = oracle_ids.length === 0;
+
+				this.cardTagLinkService.postCardTagLinks(lookupArray).subscribe(links => {
 					links.forEach(link => {
 						const dCard = this.deck.find(m => m.OracleCard && m.OracleCard.oracle_id === link.oracle_id);
 						if (dCard) {
 							dCard.CardTagLinks ? dCard.CardTagLinks.push(link) : dCard.CardTagLinks = [link];
 						}
+
+						if (isFinalRun) {
+							this._emitFinishedStep.emit(FinishedStep.CardTagLinks);
+						}
 					});
 				});
 
-				lookupArray = [];
-				SleepHelper.sleep(QUERY_SLEEP_MS);
+				if (!isFinalRun) {
+					lookupArray = [];
+					SleepHelper.sleep(QUERY_SLEEP_MS);
+				}
 			}
-		}
-
-		if (lookupArray.length > 0) {
-			this.service.getCardTagLinks(lookupArray).subscribe(links => {
-				links.forEach(link => {
-					const dCard = this.deck.find(m => m.OracleCard && m.OracleCard.oracle_id === link.oracle_id);
-					if (dCard) {
-						dCard.CardTagLinks ? dCard.CardTagLinks.push(link) : dCard.CardTagLinks = [link];
-					}
-				});
-				this._emitFinishedStep.emit(FinishedStep.CardTagLinks);
-			});
-		} else {
-			this._emitFinishedStep.emit(FinishedStep.CardTagLinks);
 		}
 	}
 
@@ -456,7 +427,7 @@ export class MainComponent implements OnInit, OnDestroy {
 			this.isChartColorPie = false;
 		}
 	}
-	
+
 	private _getCMCChart() {
 		if (this.deck && this.deck.length > 0) {
 			const chart: iChartCmc = {
@@ -667,7 +638,7 @@ export class MainComponent implements OnInit, OnDestroy {
 					newLink.TagName = tag.name;
 					newLink.TagId = tag.id;
 
-					this.service.createCardTagLink(newLink).subscribe(result => {
+					this.cardTagLinkService.createCardTagLink(newLink).subscribe(result => {
 						if (result) {
 							if (result.id) {
 								newLink.id = result.id;
@@ -697,7 +668,7 @@ export class MainComponent implements OnInit, OnDestroy {
 	}
 
 	removeCardTagLink(link: CardTagLink) {
-		this.service.deleteCardTagLink(link.id).subscribe(result => {
+		this.cardTagLinkService.deleteCardTagLink(link.id).subscribe(result => {
 			if (result) {
 				if (!result.isSuccess) {
 					this.messages.send(`Could not remove link to [${link.TagName}].`, MessageLevel.Alert);

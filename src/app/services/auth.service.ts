@@ -7,7 +7,7 @@ import { catchError, concatMap, shareReplay, tap } from 'rxjs/operators';
 import { environment } from '../../environments/environment';
 import { Auth0User } from '../classes/auth0-user';
 import { Profile } from '../classes/profile';
-import { LocalApiService } from './local-api.service';
+import { ProfileApiService } from './profile-api.service';
 
 
 const DOMAIN = 'johnnysasaki.auth0.com';
@@ -47,7 +47,7 @@ export class AuthService {
 
 	constructor(
 		private router: Router,
-		private local: LocalApiService,
+		private local: ProfileApiService,
 	) {
 		// On initial load, check authentication state with authorization server
 		// Set up local auth streams if user is already authenticated
