@@ -146,7 +146,7 @@ export class MainComponent implements OnInit, OnDestroy {
 	}
 
 	private _countCards() {
-		this.cardCounts.total = this.deck.map(m => m.count).reduce((a, b) => a + b);
+		this.cardCounts.total = this.deck.map(m => m.count).reduce((a, b) => a + b, 0);
 		this.cardCounts.unique = this.deck.length;
 	}
 

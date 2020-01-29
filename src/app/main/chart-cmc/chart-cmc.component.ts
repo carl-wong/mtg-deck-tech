@@ -44,7 +44,7 @@ export class ChartCmcComponent implements OnInit {
 					const count = Number(data.datasets[tooltipItem.datasetIndex].data[tooltipItem.index]);
 					const occ = count === 1 ? 'Card' : 'Cards';
 
-					const total = (data.datasets[tooltipItem.datasetIndex].data as number[]).reduce((a, b) => a + b);
+					const total = (data.datasets[tooltipItem.datasetIndex].data as number[]).reduce((a, b) => a + b, 0);
 					const percent = total > 0 ? Math.round(count / total * 10000) / 100 : 0;
 
 					return [`${tooltipItem.xLabel} CMC`, `${count} ${occ}`, percent + '%'];

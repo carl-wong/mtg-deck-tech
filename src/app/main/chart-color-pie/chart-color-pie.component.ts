@@ -35,7 +35,7 @@ export class ChartColorPieComponent implements OnInit {
 						(seriesName === 'Lands' ? 'Land' : 'Card') :
 						(seriesName === 'Lands' ? 'Lands' : 'Cards');
 
-					const total = (data.datasets[tooltipItem.datasetIndex].data as number[]).reduce((a, b) => a + b);
+					const total = (data.datasets[tooltipItem.datasetIndex].data as number[]).reduce((a, b) => a + b, 0);
 					const percent = total > 0 ? Math.round(count / total * 10000) / 100 : 0;
 
 					return [seriesName, `${count} ${colorName} ${occ}`, percent + '%'];

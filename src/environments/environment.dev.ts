@@ -4,6 +4,6 @@ export const environment = {
   defaultDecklist: '1 Alesha, Who Smiles at Death\n1 Altar of Dementia\n1 Animate Dead',
   baseHref: '/',
   apiUrl: 'https://scry-x.com/decktech-api',
-  timestamp: 'Updated: 2020-01-21 @ 13:50:18',
+  timestamp: 'Updated: 2020-01-28 @ 19:49:52',
   version: 'DEV',
 };

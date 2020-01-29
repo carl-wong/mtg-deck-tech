@@ -148,7 +148,7 @@ export abstract class Statistics {
 
 		if (topTags.length === 0) {
 			result.labels.push('No Tags');
-			result.sets[0].data.push(deck.map(m => m.count).reduce((a, b) => a + b));
+			result.sets[0].data.push(deck.map(m => m.count).reduce((a, b) => a + b, 0));
 		}
 
 		return result;
@@ -196,7 +196,7 @@ export abstract class Statistics {
 			}
 
 			if (filtered && filtered.length > 0) {
-				result.data.push(filtered.map(m => m.count).reduce((a, b) => a + b));
+				result.data.push(filtered.map(m => m.count).reduce((a, b) => a + b, 0));
 			} else {
 				result.data.push(0);
 			}
