@@ -1,7 +1,7 @@
 import { Component, Input, OnInit, ViewChild } from '@angular/core';
+import { Statistics } from '@classes/statistics';
 import { ChartOptions, ChartType } from 'chart.js';
-import { BaseChartDirective, Color, Label, MultiDataSet } from 'ng2-charts';
-import { Statistics } from '../../classes/statistics';
+import { BaseChartDirective, MultiDataSet } from 'ng2-charts';
 
 
 export interface iChartColorPie {

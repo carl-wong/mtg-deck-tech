@@ -1,8 +1,8 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
+import { MinOracleCard } from '@classes/min-oracle-card';
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
-import { MinOracleCard } from '../classes/min-oracle-card';
 import { BaseApiService } from './base-api.service';
 
 

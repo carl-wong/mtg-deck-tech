@@ -1,7 +1,7 @@
-import { Component, OnInit, Input } from '@angular/core';
-import { CardReference } from '../../classes/card-reference';
-import { Statistics, GroupByMode, MainCardTypes } from '../../classes/statistics';
-import { create, all } from 'mathjs';
+import { Component, Input, OnInit } from '@angular/core';
+import { CardReference } from '@classes/card-reference';
+import { GroupByMode, Statistics } from '@classes/statistics';
+import { all, create } from 'mathjs';
 
 interface iHypergeometricParams {
 	mode: string;

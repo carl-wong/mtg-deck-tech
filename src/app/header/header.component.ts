@@ -1,8 +1,9 @@
-import { environment } from '../../environments/environment';
 import { Component, OnInit } from '@angular/core';
 import { MatDialog, MatDialogConfig } from '@angular/material/dialog';
+import { environment } from '@env';
+import { AuthService } from '@services/auth.service';
 import { DialogManageTagsComponent } from '../dialog-manage-tags/dialog-manage-tags.component';
-import { AuthService } from '../services/auth.service';
+
 
 @Component({
 	selector: 'app-header',

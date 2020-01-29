@@ -1,7 +1,7 @@
 import { Component, Input, OnInit, ViewChild } from '@angular/core';
-import { ChartOptions, ChartType, RadialChartOptions, ChartDataSets } from 'chart.js';
-import { BaseChartDirective, Color, Label, MultiDataSet } from 'ng2-charts';
-import { Statistics } from '../../classes/statistics';
+import { Statistics } from '@classes/statistics';
+import { ChartDataSets, ChartType, RadialChartOptions } from 'chart.js';
+import { BaseChartDirective, Color, Label } from 'ng2-charts';
 
 
 export interface iChartTags {

@@ -1,6 +1,6 @@
 import { Component, HostListener, Inject, OnInit } from '@angular/core';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material';
-import { CardReference } from '../classes/card-reference';
+import { CardReference } from '@classes/card-reference';
 
 
 @Component({

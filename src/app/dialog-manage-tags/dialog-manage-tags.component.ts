@@ -2,12 +2,12 @@ import { Component, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { MatDialogRef, MatTableDataSource } from '@angular/material';
 import { MatDialog, MatDialogConfig } from '@angular/material/dialog';
 import { MatPaginator } from '@angular/material/paginator';
+import { Tag } from '@classes/tag';
+import { MessageLevel, MessagesService } from '@services/messages.service';
+import { EventType, iTagsUpdated, NotificationService } from '@services/notification.service';
+import { TagApiService } from '@services/tag-api.service';
 import { Subscription } from 'rxjs';
-import { Tag } from '../classes/tag';
 import { DialogRenameTagComponent, iDialogRenameTag } from '../dialog-rename-tag/dialog-rename-tag.component';
-import { MessageLevel, MessagesService } from '../services/messages.service';
-import { EventType, iTagsUpdated, NotificationService } from '../services/notification.service';
-import { TagApiService } from '../services/tag-api.service';
 
 
 @Component({

@@ -1,9 +1,9 @@
 import { Component, Inject, OnInit } from '@angular/core';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material';
-import { Tag } from '../classes/tag';
-import { MessageLevel, MessagesService } from '../services/messages.service';
-import { EventType, iTagsUpdated, NotificationService } from '../services/notification.service';
-import { TagApiService } from '../services/tag-api.service';
+import { Tag } from '@classes/tag';
+import { MessageLevel, MessagesService } from '@services/messages.service';
+import { EventType, iTagsUpdated, NotificationService } from '@services/notification.service';
+import { TagApiService } from '@services/tag-api.service';
 
 
 export interface iDialogRenameTag {

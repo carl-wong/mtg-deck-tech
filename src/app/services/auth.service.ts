@@ -2,11 +2,11 @@ import { Injectable } from '@angular/core';
 import { Router } from '@angular/router';
 import createAuth0Client from '@auth0/auth0-spa-js';
 import Auth0Client from '@auth0/auth0-spa-js/dist/typings/Auth0Client';
+import { Auth0User } from '@classes/auth0-user';
+import { Profile } from '@classes/profile';
+import { environment } from '@env';
 import { BehaviorSubject, combineLatest, from, Observable, of, throwError } from 'rxjs';
 import { catchError, concatMap, shareReplay, tap } from 'rxjs/operators';
-import { environment } from '../../environments/environment';
-import { Auth0User } from '../classes/auth0-user';
-import { Profile } from '../classes/profile';
 import { ProfileApiService } from './profile-api.service';
 
 

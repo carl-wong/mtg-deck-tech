@@ -1,8 +1,8 @@
 import { Component, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { MatTableDataSource } from '@angular/material';
 import { MatPaginator } from '@angular/material/paginator';
+import { iMessage, MessageLevel, MessagesService } from '@services/messages.service';
 import { Subscription } from 'rxjs';
-import { iMessage, MessageLevel, MessagesService } from '../services/messages.service';
 
 
 @Component({

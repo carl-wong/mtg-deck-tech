@@ -2,11 +2,11 @@ import { Component, Inject, OnInit, ViewChild } from '@angular/core';
 import { FormControl } from '@angular/forms';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material';
 import { MatAutocomplete } from '@angular/material/autocomplete';
+import { Tag } from '@classes/tag';
+import { EventType, iTagsUpdated, NotificationService } from '@services/notification.service';
+import { TagApiService } from '@services/tag-api.service';
 import { Observable } from 'rxjs';
 import { map, startWith } from 'rxjs/operators';
-import { Tag } from '../classes/tag';
-import { EventType, iTagsUpdated, NotificationService } from '../services/notification.service';
-import { TagApiService } from '../services/tag-api.service';
 
 
 @Component({

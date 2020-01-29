@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
+import { Tag } from '@classes/tag';
 import { BehaviorSubject } from 'rxjs';
-import { Tag } from '../classes/tag';
 
 
 export enum EventType {
