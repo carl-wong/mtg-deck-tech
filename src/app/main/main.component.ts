@@ -281,6 +281,7 @@ export class MainComponent implements OnInit, OnDestroy {
 
 			while (lines.length > 0) {
 				const line = lines.pop();
+				const isFinal = lines.length === 0;
 
 				regex.lastIndex = 0; // reset to look from start of each line
 				const linesRx = regex.exec(line);
@@ -299,23 +300,20 @@ export class MainComponent implements OnInit, OnDestroy {
 					}
 				}
 
-				if (lookupArray.length >= QUERY_BATCH_SIZE) {
+				if (lookupArray.length >= QUERY_BATCH_SIZE || isFinal) {
 					this.oracle.postNames(lookupArray).subscribe(cards => {
 						this._mixinOracleCards(cards);
+
+						if (isFinal) {
+							this._emitFinishedStep.emit(FinishedStep.Oracle);
+						}
 					});
 
-					lookupArray = [];
-					SleepHelper.sleep(QUERY_SLEEP_MS);
+					if (!isFinal) {
+						lookupArray = [];
+						SleepHelper.sleep(QUERY_SLEEP_MS);
+					}
 				}
-			}
-
-			if (lookupArray.length > 0) {
-				this.oracle.postNames(lookupArray).subscribe(cards => {
-					this._mixinOracleCards(cards);
-					this._emitFinishedStep.emit(FinishedStep.Oracle);
-				});
-			} else {
-				this._emitFinishedStep.emit(FinishedStep.Oracle);
 			}
 		} else {
 			this._updateProgress();
@@ -361,8 +359,9 @@ export class MainComponent implements OnInit, OnDestroy {
 
 		while (oracle_ids.length > 0) {
 			lookupArray.push(oracle_ids.pop());
+			const isFinal = oracle_ids.length === 0;
 
-			if (lookupArray.length >= QUERY_BATCH_SIZE) {
+			if (lookupArray.length >= QUERY_BATCH_SIZE || isFinal) {
 				this.cardTagLinkService.postCardTagLinks(lookupArray).subscribe(links => {
 					links.forEach(link => {
 						const dCard = this.deck.find(m => m.OracleCard && m.OracleCard.oracle_id === link.oracle_id);
@@ -370,26 +369,17 @@ export class MainComponent implements OnInit, OnDestroy {
 							dCard.CardTagLinks ? dCard.CardTagLinks.push(link) : dCard.CardTagLinks = [link];
 						}
 					});
-				});
 
-				lookupArray = [];
-				SleepHelper.sleep(QUERY_SLEEP_MS);
-			}
-		}
-
-		if (lookupArray.length > 0) {
-			this.cardTagLinkService.postCardTagLinks(lookupArray).subscribe(links => {
-				links.forEach(link => {
-					const dCard = this.deck.find(m => m.OracleCard && m.OracleCard.oracle_id === link.oracle_id);
-					if (dCard) {
-						dCard.CardTagLinks ? dCard.CardTagLinks.push(link) : dCard.CardTagLinks = [link];
+					if (isFinal) {
+						this._emitFinishedStep.emit(FinishedStep.CardTagLinks);
 					}
 				});
 
-				this._emitFinishedStep.emit(FinishedStep.CardTagLinks);
-			});
-		} else {
-			this._emitFinishedStep.emit(FinishedStep.CardTagLinks);
+				if (!isFinal) {
+					lookupArray = [];
+					SleepHelper.sleep(QUERY_SLEEP_MS);
+				}
+			}
 		}
 	}
 
