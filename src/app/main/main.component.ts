@@ -384,9 +384,9 @@ export class MainComponent implements OnInit, OnDestroy {
 					if (dCard) {
 						dCard.CardTagLinks ? dCard.CardTagLinks.push(link) : dCard.CardTagLinks = [link];
 					}
-
-					this._emitFinishedStep.emit(FinishedStep.CardTagLinks);
 				});
+
+				this._emitFinishedStep.emit(FinishedStep.CardTagLinks);
 			});
 		} else {
 			this._emitFinishedStep.emit(FinishedStep.CardTagLinks);
