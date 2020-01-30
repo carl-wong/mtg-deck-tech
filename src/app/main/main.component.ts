@@ -299,22 +299,23 @@ export class MainComponent implements OnInit, OnDestroy {
 					}
 				}
 
-				if (lookupArray.length >= QUERY_BATCH_SIZE || lines.length === 0) {
-					const isFinalRun = lines.length === 0;
-
+				if (lookupArray.length >= QUERY_BATCH_SIZE) {
 					this.oracle.postNames(lookupArray).subscribe(cards => {
 						this._mixinOracleCards(cards);
-
-						if (isFinalRun) {
-							this._emitFinishedStep.emit(FinishedStep.Oracle);
-						}
 					});
 
-					if (!isFinalRun) {
-						lookupArray = [];
-						SleepHelper.sleep(QUERY_SLEEP_MS);
-					}
+					lookupArray = [];
+					SleepHelper.sleep(QUERY_SLEEP_MS);
 				}
+			}
+
+			if (lookupArray.length > 0) {
+				this.oracle.postNames(lookupArray).subscribe(cards => {
+					this._mixinOracleCards(cards);
+					this._emitFinishedStep.emit(FinishedStep.Oracle);
+				});
+			} else {
+				this._emitFinishedStep.emit(FinishedStep.Oracle);
 			}
 		} else {
 			this._updateProgress();
@@ -360,28 +361,35 @@ export class MainComponent implements OnInit, OnDestroy {
 
 		while (oracle_ids.length > 0) {
 			lookupArray.push(oracle_ids.pop());
-			
-			if (lookupArray.length >= QUERY_BATCH_SIZE || oracle_ids.length === 0) {
-				const isFinalRun = oracle_ids.length === 0;
 
+			if (lookupArray.length >= QUERY_BATCH_SIZE) {
 				this.cardTagLinkService.postCardTagLinks(lookupArray).subscribe(links => {
 					links.forEach(link => {
 						const dCard = this.deck.find(m => m.OracleCard && m.OracleCard.oracle_id === link.oracle_id);
 						if (dCard) {
 							dCard.CardTagLinks ? dCard.CardTagLinks.push(link) : dCard.CardTagLinks = [link];
 						}
-
-						if (isFinalRun) {
-							this._emitFinishedStep.emit(FinishedStep.CardTagLinks);
-						}
 					});
 				});
 
-				if (!isFinalRun) {
-					lookupArray = [];
-					SleepHelper.sleep(QUERY_SLEEP_MS);
-				}
+				lookupArray = [];
+				SleepHelper.sleep(QUERY_SLEEP_MS);
 			}
+		}
+
+		if (lookupArray.length > 0) {
+			this.cardTagLinkService.postCardTagLinks(lookupArray).subscribe(links => {
+				links.forEach(link => {
+					const dCard = this.deck.find(m => m.OracleCard && m.OracleCard.oracle_id === link.oracle_id);
+					if (dCard) {
+						dCard.CardTagLinks ? dCard.CardTagLinks.push(link) : dCard.CardTagLinks = [link];
+					}
+
+					this._emitFinishedStep.emit(FinishedStep.CardTagLinks);
+				});
+			});
+		} else {
+			this._emitFinishedStep.emit(FinishedStep.CardTagLinks);
 		}
 	}
 
@@ -467,7 +475,6 @@ export class MainComponent implements OnInit, OnDestroy {
 						type[2] += card.count;
 
 						if (mainType === MainCardTypes.Creature) {
-							// CHANGE: Shivon suggested not to list creatures under any other type to avoid confusion
 							break;
 						}
 					}
