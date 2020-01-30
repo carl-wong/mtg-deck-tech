@@ -296,23 +296,23 @@ export class MainComponent implements OnInit, OnDestroy {
 
 						lookupArray.push(card.name);
 						this.deck.push(card);
+					}
+				}
 
-						if (lookupArray.length >= QUERY_BATCH_SIZE || lines.length === 0) {
-							const isFinalRun = lines.length === 0;
+				if (lookupArray.length >= QUERY_BATCH_SIZE || lines.length === 0) {
+					const isFinalRun = lines.length === 0;
 
-							this.oracle.postNames(lookupArray).subscribe(cards => {
-								this._mixinOracleCards(cards);
+					this.oracle.postNames(lookupArray).subscribe(cards => {
+						this._mixinOracleCards(cards);
 
-								if (isFinalRun) {
-									this._emitFinishedStep.emit(FinishedStep.Oracle);
-								}
-							});
-
-							if (!isFinalRun) {
-								lookupArray = [];
-								SleepHelper.sleep(QUERY_SLEEP_MS);
-							}
+						if (isFinalRun) {
+							this._emitFinishedStep.emit(FinishedStep.Oracle);
 						}
+					});
+
+					if (!isFinalRun) {
+						lookupArray = [];
+						SleepHelper.sleep(QUERY_SLEEP_MS);
 					}
 				}
 			}
@@ -360,6 +360,7 @@ export class MainComponent implements OnInit, OnDestroy {
 
 		while (oracle_ids.length > 0) {
 			lookupArray.push(oracle_ids.pop());
+			
 			if (lookupArray.length >= QUERY_BATCH_SIZE || oracle_ids.length === 0) {
 				const isFinalRun = oracle_ids.length === 0;
 
