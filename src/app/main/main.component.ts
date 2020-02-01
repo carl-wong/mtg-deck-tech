@@ -143,6 +143,7 @@ export class MainComponent implements OnInit, OnDestroy {
 				const index = this.deck.findIndex(m => m.name === name);
 				if (index !== -1) {
 					this.deck.splice(index, 1);
+					this.messages.send(`Could not find "${name}", removed from deck.`, MessageLevel.Info);
 				}
 			});
 	}
