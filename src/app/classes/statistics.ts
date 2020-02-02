@@ -155,10 +155,15 @@ export abstract class Statistics {
 	}
 
 	static cmcToString(cmc: number) {
-		if (cmc >= this.MAX_CMC_BUCKET) {
-			return `${this.MAX_CMC_BUCKET}+ CMC`;
+		if (typeof cmc === 'number') {
+			if (cmc >= this.MAX_CMC_BUCKET) {
+				return `${this.MAX_CMC_BUCKET}+ CMC`;
+			} else {
+				return `${cmc} CMC`;
+			}
 		} else {
-			return `${cmc} CMC`;
+			// catch null or undefined cases
+			return '0 CMC';
 		}
 	}
 
