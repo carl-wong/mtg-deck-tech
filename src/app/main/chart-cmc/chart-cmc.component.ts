@@ -20,6 +20,7 @@ export class ChartCmcComponent implements OnInit {
 	@ViewChild(BaseChartDirective, { static: true }) baseChart: BaseChartDirective;
 
 	options: ChartOptions = {
+		maintainAspectRatio: false,
 		responsive: true,
 		scales: {
 			yAxes: [{

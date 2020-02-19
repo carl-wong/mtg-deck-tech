@@ -20,6 +20,7 @@ export class ChartTagsComponent implements OnInit {
 	@ViewChild(BaseChartDirective, { static: true }) baseChart: BaseChartDirective;
 
 	options: RadialChartOptions = {
+		maintainAspectRatio: false,
 		responsive: true,
 		scale: {
 			ticks: {

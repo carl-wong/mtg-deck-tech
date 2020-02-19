@@ -19,6 +19,7 @@ export class ChartColorPieComponent implements OnInit {
 	@ViewChild(BaseChartDirective, { static: true }) baseChart: BaseChartDirective;
 
 	options: ChartOptions = {
+		maintainAspectRatio: false,
 		responsive: true,
 		tooltips: {
 			custom(tooltip: Chart.ChartTooltipModel) {
