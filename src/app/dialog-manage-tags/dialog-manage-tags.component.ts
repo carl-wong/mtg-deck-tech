@@ -22,7 +22,7 @@ export class DialogManageTagsComponent implements OnInit, OnDestroy {
 	displayColumns = ['name', 'count', 'actions'];
 	dataSource: MatTableDataSource<Tag>;
 
-	@ViewChild(MatPaginator, { static: false }) paginator: MatPaginator;
+	@ViewChild(MatPaginator) paginator: MatPaginator;
 
 	constructor(
 		private service: TagApiService,

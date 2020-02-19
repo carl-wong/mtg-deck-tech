@@ -17,7 +17,7 @@ export class MessagesComponent implements OnInit, OnDestroy {
 	private _addedMessage: Subscription;
 	private _messages: iMessage[] = [];
 
-	@ViewChild(MatPaginator, { static: false }) paginator: MatPaginator;
+	@ViewChild(MatPaginator) paginator: MatPaginator;
 
 	constructor(
 		private service: MessagesService,

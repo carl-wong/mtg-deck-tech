@@ -22,7 +22,7 @@ export class DialogAddTagComponent implements OnInit {
 
 	private tagName = '';
 
-	@ViewChild(MatAutocomplete, { static: false }) autoComplete: MatAutocomplete;
+	@ViewChild(MatAutocomplete) autoComplete: MatAutocomplete;
 
 	constructor(
 		private service: TagApiService,

@@ -45,7 +45,7 @@ enum FinishedStep {
 	styleUrls: ['./main.component.less']
 })
 export class MainComponent implements OnInit, OnDestroy {
-	@ViewChild('statsCalculator', { static: false }) statsCalculator: StatsCalculatorComponent;
+	@ViewChild('statsCalculator') statsCalculator: StatsCalculatorComponent;
 
 	groupByModes = Statistics.GROUP_MODES;
 	@Input() groupByMode: string = this.groupByModes[0].toString();
