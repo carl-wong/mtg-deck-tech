@@ -3,7 +3,7 @@ import { Injectable } from '@angular/core';
 import { ApiResult, PostResult } from '@classes/api-result';
 import { Tag } from '@classes/tag';
 import { Observable } from 'rxjs';
-import { catchError, map } from 'rxjs/operators';
+import { catchError } from 'rxjs/operators';
 import { BaseApiService } from './base-api.service';
 
 
@@ -18,13 +18,7 @@ export class TagApiService extends BaseApiService {
 	}
 
 	public getTags(): Observable<Tag[]> {
-		return this.http.get(this._api + '/Profiles/' + this.getSessionProfileId() + '/Tags')
-			.pipe(
-				map(res => {
-					res['payload'] = res;
-					return res['payload'];
-				})
-			);
+		return this.http.get<Tag[]>(this._api + '/Profiles/' + this.getSessionProfileId() + '/Tags');
 	}
 
 	public createTag(model: Tag): Observable<PostResult> {

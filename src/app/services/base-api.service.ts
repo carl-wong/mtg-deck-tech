@@ -19,7 +19,7 @@ export abstract class BaseApiService {
 	constructor() { }
 
 	protected getSessionProfileId(): string {
-		return sessionStorage.getItem('ProfileId');
+		return sessionStorage.getItem('ProfileId') || '-1';
 	}
 
 	/**

@@ -1,31 +1,42 @@
 {
-  "compileOnSave": false,
-  "compilerOptions": {
-    "baseUrl": "src",
-    "paths": {
-      "@classes/*": ["app/classes/*"],
-      "@env": ["environments/environment"],
-      "@services/*": ["app/services/*"],
+    "angularCompilerOptions": {
+        "fullTemplateTypeCheck": true,
+        "strictInjectionParameters": true
     },
-    "outDir": "./dist/out-tsc",
-    "sourceMap": true,
-    "declaration": false,
-    "downlevelIteration": true,
-    "experimentalDecorators": true,
-    "module": "esnext",
-    "moduleResolution": "node",
-    "importHelpers": true,
-    "target": "es2015",
-    "typeRoots": [
-      "node_modules/@types"
-    ],
-    "lib": [
-      "es2018",
-      "dom"
-    ]
-  },
-  "angularCompilerOptions": {
-    "fullTemplateTypeCheck": true,
-    "strictInjectionParameters": true
-  }
+    "compileOnSave": false,
+    "compilerOptions": {
+        "baseUrl": "src",
+        "declaration": false,
+        "downlevelIteration": true,
+        "experimentalDecorators": true,
+        "importHelpers": true,
+        "lib": [
+            "es2018",
+            "dom"
+        ],
+        "module": "esnext",
+        "moduleResolution": "node",
+        "noFallthroughCasesInSwitch": true,
+        "noImplicitAny": true,
+        "noImplicitReturns": true,
+        "noImplicitThis": true,
+        "outDir": "./dist/out-tsc",
+        "paths": {
+            "@classes/*": [
+                "app/classes/*"
+            ],
+            "@env": [
+                "environments/environment"
+            ],
+            "@services/*": [
+                "app/services/*"
+            ]
+        },
+        "sourceMap": true,
+        "strictNullChecks": true,
+        "target": "es2015",
+        "typeRoots": [
+            "node_modules/@types"
+        ]
+    }
 }

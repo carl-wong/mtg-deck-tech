@@ -39,11 +39,20 @@ export class ChartTagsComponent implements OnInit {
 					return '';
 				},
 				label(tooltipItem, data) {
-					const tag = data.labels[tooltipItem.index] as string;
-					const count = data.datasets[tooltipItem.datasetIndex].data[tooltipItem.index] as number;
-					const occ = count === 1 ? 'Card Tagged' : 'Cards Tagged';
+					if (data.labels && data.datasets) {
+						const tag = data.labels[tooltipItem.index || 0] as string;
 
-					return [tag, `${count} ${occ}`];
+						const dataSet = data.datasets[tooltipItem.datasetIndex || 0];
+
+						if (dataSet.data) {
+							const count = dataSet.data[tooltipItem.index || 0] as number;
+							const occ = count === 1 ? 'Card Tagged' : 'Cards Tagged';
+
+							return [tag, `${count} ${occ}`];
+						}
+					}
+
+					return 'NO LABEL';
 				}
 			}
 		}

@@ -68,7 +68,7 @@ export class DialogAddTagComponent implements OnInit {
 					tag.name = this.tagName;
 
 					this.service.createTag(tag).subscribe(result => {
-						if (result) {
+						if (tag && result) {
 							if (result.id) {
 								tag.id = result.id;
 								tag.ProfileId = this.notify.getProfileId();
