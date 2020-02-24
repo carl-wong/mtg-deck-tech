@@ -50,7 +50,9 @@ export class AuthService {
 		private profileService: ProfileApiService,
 	) {
 		this.userProfile$.subscribe(user => {
-			this._setupProfileId(user.sub);
+			if (user) {
+				this._setupProfileId(user.sub);
+			}
 		});
 
 		// On initial load, check authentication state with authorization server
