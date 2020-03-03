@@ -1,4 +1,5 @@
 import { Component, Input, OnInit } from '@angular/core';
+import { MatSelectChange } from '@angular/material/select';
 import { CardReference } from '@classes/card-reference';
 import { GroupByMode, Statistics } from '@classes/statistics';
 import { all, create } from 'mathjs';
@@ -13,6 +14,8 @@ interface iHypergeometricParams {
 }
 
 interface iHypergeometricOutputs {
+	[key: string]: any;
+
 	X_eq_x: number;
 	X_lt_x: number;
 	X_lte_x: number;
@@ -45,8 +48,8 @@ export class StatsCalculatorComponent implements OnInit {
 	@Input() model: CardReference[];
 
 	@Input() params: iHypergeometricParams = {
-		mode: null,
-		modeValue: null,
+		mode: '',
+		modeValue: '',
 		populationSize: 0,
 		populationSuccesses: 0,
 		sampleSize: 7,
@@ -156,7 +159,7 @@ export class StatsCalculatorComponent implements OnInit {
 	}
 
 	private _selectMode(mode: string) {
-		function sort(a, b) {
+		function sort(a: string, b: string) {
 			if (a > b) {
 				return 1;
 			} else if (b > a) {
@@ -171,7 +174,7 @@ export class StatsCalculatorComponent implements OnInit {
 		this._selectModeValue(this.modeValueOptions[0]);
 	}
 
-	onSelectMode($event) {
+	onSelectMode($event: MatSelectChange) {
 		this._selectMode($event.value);
 		this._enforceLimits();
 	}
@@ -189,12 +192,12 @@ export class StatsCalculatorComponent implements OnInit {
 		this.limits.sampleSuccesses.max = Math.min(this.params.sampleSize, this.params.populationSuccesses);
 	}
 
-	onSelectModeValue($event) {
+	onSelectModeValue($event: MatSelectChange) {
 		this._selectModeValue($event.value);
 		this._enforceLimits();
 	}
 
-	onChangeSampleSize($event) {
+	onChangeSampleSize($event: MatSelectChange) {
 		this._selectModeValue(this.params.modeValue);
 		this._enforceLimits();
 	}
@@ -214,20 +217,22 @@ export class StatsCalculatorComponent implements OnInit {
 		};
 
 		for (let iX = 0; iX <= _n && iX <= _k; iX++) {
-			const prob = (this._math.combinations(_k, iX) as number) *
-				(this._math.combinations(_N - _k, _n - iX) as number) /
-				(this._math.combinations(_N, _n) as number);
+			if (this._math.combinations) {
+				const prob = (this._math.combinations(_k, iX) as number) *
+					(this._math.combinations(_N - _k, _n - iX) as number) /
+					(this._math.combinations(_N, _n) as number);
 
-			if (iX < _x) {
-				results.X_lt_x += prob;
-				results.X_lte_x += prob;
-			} else if (iX === _x) {
-				results.X_lte_x += prob;
-				results.X_eq_x = prob;
-				results.X_gte_x += prob;
-			} else if (iX > _x) {
-				results.X_gte_x += prob;
-				results.X_gt_x += prob;
+				if (iX < _x) {
+					results.X_lt_x += prob;
+					results.X_lte_x += prob;
+				} else if (iX === _x) {
+					results.X_lte_x += prob;
+					results.X_eq_x = prob;
+					results.X_gte_x += prob;
+				} else if (iX > _x) {
+					results.X_gte_x += prob;
+					results.X_gt_x += prob;
+				}
 			}
 		}
 

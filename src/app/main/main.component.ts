@@ -1,6 +1,7 @@
 import { HttpClient } from '@angular/common/http';
 import { Component, EventEmitter, Input, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { MatDialog, MatDialogConfig } from '@angular/material/dialog';
+import { MatSelect, MatSelectChange } from '@angular/material/select';
 import { CardReference } from '@classes/card-reference';
 import { CardTagLink } from '@classes/card-tag-link';
 import { MinOracleCard } from '@classes/min-oracle-card';
@@ -10,7 +11,7 @@ import { Tag } from '@classes/tag';
 import { environment } from '@env';
 import { CardTagLinkApiService } from '@services/card-tag-link-api.service';
 import { MessageLevel, MessagesService } from '@services/messages.service';
-import { EventType, NotificationService } from '@services/notification.service';
+import { EventType, iTagsUpdated, NotificationService } from '@services/notification.service';
 import { OracleApiService } from '@services/oracle-api.service';
 import { TagApiService } from '@services/tag-api.service';
 import { ChartDataSets } from 'chart.js';
@@ -39,13 +40,19 @@ enum FinishedStep {
 	PostProcessing = 'Post Processing',
 }
 
+interface CardGrouping {
+	key: string,
+	cards: CardReference[],
+	count: number
+}
+
 @Component({
 	selector: 'app-main',
 	templateUrl: './main.component.html',
 	styleUrls: ['./main.component.less']
 })
 export class MainComponent implements OnInit, OnDestroy {
-	@ViewChild('statsCalculator', { static: false }) statsCalculator: StatsCalculatorComponent;
+	@ViewChild('statsCalculator') statsCalculator: StatsCalculatorComponent;
 
 	groupByModes = Statistics.GROUP_MODES;
 	@Input() groupByMode: string = this.groupByModes[0].toString();
@@ -70,7 +77,7 @@ export class MainComponent implements OnInit, OnDestroy {
 		missing: 0,
 	};
 
-	cardsGrouped: [string, CardReference[], number][] = [];
+	cardsGrouped: CardGrouping[] = [];
 
 	private _tagsUpdatedSub: Subscription;
 
@@ -143,6 +150,7 @@ export class MainComponent implements OnInit, OnDestroy {
 				const index = this.deck.findIndex(m => m.name === name);
 				if (index !== -1) {
 					this.deck.splice(index, 1);
+					this.messages.send(`Could not find "${name}", removed from deck.`, MessageLevel.Info);
 				}
 			});
 	}
@@ -160,76 +168,87 @@ export class MainComponent implements OnInit, OnDestroy {
 	}
 
 	private _subscribeToTagUpdateEvents() {
-		this._tagsUpdatedSub = this.notify.isTagsUpdated$.subscribe(event => {
+		this._tagsUpdatedSub = this.notify.isTagsUpdated$.subscribe((event: iTagsUpdated) => {
 			switch (event.type) {
 				case EventType.Insert: {
 					// update list of tags
-					let tagIndex = 0;
-					while (tagIndex < this._tags.length) {
-						if (event.Tag.name > this._tags[tagIndex].name) {
-							tagIndex++;
-						} else {
-							break;
+					if (event.Tag) {
+						let tagIndex = 0;
+						while (tagIndex < this._tags.length) {
+							if (event.Tag.name > this._tags[tagIndex].name) {
+								tagIndex++;
+							} else {
+								break;
+							}
 						}
+
+						this._tags.splice(tagIndex, 0, event.Tag);
 					}
-
-					this._tags.splice(tagIndex, 0, event.Tag);
-
 					break;
 				}
 
 				case EventType.Update: {
 					// update list of tags
-					const tag = this._tags.find(m => m.id === event.Tag.id);
-					if (tag) {
-						tag.name = event.Tag.name;
-					}
+					if (event.Tag) {
+						const tagId = event.Tag.id;
+						const tag = this._tags.find(m => m.id === tagId);
+						if (tag) {
+							tag.name = event.Tag.name;
+						}
 
-					// update tags attached to cards in deck
-					this.deck.filter(m => m.CardTagLinks && m.CardTagLinks.length > 0)
-						.forEach(card => {
-							const link = card.CardTagLinks.find(m => m.TagId === event.Tag.id);
-							if (link) {
-								link.TagName = event.Tag.name;
-							}
-						});
+						// update tags attached to cards in deck
+						const tagName = event.Tag.name;
+						this.deck.filter(m => m.CardTagLinks && m.CardTagLinks.length > 0)
+							.forEach(card => {
+								const link = card.CardTagLinks.find(m => m.TagId === tagId);
+								if (link) {
+									link.TagName = tagName;
+								}
+							});
+					}
 					break;
 				}
 
 				case EventType.Delete: {
 					// update list of tags
-					const tagIndex = this._tags.findIndex(m => m.id === event.Tag.id);
-					if (tagIndex !== -1) {
-						this._tags.splice(tagIndex, 1);
-					}
+					if (event.Tag) {
+						const tagId = event.Tag.id;
+						const tagIndex = this._tags.findIndex(m => m.id === tagId);
+						if (tagIndex !== -1) {
+							this._tags.splice(tagIndex, 1);
+						}
 
-					// update tags attached to cards in deck
-					this.deck.filter(m => m.CardTagLinks && m.CardTagLinks.length > 0)
-						.forEach(card => {
-							const linkIndex = card.CardTagLinks.findIndex(m => m.TagId === event.Tag.id);
-							if (linkIndex !== -1) {
-								card.CardTagLinks.splice(linkIndex, 1);
-							}
-						});
+						// update tags attached to cards in deck
+						this.deck.filter(m => m.CardTagLinks && m.CardTagLinks.length > 0)
+							.forEach(card => {
+								const linkIndex = card.CardTagLinks.findIndex(m => m.TagId === tagId);
+								if (linkIndex !== -1) {
+									card.CardTagLinks.splice(linkIndex, 1);
+								}
+							});
+					}
 					break;
 				}
 
 				case EventType.Merge: {
 					// update list of tags
-					const fromIndex = this._tags.findIndex(m => m.id === event.fromId);
-					if (fromIndex !== -1) {
-						this._tags.splice(fromIndex, 1);
-					}
+					if (event.Tag) {
+						const fromIndex = this._tags.findIndex(m => m.id === event.fromId);
+						if (fromIndex !== -1) {
+							this._tags.splice(fromIndex, 1);
+						}
 
-					// update tags attached to cards in deck
-					this.deck.filter(m => m.CardTagLinks)
-						.forEach(card => {
-							const link = card.CardTagLinks.find(m => m.TagId === event.fromId);
-							if (link) {
-								link.TagName = event.Tag.name;
-								link.TagId = event.toId;
-							}
-						});
+						// update tags attached to cards in deck
+						const tagName = event.Tag.name;
+						this.deck.filter(m => m.CardTagLinks)
+							.forEach(card => {
+								const link = card.CardTagLinks.find(m => m.TagId === event.fromId);
+								if (link) {
+									link.TagName = tagName;
+									link.TagId = event.toId;
+								}
+							});
+					}
 					break;
 				}
 
@@ -283,20 +302,22 @@ export class MainComponent implements OnInit, OnDestroy {
 				const line = lines.pop();
 				const isFinal = lines.length === 0;
 
-				regex.lastIndex = 0; // reset to look from start of each line
-				const linesRx = regex.exec(line);
+				if (line) {
+					regex.lastIndex = 0; // reset to look from start of each line
+					const linesRx = regex.exec(line);
 
-				if (linesRx) {
-					const name = linesRx.groups.name ? linesRx.groups.name.trim().toLowerCase() : null;
-					if (name) {
-						const count = linesRx.groups.count ? parseInt(linesRx.groups.count) : 1;
+					if (linesRx && linesRx.groups) {
+						const name = linesRx.groups.name ? linesRx.groups.name.trim().toLowerCase() : null;
+						if (name) {
+							const count = linesRx.groups.count ? parseInt(linesRx.groups.count) : 1;
 
-						const card = new CardReference();
-						card.count = count;
-						card.name = this._transformNameDict[name] ? this._transformNameDict[name] : name;
+							const card = new CardReference();
+							card.count = count;
+							card.name = this._transformNameDict[name] ? this._transformNameDict[name] : name;
 
-						lookupArray.push(card.name);
-						this.deck.push(card);
+							lookupArray.push(card.name);
+							this.deck.push(card);
+						}
 					}
 				}
 
@@ -354,12 +375,16 @@ export class MainComponent implements OnInit, OnDestroy {
 	}
 
 	private _mixinTagLinks() {
-		let lookupArray = [];
+		let lookupArray: string[] = [];
 		const oracle_ids = this.deck.filter(m => m.OracleCard).map(a => a.OracleCard.oracle_id);
 
 		while (oracle_ids.length > 0) {
-			lookupArray.push(oracle_ids.pop());
+			const oracle_id = oracle_ids.pop();
 			const isFinal = oracle_ids.length === 0;
+
+			if (oracle_id) {
+				lookupArray.push(oracle_id);
+			}
 
 			if (lookupArray.length >= QUERY_BATCH_SIZE || isFinal) {
 				this.cardTagLinkService.postCardTagLinks(lookupArray).subscribe(links => {
@@ -447,10 +472,10 @@ export class MainComponent implements OnInit, OnDestroy {
 	}
 
 	private _groupByTypes() {
-		const result: [string, CardReference[], number][] = [];
+		const result: CardGrouping[] = [];
 
 		Statistics.MAIN_TYPES.forEach(mainType => {
-			result.push([mainType, [], 0]);
+			result.push({ key: mainType, cards: [], count: 0 });
 		});
 
 		this.deck.forEach(card => {
@@ -459,10 +484,12 @@ export class MainComponent implements OnInit, OnDestroy {
 					const mainType = Statistics.MAIN_TYPES[iType];
 
 					if (card.OracleCard.type_line.indexOf(mainType.toString()) !== -1) {
-						const type: [string, CardReference[], number] = result.find(m => m[0] === mainType);
+						const grouping = result.find(m => m.key === mainType);
 
-						type[1].push(card);
-						type[2] += card.count;
+						if (grouping) {
+							grouping.cards.push(card);
+							grouping.count += card.count;
+						}
 
 						if (mainType === MainCardTypes.Creature) {
 							break;
@@ -474,13 +501,13 @@ export class MainComponent implements OnInit, OnDestroy {
 
 		result.map(a => this._sortGroupContents(a));
 
-		this.cardsGrouped = result.filter(m => m[2] > 0);
+		this.cardsGrouped = result.filter(m => m.count > 0);
 		this.accordionStep = 'groups';
 	}
 
-	private _sortGroupContents(group: [string, CardReference[], number]) {
-		group[1] = group[1].sort(this._sortCardsByName);
-		group[1].forEach(card => {
+	private _sortGroupContents(group: CardGrouping) {
+		group.cards = group.cards.sort(this._sortCardsByName);
+		group.cards.forEach(card => {
 			if (card.CardTagLinks) {
 				card.CardTagLinks = card.CardTagLinks.sort(this._sortCardTagLinksByName);
 			}
@@ -488,52 +515,51 @@ export class MainComponent implements OnInit, OnDestroy {
 	}
 
 	private _groupByTags() {
-		const untagged: [string, CardReference[], number] = [UNTAGGED_PLACEHOLDER, [], 0];
-		let result: [string, CardReference[], number][] = [];
+		const untagged: CardGrouping = { key: UNTAGGED_PLACEHOLDER, cards: [], count: 0 };
+		let result: CardGrouping[] = [];
 
 		this.deck.forEach(card => {
 			if (card.CardTagLinks && card.CardTagLinks.length > 0) {
 				card.CardTagLinks.forEach(link => {
 					if (link && link.TagName) {
-						let type: [string, CardReference[], number] = result.find(m => m[0] === link.TagName);
+						let grouping = result.find(m => m.key === link.TagName);
 
-						if (!type) {
-							type = [link.TagName, [], 0];
-							result.push(type);
+						if (!grouping) {
+							grouping = { key: link.TagName, cards: [], count: 0 };
+							result.push(grouping);
 						}
 
-						type[1].push(card);
-						type[2] += card.count;
+						grouping.cards.push(card);
+						grouping.count += card.count;
 					}
 				});
 			} else {
-				untagged[1].push(card);
-				untagged[2] += card.count;
-
+				untagged.cards.push(card);
+				untagged.count += card.count;
 			}
 		});
 
 		result.map(a => this._sortGroupContents(a));
-		result = result.sort(this._sortTupleByGroup);
+		result = result.sort(this._sortCardGroupingsByKey);
 
 		// ensure untagged cards show up at the bottom
-		if (untagged[2] > 0) {
-			untagged[1] = untagged[1].sort(this._sortCardsByName);
+		if (untagged.count > 0) {
+			untagged.cards = untagged.cards.sort(this._sortCardsByName);
 			result.push(untagged);
 		}
 
-		this.cardsGrouped = result;
+		this.cardsGrouped = result.filter(m => m.count > 0);
 		this.accordionStep = 'groups';
 	}
 
 	private _groupByCMC() {
-		const result: [string, CardReference[], number][] = [];
+		const result: CardGrouping[] = [];
 
 		for (let i = 0; i < 8; i++) {
-			result.push([Statistics.cmcToString(i), [], 0]);
+			result.push({ key: Statistics.cmcToString(i), cards: [], count: 0 });
 		}
 
-		const landsGroup: [string, CardReference[], number] = ['Lands', [], 0];
+		const landsGroup: CardGrouping = { key: 'Lands', cards: [], count: 0 };
 		result.push(landsGroup);
 
 		this.deck.forEach(card => {
@@ -543,13 +569,16 @@ export class MainComponent implements OnInit, OnDestroy {
 					oracle.layout !== 'transform' &&
 					oracle.type_line &&
 					oracle.type_line.includes('Land')) {
-					landsGroup[1].push(card);
-					landsGroup[2] += card.count;
+					landsGroup.cards.push(card);
+					landsGroup.count += card.count;
 				} else {
 					const cmcString = Statistics.cmcToString(oracle.cmc);
-					const group: [string, CardReference[], number] = result.find(m => m[0] === cmcString);
-					group[1].push(card);
-					group[2] += card.count;
+					const group = result.find(m => m.key === cmcString);
+
+					if (group) {
+						group.cards.push(card);
+						group.count += card.count;
+					}
 				}
 			} else {
 				this.messages.send('Could not find Oracle entry for ' + card.name);
@@ -558,12 +587,12 @@ export class MainComponent implements OnInit, OnDestroy {
 
 		result.map(a => this._sortGroupContents(a));
 
-		this.cardsGrouped = result.filter(m => m[2] > 0);
+		this.cardsGrouped = result.filter(m => m.count > 0);
 		this.accordionStep = 'groups';
 	}
 
-	private _sortTupleByGroup(a, b): number {
-		return (a[0] > b[0]) ? 1 : ((b[0] > a[0]) ? -1 : 0);
+	private _sortCardGroupingsByKey(a: CardGrouping, b: CardGrouping): number {
+		return (a.key > b.key) ? 1 : ((b.key > a.key) ? -1 : 0);
 	}
 
 	private _sortCardsByName(a: CardReference, b: CardReference): number {
@@ -601,7 +630,7 @@ export class MainComponent implements OnInit, OnDestroy {
 		}
 	}
 
-	selectedMode($event) {
+	selectedMode($event: MatSelectChange) {
 		this._performGroupByMode($event.value);
 	}
 

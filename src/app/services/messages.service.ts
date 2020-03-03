@@ -24,8 +24,8 @@ export interface iMessage {
 export class MessagesService {
 	private _addedMessage = new BehaviorSubject<iMessage>({
 		level: MessageLevel.Init,
-		text: null,
-		timestamp: null
+		text: '',
+		timestamp: ''
 	});
 
 	addedMessage$ = this._addedMessage.asObservable();

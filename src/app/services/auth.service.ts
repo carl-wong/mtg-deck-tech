@@ -43,12 +43,18 @@ export class AuthService {
 	private userProfileSubject$ = new BehaviorSubject<any>(null);
 	userProfile$ = this.userProfileSubject$.asObservable();
 	// Create a local property for login status
-	loggedIn: boolean = null;
+	loggedIn: boolean | null = null;
 
 	constructor(
 		private router: Router,
-		private local: ProfileApiService,
+		private profileService: ProfileApiService,
 	) {
+		this.userProfile$.subscribe(user => {
+			if (user) {
+				this._setupProfileId(user.sub);
+			}
+		});
+
 		// On initial load, check authentication state with authorization server
 		// Set up local auth streams if user is already authenticated
 		this.localAuthSetup();
@@ -56,8 +62,8 @@ export class AuthService {
 		this.handleAuthCallback();
 	}
 
-	private _setupProfileId(auth0Id: string, isLastAttempt: boolean = false) {
-		this.local.getProfilesByAuth0(auth0Id)
+	private _setupProfileId(auth0Id: string, isLastAttempt?: boolean) {
+		this.profileService.getProfilesByAuth0(auth0Id)
 			.subscribe(users => {
 				if (users && users.length > 0) {
 					sessionStorage.setItem('ProfileId', users[0].id.toString());
@@ -68,7 +74,7 @@ export class AuthService {
 					model.auth0Id = auth0Id;
 
 					// create the new profile
-					this.local.createProfile(model)
+					this.profileService.createProfile(model)
 						.subscribe(() => {
 							this._setupProfileId(auth0Id, true);
 						});
@@ -78,14 +84,11 @@ export class AuthService {
 
 	// When calling, options can be passed if desired
 	// https://auth0.github.io/auth0-spa-js/classes/auth0client.html#getuser
-	getUser$(options?): Observable<any> {
+	getUser$(options?: any): Observable<any> {
 		return this.auth0Client$.pipe(
 			concatMap((client: Auth0Client) => from(client.getUser(options))),
 			tap(user => {
-				const auth0User: Auth0User = Object.assign(new Auth0User(), user);
-				sessionStorage.setItem('auth0', auth0User.sub);
-				this._setupProfileId(auth0User.sub);
-
+				sessionStorage.setItem('auth0', user.sub);
 				this.userProfileSubject$.next(user);
 			})
 		);

@@ -9,6 +9,12 @@
                     "builder": "@angular-devkit/build-angular:browser",
                     "configurations": {
                         "dev": {
+              "budgets": [
+                {
+                  "type": "anyComponentStyle",
+                  "maximumWarning": "6kb"
+                }
+              ],
                             "fileReplacements": [
                                 {
                                     "replace": "src/environments/environment.ts",
@@ -17,7 +23,6 @@
                             ]
                         },
                         "production": {
-                            "aot": true,
                             "budgets": [
                                 {
                                     "maximumError": "5mb",
@@ -47,7 +52,7 @@
                         }
                     },
                     "options": {
-                        "aot": false,
+                        "aot": true,
                         "assets": [
                             "src/favicon.ico",
                             "src/assets"

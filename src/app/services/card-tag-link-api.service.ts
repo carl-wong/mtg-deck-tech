@@ -3,7 +3,7 @@ import { Injectable } from '@angular/core';
 import { ApiResult, PostResult } from '@classes/api-result';
 import { CardTagLink } from '@classes/card-tag-link';
 import { Observable } from 'rxjs';
-import { catchError, map } from 'rxjs/operators';
+import { catchError } from 'rxjs/operators';
 import { BaseApiService } from './base-api.service';
 
 
@@ -24,34 +24,16 @@ export class CardTagLinkApiService extends BaseApiService {
 		queries.push('TagId=' + tagId.toString());
 
 		const suffix = queries.length > 0 ? '?' + queries.join('&') : '';
-		return this.http.get(this._api + '/Profiles/' + this.getSessionProfileId() + '/CardTagLinks' + suffix)
-			.pipe(
-				map(res => {
-					res['payload'] = res;
-					return res['payload'];
-				})
-			);
+		return this.http.get<CardTagLink[]>(this._api + '/Profiles/' + this.getSessionProfileId() + '/CardTagLinks' + suffix);
 	}
 
 	public getCardTagLinksByTagId(tagId: number): Observable<CardTagLink[]> {
 		const suffix = '?TagId=' + tagId;
-		return this.http.get(this._api + '/Profiles/' + this.getSessionProfileId() + '/CardTagLinks' + suffix)
-			.pipe(
-				map(res => {
-					res['payload'] = res;
-					return res['payload'];
-				})
-			);
+		return this.http.get<CardTagLink[]>(this._api + '/Profiles/' + this.getSessionProfileId() + '/CardTagLinks' + suffix);
 	}
 
 	public postCardTagLinks(oracle_ids: string[]): Observable<CardTagLink[]> {
-		return this.http.post<CardTagLink[]>(this._api + '/Profiles/' + this.getSessionProfileId() + '/CardTagLinks', { oracle_ids: oracle_ids }, this.httpOptions)
-			.pipe(
-				map(res => {
-					res['payload'] = res;
-					return res['payload'];
-				})
-			);
+		return this.http.post<CardTagLink[]>(this._api + '/Profiles/' + this.getSessionProfileId() + '/CardTagLinks', { oracle_ids: oracle_ids }, this.httpOptions);
 	}
 
 	public createCardTagLink(model: CardTagLink): Observable<PostResult> {

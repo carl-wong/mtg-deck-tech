@@ -1,5 +1,5 @@
 import { Component, OnDestroy, OnInit, ViewChild } from '@angular/core';
-import { MatTableDataSource } from '@angular/material';
+import { MatTableDataSource } from '@angular/material/table';
 import { MatPaginator } from '@angular/material/paginator';
 import { iMessage, MessageLevel, MessagesService } from '@services/messages.service';
 import { Subscription } from 'rxjs';
@@ -17,7 +17,7 @@ export class MessagesComponent implements OnInit, OnDestroy {
 	private _addedMessage: Subscription;
 	private _messages: iMessage[] = [];
 
-	@ViewChild(MatPaginator, { static: false }) paginator: MatPaginator;
+	@ViewChild(MatPaginator) paginator: MatPaginator;
 
 	constructor(
 		private service: MessagesService,
@@ -25,7 +25,7 @@ export class MessagesComponent implements OnInit, OnDestroy {
 	}
 
 	ngOnInit() {
-		this._addedMessage = this.service.addedMessage$.subscribe(message => {
+		this._addedMessage = this.service.addedMessage$.subscribe((message: iMessage) => {
 			if (message.level !== MessageLevel.Init) {
 				this._messages.push(message);
 				this._refreshTable();

@@ -93,16 +93,15 @@ export abstract class Statistics {
 	];
 
 	static hexToRgbA(hex: string, alpha: number) {
-		let c;
-		if (/^#([A-Fa-f0-9]{3}){1,2}$/.test(hex)) {
-			c = hex.substring(1).split('');
-			if (c.length === 3) {
-				c = [c[0], c[0], c[1], c[1], c[2], c[2]];
-			}
-			c = '0x' + c.join('');
-			return 'rgba(' + [(c >> 16) & 255, (c >> 8) & 255, c & 255].join(',') + `, ${alpha})`;
+		var r = parseInt(hex.slice(1, 3), 16),
+			g = parseInt(hex.slice(3, 5), 16),
+			b = parseInt(hex.slice(5, 7), 16);
+
+		if (alpha) {
+			return "rgba(" + r + ", " + g + ", " + b + ", " + alpha + ")";
+		} else {
+			return "rgb(" + r + ", " + g + ", " + b + ")";
 		}
-		throw new Error('Bad Hex');
 	}
 
 	static getChartTagsRadar(deck: CardReference[]): { sets: ChartDataSets[], labels: Label[] } {
@@ -140,25 +139,35 @@ export abstract class Statistics {
 		});
 
 		const result: { sets: ChartDataSets[], labels: Label[] } = { sets: [{ data: [], label: 'Tags' }], labels: [] };
-
 		topTags.forEach((item: [string, number]) => {
 			result.labels.push(item[0]);
-			result.sets[0].data.push(item[1]);
+
+			if (result.sets[0].data) {
+				result.sets[0].data.push(item[1]);
+			}
 		});
 
 		if (topTags.length === 0) {
 			result.labels.push('No Tags');
-			result.sets[0].data.push(deck.map(m => m.count).reduce((a, b) => a + b, 0));
+
+			if (result.sets[0].data) {
+				result.sets[0].data.push(deck.map(m => m.count).reduce((a, b) => a + b, 0));
+			}
 		}
 
 		return result;
 	}
 
 	static cmcToString(cmc: number) {
-		if (cmc >= this.MAX_CMC_BUCKET) {
-			return `${this.MAX_CMC_BUCKET}+ CMC`;
+		if (typeof cmc === 'number') {
+			if (cmc >= this.MAX_CMC_BUCKET) {
+				return `${this.MAX_CMC_BUCKET}+ CMC`;
+			} else {
+				return `${cmc} CMC`;
+			}
 		} else {
-			return `${cmc} CMC`;
+			// catch null or undefined cases
+			return '0 CMC';
 		}
 	}
 
@@ -183,22 +192,24 @@ export abstract class Statistics {
 			backgroundColor: this.PALETTE_BLUE[5]
 		};
 
-		for (let i = 0; i <= this.MAX_CMC_BUCKET; i++) {
-			let filtered: CardReference[];
+		if (result.data) {
+			for (let i = 0; i <= this.MAX_CMC_BUCKET; i++) {
+				let filtered: CardReference[];
 
-			if (i === 0) {
-				filtered = deck.filter(m => m.OracleCard && m.OracleCard.cmc === i)
-					.filter(m => !m.OracleCard.type_line.includes('Land'));
-			} else if (i === this.MAX_CMC_BUCKET) {
-				filtered = deck.filter(m => m.OracleCard && m.OracleCard.cmc >= this.MAX_CMC_BUCKET);
-			} else {
-				filtered = deck.filter(m => m.OracleCard && m.OracleCard.cmc === i);
-			}
+				if (i === 0) {
+					filtered = deck.filter(m => m.OracleCard && m.OracleCard.cmc === i)
+						.filter(m => !m.OracleCard.type_line.includes('Land'));
+				} else if (i === this.MAX_CMC_BUCKET) {
+					filtered = deck.filter(m => m.OracleCard && m.OracleCard.cmc >= this.MAX_CMC_BUCKET);
+				} else {
+					filtered = deck.filter(m => m.OracleCard && m.OracleCard.cmc === i);
+				}
 
-			if (filtered && filtered.length > 0) {
-				result.data.push(filtered.map(m => m.count).reduce((a, b) => a + b, 0));
-			} else {
-				result.data.push(0);
+				if (filtered.length > 0) {
+					result.data.push(filtered.map(m => m.count).reduce((a, b) => a + b, 0));
+				} else {
+					result.data.push(0);
+				}
 			}
 		}
 

@@ -13,7 +13,7 @@ export enum EventType {
 
 export interface iTagsUpdated {
 	type: EventType;
-	Tag: Tag;
+	Tag: Tag | null;
 
 	fromId: number;// for Merge
 	toId: number;// for Merge
@@ -39,6 +39,6 @@ export class NotificationService {
 	}
 
 	getProfileId(): number {
-		return parseInt(sessionStorage.getItem('ProfileId'));
+		return parseInt(sessionStorage.getItem('ProfileId') || '-1');
 	}
 }

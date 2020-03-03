@@ -1,6 +1,6 @@
 import { Component, Inject, OnInit, ViewChild } from '@angular/core';
 import { FormControl } from '@angular/forms';
-import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material';
+import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { MatAutocomplete } from '@angular/material/autocomplete';
 import { Tag } from '@classes/tag';
 import { EventType, iTagsUpdated, NotificationService } from '@services/notification.service';
@@ -22,7 +22,7 @@ export class DialogAddTagComponent implements OnInit {
 
 	private tagName = '';
 
-	@ViewChild(MatAutocomplete, { static: false }) autoComplete: MatAutocomplete;
+	@ViewChild(MatAutocomplete) autoComplete: MatAutocomplete;
 
 	constructor(
 		private service: TagApiService,
@@ -68,7 +68,7 @@ export class DialogAddTagComponent implements OnInit {
 					tag.name = this.tagName;
 
 					this.service.createTag(tag).subscribe(result => {
-						if (result) {
+						if (tag && result) {
 							if (result.id) {
 								tag.id = result.id;
 								tag.ProfileId = this.notify.getProfileId();

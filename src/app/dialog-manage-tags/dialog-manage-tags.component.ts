@@ -1,7 +1,8 @@
 import { Component, OnDestroy, OnInit, ViewChild } from '@angular/core';
-import { MatDialogRef, MatTableDataSource } from '@angular/material';
-import { MatDialog, MatDialogConfig } from '@angular/material/dialog';
+import { MatDialog, MatDialogConfig, MatDialogRef } from '@angular/material/dialog';
 import { MatPaginator } from '@angular/material/paginator';
+import { MatSelectChange } from '@angular/material/select';
+import { MatTableDataSource } from '@angular/material/table';
 import { Tag } from '@classes/tag';
 import { MessageLevel, MessagesService } from '@services/messages.service';
 import { EventType, iTagsUpdated, NotificationService } from '@services/notification.service';
@@ -22,7 +23,7 @@ export class DialogManageTagsComponent implements OnInit, OnDestroy {
 	displayColumns = ['name', 'count', 'actions'];
 	dataSource: MatTableDataSource<Tag>;
 
-	@ViewChild(MatPaginator, { static: false }) paginator: MatPaginator;
+	@ViewChild(MatPaginator) paginator: MatPaginator;
 
 	constructor(
 		private service: TagApiService,
@@ -33,27 +34,37 @@ export class DialogManageTagsComponent implements OnInit, OnDestroy {
 	) { }
 
 	ngOnInit() {
-		this._tagsUpdatedSub = this.notify.isTagsUpdated$.subscribe(event => {
+		this._tagsUpdatedSub = this.notify.isTagsUpdated$.subscribe((event: iTagsUpdated) => {
 			switch (event.type) {
 				case EventType.Init:
 					// do nothing
 					break;
 
 				case EventType.Update: {
-					const tag = this.tags.find(m => m.id == event.Tag.id);
-					tag.name = event.Tag.name;
+					if (event.Tag) {
+						const tagId = event.Tag.id;
+						const tag = this.tags.find(m => m.id === tagId);
+						if (tag) {
+							tag.name = event.Tag.name;
+						}
+					}
 					break;
 				}
 
 				case EventType.Insert: {
-					this.tags.push(event.Tag);
+					if (event.Tag) {
+						this.tags.push(event.Tag);
+					}
 					break;
 				}
 
 				case EventType.Delete: {
-					const tagIndex = this.tags.findIndex(m => m.id === event.Tag.id);
-					if (tagIndex !== -1) {
-						this.tags.splice(tagIndex, 1);
+					if (event.Tag) {
+						const tagId = event.Tag.id;
+						const tagIndex = this.tags.findIndex(m => m.id === tagId);
+						if (tagIndex !== -1) {
+							this.tags.splice(tagIndex, 1);
+						}
 					}
 					break;
 				}
@@ -112,7 +123,7 @@ export class DialogManageTagsComponent implements OnInit, OnDestroy {
 		});
 	}
 
-	selectedAction($event, model: Tag) {
+	selectedAction($event: MatSelectChange, model: Tag) {
 		switch ($event.value) {
 			case 'rename': {
 				const dConfig = new MatDialogConfig();

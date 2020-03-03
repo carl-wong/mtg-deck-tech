@@ -18,14 +18,7 @@ export class ProfileApiService extends BaseApiService {
 	}
 
 	public getProfilesByAuth0(id: string): Observable<Profile[]> {
-		return this.http.get<Profile[]>(this._api + '/Profiles?auth0Id=' + id)
-			.pipe(
-				map(res => {
-					res['payload'] = res;
-					return res['payload'];
-				}),
-				catchError(this.handleError('get auth0Id=' + id))
-			);
+		return this.http.get<Profile[]>(this._api + '/Profiles?auth0Id=' + id);
 	}
 
 	public createProfile(model: Profile): Observable<PostResult> {

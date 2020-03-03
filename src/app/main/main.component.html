@@ -58,10 +58,10 @@
         <mat-expansion-panel *ngFor="let group of cardsGrouped; first as isFirst;" [expanded]="isFirst">
           <mat-expansion-panel-header>
             <mat-panel-title>
-              {{group[0] | uppercase}} ({{group[2]}})
+              {{group.key | uppercase}} ({{group.count}})
             </mat-panel-title>
           </mat-expansion-panel-header>
-          <table mat-table [dataSource]="group[1]">
+          <table mat-table [dataSource]="group.cards">
             <ng-container matColumnDef="name">
               <th mat-header-cell *matHeaderCellDef class="name-col">Name</th>
               <td mat-cell *matCellDef="let element" class="name-col">
@@ -115,13 +115,13 @@
         <div class="col-12" *ngIf="!(isChartCMCCurve || isChartColorPie || isChartTagsRadar)">
           <ng-container *ngTemplateOutlet="noDataWarning;"></ng-container>
         </div>
-        <div class="col-md-6 col-lg-4" *ngIf="isChartCMCCurve">
+        <div class="col-lg-4" *ngIf="isChartCMCCurve">
           <app-chart-cmc [model]="chartCMCCurve"></app-chart-cmc>
         </div>
-        <div class="col-md-6 col-lg-4" *ngIf="isChartColorPie">
+        <div class="col-lg-4" *ngIf="isChartColorPie">
           <app-chart-color-pie [model]="chartColorPie"></app-chart-color-pie>
         </div>
-        <div class="col-md-6 col-lg-4" *ngIf="isChartTagsRadar">
+        <div class="col-lg-4" *ngIf="isChartTagsRadar">
           <app-chart-tags [model]="chartTagsRadar"></app-chart-tags>
         </div>
       </div>

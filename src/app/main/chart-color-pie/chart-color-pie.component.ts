@@ -19,6 +19,7 @@ export class ChartColorPieComponent implements OnInit {
 	@ViewChild(BaseChartDirective, { static: true }) baseChart: BaseChartDirective;
 
 	options: ChartOptions = {
+		maintainAspectRatio: false,
 		responsive: true,
 		tooltips: {
 			custom(tooltip: Chart.ChartTooltipModel) {
@@ -27,18 +28,26 @@ export class ChartColorPieComponent implements OnInit {
 			},
 			callbacks: {
 				label(tooltipItem, data) {
-					const seriesName = data.labels[tooltipItem.datasetIndex] as string;
-					const colorName = Statistics.COLORS[tooltipItem.index][1];
+					if (data.labels && data.datasets) {
+						const seriesName = data.labels[tooltipItem.datasetIndex || 0] as string;
+						const colorName = Statistics.COLORS[tooltipItem.index || 0][1];
 
-					const count = data.datasets[tooltipItem.datasetIndex].data[tooltipItem.index] as number;
-					const occ = count === 1 ?
-						(seriesName === 'Lands' ? 'Land' : 'Card') :
-						(seriesName === 'Lands' ? 'Lands' : 'Cards');
+						const dataSet = data.datasets[tooltipItem.datasetIndex || 0];
 
-					const total = (data.datasets[tooltipItem.datasetIndex].data as number[]).reduce((a, b) => a + b, 0);
-					const percent = total > 0 ? Math.round(count / total * 10000) / 100 : 0;
+						if (dataSet.data) {
+							const count = dataSet.data[tooltipItem.index || 0] as number;
+							const occ = count === 1 ?
+								(seriesName === 'Lands' ? 'Land' : 'Card') :
+								(seriesName === 'Lands' ? 'Lands' : 'Cards');
 
-					return [seriesName, `${count} ${colorName} ${occ}`, percent + '%'];
+							const total = (dataSet.data as number[]).reduce((a, b) => a + b, 0);
+							const percent = total > 0 ? Math.round(count / total * 10000) / 100 : 0;
+
+							return [seriesName, `${count} ${colorName} ${occ}`, percent + '%'];
+						}
+					}
+
+					return 'NO LABEL';
 				}
 			}
 		}

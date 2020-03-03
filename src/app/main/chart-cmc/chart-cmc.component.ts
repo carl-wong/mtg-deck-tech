@@ -20,6 +20,7 @@ export class ChartCmcComponent implements OnInit {
 	@ViewChild(BaseChartDirective, { static: true }) baseChart: BaseChartDirective;
 
 	options: ChartOptions = {
+		maintainAspectRatio: false,
 		responsive: true,
 		scales: {
 			yAxes: [{
@@ -39,14 +40,22 @@ export class ChartCmcComponent implements OnInit {
 					return ''; // no title
 				},
 				label(tooltipItem: Chart.ChartTooltipItem, data: Chart.ChartData) {
-					const cmc = data.labels[tooltipItem.index];
-					const count = Number(data.datasets[tooltipItem.datasetIndex].data[tooltipItem.index]);
-					const occ = count === 1 ? 'Card' : 'Cards';
+					if (data.labels && data.datasets) {
+						const cmc = data.labels[tooltipItem.index || 0];
+						const dataSet = data.datasets[tooltipItem.datasetIndex || 0];
 
-					const total = (data.datasets[tooltipItem.datasetIndex].data as number[]).reduce((a, b) => a + b, 0);
-					const percent = total > 0 ? Math.round(count / total * 10000) / 100 : 0;
+						if (dataSet.data) {
+							const count = Number(dataSet.data[tooltipItem.index || 0]);
+							const occ = count === 1 ? 'Card' : 'Cards';
 
-					return [`${tooltipItem.xLabel} CMC`, `${count} ${occ}`, percent + '%'];
+							const total = (dataSet.data as number[]).reduce((a, b) => a + b, 0);
+							const percent = total > 0 ? Math.round(count / total * 10000) / 100 : 0;
+
+							return [`${tooltipItem.xLabel} CMC`, `${count} ${occ}`, percent + '%'];
+						}
+					}
+
+					return 'NO LABEL';
 				}
 			}
 		}
