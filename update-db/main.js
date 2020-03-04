@@ -172,11 +172,12 @@ function processScryfall() {
 
 				console.log('Extracted ' + output.length + ' non-token cards from ' + result.file);
 
-				fs.writeFileSync(`${ROOT_DIR}/output/min-oracle.json`, JSON.stringify(output, null, 2));
-				console.log('--> min-oracle.json written to output folder');
+				const outputFile = path.join(ROOT_DIR, OUTPUT_DIR, 'oracle-card.json');
+				fs.writeFileSync(outputFile, JSON.stringify(output, null, 2));
+				console.log(`--> output written to ${outputFile}`);
 
-				fs.writeFileSync(`${ROOT_DIR}/output/min-oracle-server.json`, JSON.stringify({ 'OracleCards': output }, null, 2));
-				console.log('--> min-oracle-server.json written to output folder');
+				// fs.writeFileSync(`${ROOT_DIR}/output/min-oracle-server.json`, JSON.stringify({ 'OracleCards': output }, null, 2));
+				// console.log('--> min-oracle-server.json written to output folder');
 
 				console.log('Longest Values: ');
 				console.log(JSON.stringify(longestValues, null, 2));
@@ -184,7 +185,6 @@ function processScryfall() {
 			} else {
 				console.log('Error: expected contents to be an array');
 			}
-
 		});
 	} else {
 		console.log(`No input JSON files detected in ${ROOT_DIR}/${INPUT_DIR}`);
