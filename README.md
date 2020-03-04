@@ -1,5 +1,30 @@
 # MTG DeckTech
 
+## Prepare SQL File
+
+Run `npm run trim-oracle-db` to process the latest Scryfall Oracle JSON file (found [here](https://archive.scryfall.com/json/scryfall-oracle-cards.json)) by trimming off the unnecessary attributes.
+
+Convert the output file into MySQL commands via a tool like [Numidian Convert](https://numidian.io/convert). `OracleCard` is the database table that will receive these records.
+
+**Note:** MySQL may not support `VARCHAR(MAX)` column definitions in the `CREATE TABLE` command. Use the output from the trimming utility to determine an appropriate length for each column when setting up the database for the first time.
+
+**Note:** Replace any table creation commands with `TRUNCATE OracleCard;` to empty and reseed the `OracleCard` table before inserting the new records.
+
+## Upload SQL Insert File
+
+- `scp local-file.sql [username]@[domain]:oracle-cards.sql` uploads the update file
+- SSH into the server
+- `mysqldump -u root -p [database] > backup.sql` to backup the database
+- `mysql [database] < oracle-cards.sql` to execute the commands in the update file
+
+## Working On MySQL
+
+- SSH into the server
+- `mysql` to start the MySQL prompt
+- `SHOW DATABASES;` to list available databases
+- `USE [database];` to select the database for the session
+- `SHOW TABLES;` to list available tables
+
 ## Development Server
 
 Run `json-server databases/min-oracle-server.json -p 3000` and `json-server databases/local.json -p 3001` to get the test APIs running.
