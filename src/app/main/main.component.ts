@@ -296,7 +296,22 @@ export class MainComponent implements OnInit, OnDestroy {
 			let lookupArray: string[] = [];
 
 			const lines = this.decklist.split('\n');
-			const regex = /(?<_ls>[\s]+)?(?<count>[\d]+)?(?<_x>[xX]+[\s]+)?(?<_ms>[\s]+)?(?<name>.+)(?<_ts>[\s]+)?$/gm;
+
+			/*
+			original grouped regex:
+			/(?<_ls>[\s]+)?(?<count>[\d]+)?(?<_x>[xX]+[\s]+)?(?<_ms>[\s]+)?(?<name>.+)(?<_ts>[\s]+)?$/gm;
+			*/
+			const regex = /([\s]+)?([\d]+)?([xX]+[\s]+)?([\s]+)?(.+)([\s]+)?$/gm;
+
+			const REGEX_GROUP = {
+				full: 0,
+				ls: 1,
+				count: 2,
+				x: 3,
+				ms: 4,
+				name: 5,
+				ts: 6,
+			};
 
 			while (lines.length > 0) {
 				const line = lines.pop();
@@ -306,14 +321,14 @@ export class MainComponent implements OnInit, OnDestroy {
 					regex.lastIndex = 0; // reset to look from start of each line
 					const linesRx = regex.exec(line);
 
-					if (linesRx && linesRx.groups) {
-						const name = linesRx.groups.name ? linesRx.groups.name.trim().toLowerCase() : null;
-						if (name) {
-							const count = linesRx.groups.count ? parseInt(linesRx.groups.count) : 1;
+					if (linesRx) {
+						const cardName = linesRx[REGEX_GROUP.name] ? linesRx[REGEX_GROUP.name].trim().toLowerCase() : null;
+						if (cardName) {
+							const cardCount = linesRx[REGEX_GROUP.count] ? parseInt(linesRx[REGEX_GROUP.count]) : 1;
 
 							const card = new CardReference();
-							card.count = count;
-							card.name = this._transformNameDict[name] ? this._transformNameDict[name] : name;
+							card.count = cardCount;
+							card.name = this._transformNameDict[cardName] ? this._transformNameDict[cardName] : cardName;
 
 							lookupArray.push(card.name);
 							this.deck.push(card);
