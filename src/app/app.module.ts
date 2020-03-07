@@ -37,6 +37,7 @@ import { ChartTagsComponent } from './main/chart-tags/chart-tags.component';
 import { MainComponent } from './main/main.component';
 import { StatsCalculatorComponent } from './main/stats-calculator/stats-calculator.component';
 import { MessagesComponent } from './messages/messages.component';
+import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
 
 
 @NgModule({
@@ -88,6 +89,7 @@ import { MessagesComponent } from './messages/messages.component';
 		MatToolbarModule,
 		MatTooltipModule,
 		ReactiveFormsModule,
+		FontAwesomeModule,
 	],
 	providers: [],
 	bootstrap: [AppComponent]
