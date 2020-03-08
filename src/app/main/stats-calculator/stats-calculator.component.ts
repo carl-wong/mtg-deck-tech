@@ -3,6 +3,7 @@ import { MatSelectChange } from '@angular/material/select';
 import { CardReference } from '@classes/card-reference';
 import { GroupByMode, Statistics } from '@classes/statistics';
 import { all, create } from 'mathjs';
+import { faCalculator } from '@fortawesome/free-solid-svg-icons';
 
 interface iHypergeometricParams {
 	mode: string;
@@ -29,6 +30,8 @@ interface iHypergeometricOutputs {
 	styleUrls: ['./stats-calculator.component.less']
 })
 export class StatsCalculatorComponent implements OnInit {
+	faCalculator = faCalculator;
+	
 	modeOptions = Statistics.GROUP_MODES;
 	modeValueOptions: string[] = [];
 	maxSampleSuccesses: number;

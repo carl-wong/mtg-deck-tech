@@ -7,6 +7,7 @@ import { EventType, iTagsUpdated, NotificationService } from '@services/notifica
 import { TagApiService } from '@services/tag-api.service';
 import { Observable } from 'rxjs';
 import { map, startWith } from 'rxjs/operators';
+import { faTimes, faSave } from '@fortawesome/free-solid-svg-icons';
 
 
 @Component({
@@ -15,6 +16,9 @@ import { map, startWith } from 'rxjs/operators';
 	styleUrls: ['./dialog-add-tag.component.less']
 })
 export class DialogAddTagComponent implements OnInit {
+	faTimes = faTimes;
+	faSave = faSave;
+
 	private _tags: Tag[];
 	options: string[] = [];
 	filteredOptions: Observable<string[]>;

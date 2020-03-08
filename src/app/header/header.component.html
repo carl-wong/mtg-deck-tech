@@ -2,16 +2,20 @@
   <img src="assets/images/logo.png" style="width: auto; height: 60%;">
   <span matTooltip="{{buildVersion}} {{lastUpdated}}" matTooltipPosition="right">MTG DeckTech</span>
   <span class="fill-space"></span>
-  <button mat-icon-button [matMenuTriggerFor]="profileMenu" *ngIf="auth.loggedIn">
-    <mat-icon>account_box</mat-icon>
+  <button mat-button [matMenuTriggerFor]="profileMenu" *ngIf="auth.loggedIn">
+    <fa-icon [icon]="faUserCircle"></fa-icon>
+    &nbsp;
+    Account
   </button>
   <mat-menu #profileMenu>
     <button mat-menu-item (click)="openDialogManageTags()">
-      <mat-icon>label</mat-icon>
+      <fa-icon [icon]="faTags"></fa-icon>
+      &nbsp;
       Manage Tags
     </button>
     <button mat-menu-item (click)="auth.logout()" *ngIf="auth.loggedIn">
-      <mat-icon>exit_to_app</mat-icon>
+      <fa-icon [icon]="faSignOutAlt"></fa-icon>
+      &nbsp;
       Logout
     </button>
   </mat-menu>

@@ -3,6 +3,7 @@ import { MatTableDataSource } from '@angular/material/table';
 import { MatPaginator } from '@angular/material/paginator';
 import { iMessage, MessageLevel, MessagesService } from '@services/messages.service';
 import { Subscription } from 'rxjs';
+import { faTrashAlt } from '@fortawesome/free-solid-svg-icons';
 
 
 @Component({
@@ -11,6 +12,8 @@ import { Subscription } from 'rxjs';
 	styleUrls: ['./messages.component.less']
 })
 export class MessagesComponent implements OnInit, OnDestroy {
+	faTrashAlt = faTrashAlt;
+	
 	displayColumns = ['level', 'timestamp', 'text'];
 	dataSource: MatTableDataSource<iMessage>;
 

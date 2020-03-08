@@ -3,6 +3,7 @@ import { MatDialog, MatDialogConfig } from '@angular/material/dialog';
 import { environment } from '@env';
 import { AuthService } from '@services/auth.service';
 import { DialogManageTagsComponent } from '../dialog-manage-tags/dialog-manage-tags.component';
+import { faTags, faUserCircle, faSignOutAlt } from '@fortawesome/free-solid-svg-icons';
 
 
 @Component({
@@ -11,6 +12,10 @@ import { DialogManageTagsComponent } from '../dialog-manage-tags/dialog-manage-t
 	styleUrls: ['./header.component.less']
 })
 export class HeaderComponent implements OnInit {
+	faTags = faTags;
+	faUserCircle = faUserCircle;
+	faSignOutAlt = faSignOutAlt;
+
 	lastUpdated = '';
 	buildVersion = '';
 

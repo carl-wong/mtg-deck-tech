@@ -23,6 +23,7 @@ import { iChartCmc } from './chart-cmc/chart-cmc.component';
 import { iChartColorPie } from './chart-color-pie/chart-color-pie.component';
 import { iChartTags } from './chart-tags/chart-tags.component';
 import { StatsCalculatorComponent } from './stats-calculator/stats-calculator.component';
+import { faPlus, faList, faTasks, faTags, faSync, faChartBar, faComment, faSquareRootAlt } from '@fortawesome/free-solid-svg-icons';
 
 
 const TOTAL_PROGRESS_STEPS = 5.0;
@@ -52,6 +53,15 @@ interface CardGrouping {
 	styleUrls: ['./main.component.less']
 })
 export class MainComponent implements OnInit, OnDestroy {
+	faPlus = faPlus;
+	faList = faList;
+	faTasks = faTasks;
+	faTags = faTags;
+	faSync = faSync;
+	faChartBar = faChartBar;
+	faComment = faComment;
+	faSquareRootAlt = faSquareRootAlt;
+
 	@ViewChild('statsCalculator') statsCalculator: StatsCalculatorComponent;
 
 	groupByModes = Statistics.GROUP_MODES;

@@ -11,9 +11,13 @@
 </mat-dialog-content>
 <mat-dialog-actions align="end">
   <button mat-button color="accent" (click)="close(true)">
+    <fa-icon [icon]="faSave"></fa-icon>
+    &nbsp;
     Save
   </button>
   <button mat-button color="warn" (click)="close()">
+    <fa-icon [icon]="faTimes"></fa-icon>
+    &nbsp;
     Cancel
   </button>
 </mat-dialog-actions>
