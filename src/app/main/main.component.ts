@@ -10,6 +10,7 @@ import { GroupByMode, MainCardTypes, Statistics } from '@classes/statistics';
 import { Tag } from '@classes/tag';
 import { environment } from '@env';
 import { faChartBar, faComment, faList, faPlus, faSpinner, faSquareRootAlt, faSync, faTags, faTasks } from '@fortawesome/free-solid-svg-icons';
+import { AuthService } from '@services/auth.service';
 import { CardTagLinkApiService } from '@services/card-tag-link-api.service';
 import { MessageLevel, MessagesService } from '@services/messages.service';
 import { EventType, iTagsUpdated, NotificationService } from '@services/notification.service';
@@ -24,12 +25,11 @@ import { iChartCmc } from './chart-cmc/chart-cmc.component';
 import { iChartColorPie } from './chart-color-pie/chart-color-pie.component';
 import { iChartTags } from './chart-tags/chart-tags.component';
 import { StatsCalculatorComponent } from './stats-calculator/stats-calculator.component';
-import { AuthService } from '@services/auth.service';
 
 
 const UNTAGGED_PLACEHOLDER = 'UNTAGGED';
 const QUERY_BATCH_SIZE = 10;
-const QUERY_SLEEP_MS = 100;
+const QUERY_SLEEP_MS = 50;
 
 const DECKBOX_TOKEN = 'deckbox.org/sets/';
 
@@ -145,7 +145,7 @@ export class MainComponent implements OnInit, OnDestroy {
 					break;
 
 				case FinishedStep.Oracle:
-					this._removeMissingCards();
+					// this._removeMissingCards();
 					this._mixinTagLinks();
 					break;
 
@@ -165,16 +165,16 @@ export class MainComponent implements OnInit, OnDestroy {
 		});
 	}
 
-	private _removeMissingCards() {
-		this.deck.filter(m => !m.OracleCard).map(m => m.name)
-			.forEach(name => {
-				const index = this.deck.findIndex(m => m.name === name);
-				if (index !== -1) {
-					this.deck.splice(index, 1);
-					this.messages.send(`Could not find "${name}", removed from deck.`, MessageLevel.Info);
-				}
-			});
-	}
+	// private _removeMissingCards() {
+	// 	this.deck.filter(m => !m.OracleCard).map(m => m.name)
+	// 		.forEach(name => {
+	// 			const index = this.deck.findIndex(m => m.name === name);
+	// 			if (index !== -1) {
+	// 				this.deck.splice(index, 1);
+	// 				this.messages.send(`Could not find "${name}", removed from deck.`, MessageLevel.Info);
+	// 			}
+	// 		});
+	// }
 
 	private _decklistPostProcessing() {
 		this._performGroupByMode(this.groupByMode);
@@ -279,26 +279,16 @@ export class MainComponent implements OnInit, OnDestroy {
 		this._subscriptions.push(sub);
 	}
 
-	submitDecklist() {
-		this.isDecklistReady = false;
-		this.isProgressSpinnerActive = true;
+	private _submitDecklistHelper(lines: string[]) {
+		console.log(lines.length + ' lines left');
 
-		if (this._isCacheReady()) {
-			this.messages.send('Processing decklist, please wait...', MessageLevel.Notify);
-
-			// reset output containers
-			this.deck = [];
-			this.cardsGrouped = [];
-
-			// regular decklist importer
-			let lookupArray: string[] = [];
-
-			const lines = this.decklist.split('\n');
-
+		if (lines.length === 0) {
+			this._emitFinishedStep.emit(FinishedStep.Oracle);
+		} else {
 			/*
-			original grouped regex:
-			/(?<_ls>[\s]+)?(?<count>[\d]+)?(?<_x>[xX]+[\s]+)?(?<_ms>[\s]+)?(?<name>.+)(?<_ts>[\s]+)?$/gm;
-			*/
+				original grouped regex:
+				/(?<_ls>[\s]+)?(?<count>[\d]+)?(?<_x>[xX]+[\s]+)?(?<_ms>[\s]+)?(?<name>.+)(?<_ts>[\s]+)?$/gm;
+				*/
 			const regex = /([\s]+)?([\d]+)?([xX]+[\s]+)?([\s]+)?(.+)([\s]+)?$/gm;
 
 			const REGEX_GROUP = {
@@ -311,44 +301,50 @@ export class MainComponent implements OnInit, OnDestroy {
 				ts: 6,
 			};
 
-			while (lines.length > 0) {
-				const line = lines.pop();
-				const isFinal = lines.length === 0;
+			const linesList = lines.slice(0, Math.min(QUERY_BATCH_SIZE, lines.length));
+			lines.splice(0, linesList.length);
 
-				if (line) {
-					regex.lastIndex = 0; // reset to look from start of each line
-					const linesRx = regex.exec(line);
+			const tempCardList: CardReference[] = [];
 
-					if (linesRx) {
-						const cardName = linesRx[REGEX_GROUP.name] ? linesRx[REGEX_GROUP.name].trim().toLowerCase() : null;
-						if (cardName) {
-							const cardCount = linesRx[REGEX_GROUP.count] ? parseInt(linesRx[REGEX_GROUP.count]) : 1;
+			linesList.forEach(line => {
+				regex.lastIndex = 0; // reset to look from start of each line
+				const lineRx = regex.exec(line);
 
-							const card = new CardReference();
-							card.count = cardCount;
-							card.name = this._transformNameDict[cardName] ? this._transformNameDict[cardName] : cardName;
+				if (lineRx) {
+					const cardName = (lineRx[REGEX_GROUP.name] || '').trim().toLowerCase();
+					if (cardName) {
+						const cardCount = parseInt(lineRx[REGEX_GROUP.count] || '1');
 
-							lookupArray.push(card.name);
-							this.deck.push(card);
-						}
+						const card = new CardReference();
+						card.count = cardCount;
+						card.name = this._transformNameDict[cardName] || cardName;
+
+						tempCardList.push(card);
 					}
 				}
+			});
 
-				if (lookupArray.length >= QUERY_BATCH_SIZE || isFinal) {
-					this.oracle.postNames(lookupArray).subscribe(cards => {
-						this._mixinOracleCards(cards);
+			this.oracle.postNames(tempCardList.map(m => m.name)).subscribe(cards => {
+				this._mixinOracleCardResults(tempCardList, cards);
 
-						if (isFinal) {
-							this._emitFinishedStep.emit(FinishedStep.Oracle);
-						}
-					});
+				SleepHelper.sleep(QUERY_SLEEP_MS);
+				this._submitDecklistHelper(lines);
+			});
+		}
+	}
 
-					if (!isFinal) {
-						lookupArray = [];
-						SleepHelper.sleep(QUERY_SLEEP_MS);
-					}
-				}
-			}
+	submitDecklist() {
+		this.isDecklistReady = false;
+		this.isProgressSpinnerActive = true;
+
+		if (this._isCacheReady()) {
+			this.messages.send('Processing decklist...', MessageLevel.Notify);
+
+			// reset output containers
+			this.deck = [];
+			this.cardsGrouped = [];
+
+			this._submitDecklistHelper(this.decklist.split('\n'));
 		} else {
 			// load up the cache before (automatically) resubmitting
 			this.tagService.getTags()
@@ -371,50 +367,56 @@ export class MainComponent implements OnInit, OnDestroy {
 		}
 	}
 
-	private _mixinOracleCards(oCards: MinOracleCard[]) {
+	private _mixinOracleCardResults(dCards: CardReference[], oCards: MinOracleCard[]) {
 		// attach oracle results to each card reference
 		oCards.forEach(oCard => {
 			const lowerName = oCard.name.toLowerCase();
-			const dCard = this.deck.find(m => m.name === lowerName);
+			const dCard = dCards.find(m => m.name === lowerName);
 			if (dCard) {
 				dCard.name = oCard.name;
 				dCard.OracleCard = oCard;
 			}
 		});
+
+		// log each card that was not found
+		dCards.filter(m => !m.OracleCard).forEach(card => {
+			this.messages.send(
+				`No oracle result for "${card.name}", removing from deck...`,
+				MessageLevel.Info);
+		});
+
+		// add only the cards with oracle results to the deck
+		dCards.filter(m => !!m.OracleCard).forEach(card => {
+			this.deck.push(card);
+		});
 	}
 
-	private _mixinTagLinks() {
-		let lookupArray: string[] = [];
-		const oracle_ids = this.deck.filter(m => m.OracleCard).map(a => a.OracleCard.oracle_id);
+	private _mixinTagLinksHelper(oracle_ids: string[]) {
+		if (oracle_ids.length === 0) {
+			this._emitFinishedStep.emit(FinishedStep.CardTagLinks);
+		} else {
+			const idList = oracle_ids.slice(0, Math.min(QUERY_BATCH_SIZE, oracle_ids.length));
+			oracle_ids.splice(0, idList.length);
 
-		while (oracle_ids.length > 0) {
-			const oracle_id = oracle_ids.pop();
-			const isFinal = oracle_ids.length === 0;
+			this.cardTagLinkService.postCardTagLinks(idList).subscribe(links => {
+				links.forEach(link => {
+					const dCard = this.deck.filter(m => !!m.OracleCard)
+						.find(m => m.OracleCard.oracle_id === link.oracle_id);
 
-			if (oracle_id) {
-				lookupArray.push(oracle_id);
-			}
-
-			if (lookupArray.length >= QUERY_BATCH_SIZE || isFinal) {
-				this.cardTagLinkService.postCardTagLinks(lookupArray).subscribe(links => {
-					links.forEach(link => {
-						const dCard = this.deck.find(m => m.OracleCard && m.OracleCard.oracle_id === link.oracle_id);
-						if (dCard) {
-							dCard.CardTagLinks ? dCard.CardTagLinks.push(link) : dCard.CardTagLinks = [link];
-						}
-					});
-
-					if (isFinal) {
-						this._emitFinishedStep.emit(FinishedStep.CardTagLinks);
+					if (dCard) {
+						dCard.CardTagLinks ? dCard.CardTagLinks.push(link) : dCard.CardTagLinks = [link];
 					}
 				});
 
-				if (!isFinal) {
-					lookupArray = [];
-					SleepHelper.sleep(QUERY_SLEEP_MS);
-				}
-			}
+				SleepHelper.sleep(QUERY_SLEEP_MS);
+				this._mixinTagLinksHelper(oracle_ids);
+			});
 		}
+	}
+
+	private _mixinTagLinks() {
+		const oracle_ids = this.deck.filter(m => !!m.OracleCard).map(a => a.OracleCard.oracle_id);
+		this._mixinTagLinksHelper(oracle_ids);
 	}
 
 	private _getCharts() {

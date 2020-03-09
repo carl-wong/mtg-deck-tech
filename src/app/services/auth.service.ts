@@ -42,6 +42,10 @@ export class AuthService {
 	// Create subject and public observable of user profile data
 	private userProfileSubject$ = new BehaviorSubject<any>(null);
 	userProfile$ = this.userProfileSubject$.asObservable();
+
+	private isUserLoadedSubject$ = new BehaviorSubject<boolean>(false);
+	isUserLoaded$ = this.isUserLoadedSubject$.asObservable();
+
 	// Create a local property for login status
 	loggedIn: boolean | null = null;
 
@@ -49,11 +53,11 @@ export class AuthService {
 		private router: Router,
 		private profileService: ProfileApiService,
 	) {
-		this.userProfile$.subscribe(user => {
-			if (user) {
-				this._setupProfileId(user.sub);
-			}
-		});
+		// this.userProfile$.subscribe(user => {
+		// 	if (user) {
+		// 		this._setupProfileId(user.sub);
+		// 	}
+		// });
 
 		// On initial load, check authentication state with authorization server
 		// Set up local auth streams if user is already authenticated
@@ -67,6 +71,7 @@ export class AuthService {
 			.subscribe(users => {
 				if (users && users.length > 0) {
 					sessionStorage.setItem('ProfileId', users[0].id.toString());
+					this.isUserLoadedSubject$.next(true);
 				} else if (isLastAttempt) {
 					this.logout();
 				} else {
@@ -88,7 +93,8 @@ export class AuthService {
 		return this.auth0Client$.pipe(
 			concatMap((client: Auth0Client) => from(client.getUser(options))),
 			tap(user => {
-				sessionStorage.setItem('auth0', user.sub);
+				// sessionStorage.setItem('auth0', user.sub);
+				this._setupProfileId(user.sub);
 				this.userProfileSubject$.next(user);
 			})
 		);
