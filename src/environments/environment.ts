@@ -4,6 +4,6 @@ export const environment = {
   defaultDecklist: '1 Alesha, Who Smiles at Death\n1 Altar of Dementia\n1 Animate Dead',
   baseHref: '/',
   apiUrl: 'http://localhost:3000',
-  timestamp: 'Updated: 2020-03-09 @ 14:07:09',
+  timestamp: 'Updated: 2020-03-09 @ 16:40:00',
   version: 'LOCAL',
 };
