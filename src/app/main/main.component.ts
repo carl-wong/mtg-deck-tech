@@ -73,6 +73,9 @@ export class MainComponent implements OnInit, OnDestroy {
 	isDecklistReady = false;
 	deck: CardReference[] = [];
 
+	totalCards = 0;
+	uniqueCards = 0;
+
 	private _emitFinishedStep = new EventEmitter();
 
 	private _isCacheReady(): boolean {
@@ -173,24 +176,12 @@ export class MainComponent implements OnInit, OnDestroy {
 			});
 	}
 
-	countTotalCards(): number {
-		if (this.deck) {
-			return this.deck.map(m => m.count).reduce((a, b) => a + b, 0);
-		} else {
-			return 0;
-		}
-	}
-
-	countUniqueCards(): number {
-		if (this.deck) {
-			return this.deck.length;
-		} else {
-			return 0;
-		}
-	}
-
 	private _decklistPostProcessing() {
 		this._performGroupByMode(this.groupByMode);
+
+		this.totalCards = this.deck.map(m => m.count).reduce((a, b) => a + b, 0);
+		this.uniqueCards = this.deck.length;
+
 		this._emitFinishedStep.emit(FinishedStep.PostProcessing);
 	}
 
