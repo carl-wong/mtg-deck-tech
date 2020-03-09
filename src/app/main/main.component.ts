@@ -1,7 +1,7 @@
 import { HttpClient } from '@angular/common/http';
 import { Component, EventEmitter, Input, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { MatDialog, MatDialogConfig } from '@angular/material/dialog';
-import { MatSelect, MatSelectChange } from '@angular/material/select';
+import { MatSelectChange } from '@angular/material/select';
 import { CardReference } from '@classes/card-reference';
 import { CardTagLink } from '@classes/card-tag-link';
 import { MinOracleCard } from '@classes/min-oracle-card';
@@ -9,6 +9,7 @@ import { SleepHelper } from '@classes/sleep-helper';
 import { GroupByMode, MainCardTypes, Statistics } from '@classes/statistics';
 import { Tag } from '@classes/tag';
 import { environment } from '@env';
+import { faChartBar, faComment, faList, faPlus, faSpinner, faSquareRootAlt, faSync, faTags, faTasks } from '@fortawesome/free-solid-svg-icons';
 import { CardTagLinkApiService } from '@services/card-tag-link-api.service';
 import { MessageLevel, MessagesService } from '@services/messages.service';
 import { EventType, iTagsUpdated, NotificationService } from '@services/notification.service';
@@ -23,10 +24,8 @@ import { iChartCmc } from './chart-cmc/chart-cmc.component';
 import { iChartColorPie } from './chart-color-pie/chart-color-pie.component';
 import { iChartTags } from './chart-tags/chart-tags.component';
 import { StatsCalculatorComponent } from './stats-calculator/stats-calculator.component';
-import { faPlus, faList, faTasks, faTags, faSync, faChartBar, faComment, faSquareRootAlt } from '@fortawesome/free-solid-svg-icons';
+import { AuthService } from '@services/auth.service';
 
-
-const TOTAL_PROGRESS_STEPS = 5.0;
 
 const UNTAGGED_PLACEHOLDER = 'UNTAGGED';
 const QUERY_BATCH_SIZE = 10;
@@ -35,7 +34,7 @@ const QUERY_SLEEP_MS = 100;
 const DECKBOX_TOKEN = 'deckbox.org/sets/';
 
 enum FinishedStep {
-	Cache = 'Transform Name Dictionary',
+	Cache = 'Cache',
 	Oracle = 'Oracle Definitions',
 	CardTagLinks = 'CardTagLinks',
 	PostProcessing = 'Post Processing',
@@ -53,14 +52,15 @@ interface CardGrouping {
 	styleUrls: ['./main.component.less']
 })
 export class MainComponent implements OnInit, OnDestroy {
-	faPlus = faPlus;
-	faList = faList;
-	faTasks = faTasks;
-	faTags = faTags;
-	faSync = faSync;
 	faChartBar = faChartBar;
 	faComment = faComment;
+	faList = faList;
+	faPlus = faPlus;
+	faSpinner = faSpinner;
 	faSquareRootAlt = faSquareRootAlt;
+	faSync = faSync;
+	faTags = faTags;
+	faTasks = faTasks;
 
 	@ViewChild('statsCalculator') statsCalculator: StatsCalculatorComponent;
 
@@ -75,25 +75,20 @@ export class MainComponent implements OnInit, OnDestroy {
 
 	private _emitFinishedStep = new EventEmitter();
 
-	private _isCacheReady = false;// true only after _tags and _transformNameDict are loaded
+	private _isCacheReady(): boolean {
+		return !!this._tags && !!this._transformNameDict;
+	};
+
 	private _tags: Tag[];
 	private _transformNameDict: { [name: string]: string } = {};
 
 	chartsColumns = 2;
 
-	cardCounts = {
-		total: 0,
-		unique: 0,
-		missing: 0,
-	};
-
 	cardsGrouped: CardGrouping[] = [];
 
-	private _tagsUpdatedSub: Subscription;
+	private _subscriptions: Subscription[] = [];
 
-	isProgressSpinnerActive = false;
-	progressSpinnerValue = 0;
-	private _stepNumber = 0;
+	isProgressSpinnerActive = true;
 
 	isChartTagsRadar = false;
 	chartTagsRadar: iChartTags;
@@ -106,6 +101,7 @@ export class MainComponent implements OnInit, OnDestroy {
 
 	constructor(
 		private http: HttpClient,
+		private auth: AuthService,
 		private messages: MessagesService,
 		private oracle: OracleApiService,
 		private tagService: TagApiService,
@@ -115,13 +111,25 @@ export class MainComponent implements OnInit, OnDestroy {
 	) { }
 
 	ngOnInit() {
+		this._subscribeToUserLoadedEvent();
 		this._subscribeToTagUpdateEvents();
 		this._subscribeToFinishedStepEvents();
 	}
 
 	ngOnDestroy() {
-		this._tagsUpdatedSub.unsubscribe();
+		this._subscriptions.forEach(sub => sub.unsubscribe());
 		this._emitFinishedStep.unsubscribe();
+	}
+
+	private _subscribeToUserLoadedEvent() {
+		// when user object is loaded, allow interaction
+		const sub = this.auth.userProfile$.subscribe(user => {
+			if (user) {
+				this.isProgressSpinnerActive = false;
+			}
+		});
+
+		this._subscriptions.push(sub);
 	}
 
 	private _subscribeToFinishedStepEvents() {
@@ -129,20 +137,20 @@ export class MainComponent implements OnInit, OnDestroy {
 			this.messages.send(`${step.toString()} loaded...`);
 
 			switch (step) {
+				case FinishedStep.Cache:
+					this.submitDecklist();
+					break;
+
 				case FinishedStep.Oracle:
 					this._removeMissingCards();
-					this._countCards();
-					this._updateProgress();
 					this._mixinTagLinks();
 					break;
 
 				case FinishedStep.CardTagLinks:
-					this._updateProgress();
 					this._decklistPostProcessing();
 					break;
 
 				case FinishedStep.PostProcessing:
-					this._updateProgress();
 					this.isProgressSpinnerActive = false;
 					this.isDecklistReady = true;
 					this.messages.send('Decklist processed!');
@@ -165,20 +173,29 @@ export class MainComponent implements OnInit, OnDestroy {
 			});
 	}
 
-	private _countCards() {
-		this.cardCounts.total = this.deck.map(m => m.count).reduce((a, b) => a + b, 0);
-		this.cardCounts.unique = this.deck.length;
+	countTotalCards(): number {
+		if (this.deck) {
+			return this.deck.map(m => m.count).reduce((a, b) => a + b, 0);
+		} else {
+			return 0;
+		}
+	}
+
+	countUniqueCards(): number {
+		if (this.deck) {
+			return this.deck.length;
+		} else {
+			return 0;
+		}
 	}
 
 	private _decklistPostProcessing() {
-		this._logMissingCards();
 		this._performGroupByMode(this.groupByMode);
-
 		this._emitFinishedStep.emit(FinishedStep.PostProcessing);
 	}
 
 	private _subscribeToTagUpdateEvents() {
-		this._tagsUpdatedSub = this.notify.isTagsUpdated$.subscribe((event: iTagsUpdated) => {
+		const sub = this.notify.isTagsUpdated$.subscribe((event: iTagsUpdated) => {
 			switch (event.type) {
 				case EventType.Insert: {
 					// update list of tags
@@ -267,35 +284,15 @@ export class MainComponent implements OnInit, OnDestroy {
 					break;
 			}
 		});
+
+		this._subscriptions.push(sub);
 	}
 
-	private _logMissingCards() {
-		const missing = this.deck.filter(m => !m.OracleCard);
-		missing.forEach(card => {
-			this.messages.send(`Could not find "${card.name}" in Oracle, please check spelling and/or capitalization.`, MessageLevel.Warn);
-		});
+	submitDecklist() {
+		this.isDecklistReady = false;
+		this.isProgressSpinnerActive = true;
 
-		this.cardCounts.missing = missing.length;
-	}
-
-	private _updateProgress() {
-		if (this._stepNumber < TOTAL_PROGRESS_STEPS) {
-			this._stepNumber++;
-		}
-
-		this.progressSpinnerValue = Math.min(100, (this._stepNumber / TOTAL_PROGRESS_STEPS) * 100);
-	}
-
-	submitDecklist(isFromClick: boolean = false) {
-		if (isFromClick) {
-			this.isDecklistReady = false;
-			this._stepNumber = (this._isCacheReady) ? 1 : 0;
-			this.isProgressSpinnerActive = true;
-		}
-
-		if (this._isCacheReady) {
-			this._updateProgress();
-
+		if (this._isCacheReady()) {
 			this.messages.send('Processing decklist, please wait...', MessageLevel.Notify);
 
 			// reset output containers
@@ -362,8 +359,7 @@ export class MainComponent implements OnInit, OnDestroy {
 				}
 			}
 		} else {
-			this._updateProgress();
-
+			// load up the cache before (automatically) resubmitting
 			this.tagService.getTags()
 				.subscribe(tags => {
 					this._tags = tags;
@@ -377,10 +373,7 @@ export class MainComponent implements OnInit, OnDestroy {
 										this._transformNameDict[front] = name;
 									});
 
-								this._isCacheReady = true;
 								this._emitFinishedStep.emit(FinishedStep.Cache);
-
-								this.submitDecklist();
 							}
 						});
 				});

@@ -13,7 +13,6 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { MatMenuModule } from '@angular/material/menu';
 import { MatPaginatorModule } from '@angular/material/paginator';
-import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSelectModule } from '@angular/material/select';
 import { MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatTableModule } from '@angular/material/table';
@@ -21,6 +20,7 @@ import { MatToolbarModule } from '@angular/material/toolbar';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { BrowserModule } from '@angular/platform-browser';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
+import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
 import { MDBBootstrapModule } from 'angular-bootstrap-md';
 import { ChartsModule } from 'ng2-charts';
 import { AppRoutingModule } from './app-routing.module';
@@ -37,24 +37,23 @@ import { ChartTagsComponent } from './main/chart-tags/chart-tags.component';
 import { MainComponent } from './main/main.component';
 import { StatsCalculatorComponent } from './main/stats-calculator/stats-calculator.component';
 import { MessagesComponent } from './messages/messages.component';
-import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
 
 
 @NgModule({
 	declarations: [
 		AppComponent,
-		MainComponent,
-		DialogAddTagComponent,
-		DialogCardDetailsComponent,
+		CallbackComponent,
 		ChartCmcComponent,
 		ChartColorPieComponent,
-		HeaderComponent,
-		CallbackComponent,
+		ChartTagsComponent,
+		DialogAddTagComponent,
+		DialogCardDetailsComponent,
 		DialogManageTagsComponent,
 		DialogRenameTagComponent,
+		HeaderComponent,
+		MainComponent,
 		MessagesComponent,
-		ChartTagsComponent,
-		StatsCalculatorComponent
+		StatsCalculatorComponent,
 	],
 	entryComponents: [
 		DialogAddTagComponent,
@@ -64,12 +63,17 @@ import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
 	],
 	imports: [
 		MDBBootstrapModule.forRoot(),
+		
 		AppRoutingModule,
 		BrowserAnimationsModule,
 		BrowserModule,
-		ChartsModule,
 		FormsModule,
 		HttpClientModule,
+		ReactiveFormsModule,
+
+		ChartsModule,
+		FontAwesomeModule,
+		
 		MatAutocompleteModule,
 		MatButtonModule,
 		MatCardModule,
@@ -82,14 +86,11 @@ import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
 		MatInputModule,
 		MatMenuModule,
 		MatPaginatorModule,
-		MatProgressSpinnerModule,
 		MatSelectModule,
 		MatSnackBarModule,
 		MatTableModule,
 		MatToolbarModule,
 		MatTooltipModule,
-		ReactiveFormsModule,
-		FontAwesomeModule,
 	],
 	providers: [],
 	bootstrap: [AppComponent]

@@ -30,7 +30,7 @@ export class MessagesComponent implements OnInit, OnDestroy {
 	ngOnInit() {
 		this._addedMessage = this.service.addedMessage$.subscribe((message: iMessage) => {
 			if (message.level !== MessageLevel.Init) {
-				this._messages.push(message);
+				this._messages.splice(0, 0, message);
 				this._refreshTable();
 			}
 		});

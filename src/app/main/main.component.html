@@ -1,7 +1,6 @@
 <ng-container *ngIf="isProgressSpinnerActive">
   <div class="spinner-wrapper">
-    <mat-progress-spinner color="accent" mode="determinate" [value]="progressSpinnerValue">
-    </mat-progress-spinner>
+    <fa-icon [icon]="faSpinner" [fixedWidth]="true" [pulse]="true"></fa-icon>
   </div>
 </ng-container>
 <mat-accordion>
@@ -17,7 +16,7 @@
       <textarea matInput [(ngModel)]="decklist" (focus)="$event.target.select()" placeholder="Decklist (Simple Format)" rows="10"></textarea>
     </mat-form-field>
     <mat-action-row>
-      <button mat-button color="accent" (click)="submitDecklist(true)">
+      <button mat-button color="accent" (click)="submitDecklist()">
         <fa-icon [icon]="faTasks"></fa-icon>
         &nbsp;
         Submit
@@ -31,11 +30,9 @@
         &nbsp;
         Deck Results
       </mat-panel-title>
-      <ng-container *ngIf="cardCounts.total > 0">
-        <mat-panel-description>
-          {{cardCounts.total}} total, {{cardCounts.unique}} unique
-        </mat-panel-description>
-      </ng-container>
+      <mat-panel-description>
+        {{countTotalCards()}} total, {{countUniqueCards()}} unique
+      </mat-panel-description>
     </mat-expansion-panel-header>
     <div align="end">
       <mat-form-field style="max-width: 300px;">
@@ -50,9 +47,6 @@
         <fa-icon [icon]="faSync"></fa-icon>
       </button>
     </div>
-    <ng-container *ngIf="cardCounts.missing > 0">
-      <p>There were {{cardCounts.missing}} missing cards; please check log for details.</p>
-    </ng-container>
     <ng-container *ngIf="!isDecklistReady || cardsGrouped.length === 0">
       <ng-container *ngTemplateOutlet="noDataWarning;"></ng-container>
     </ng-container>
