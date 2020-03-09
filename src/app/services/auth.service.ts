@@ -53,12 +53,6 @@ export class AuthService {
 		private router: Router,
 		private profileService: ProfileApiService,
 	) {
-		// this.userProfile$.subscribe(user => {
-		// 	if (user) {
-		// 		this._setupProfileId(user.sub);
-		// 	}
-		// });
-
 		// On initial load, check authentication state with authorization server
 		// Set up local auth streams if user is already authenticated
 		this.localAuthSetup();
@@ -93,7 +87,6 @@ export class AuthService {
 		return this.auth0Client$.pipe(
 			concatMap((client: Auth0Client) => from(client.getUser(options))),
 			tap(user => {
-				// sessionStorage.setItem('auth0', user.sub);
 				this._setupProfileId(user.sub);
 				this.userProfileSubject$.next(user);
 			})

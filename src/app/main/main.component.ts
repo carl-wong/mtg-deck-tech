@@ -126,12 +126,11 @@ export class MainComponent implements OnInit, OnDestroy {
 
 	private _subscribeToUserLoadedEvent() {
 		// when user object is loaded, allow interaction
-		const sub = this.auth.userProfile$.subscribe(user => {
-			if (user) {
+		const sub = this.auth.isUserLoaded$.subscribe(isLoaded => {
+			if (isLoaded) {
 				this.isProgressSpinnerActive = false;
 			}
 		});
-
 		this._subscriptions.push(sub);
 	}
 
@@ -145,7 +144,6 @@ export class MainComponent implements OnInit, OnDestroy {
 					break;
 
 				case FinishedStep.Oracle:
-					// this._removeMissingCards();
 					this._mixinTagLinks();
 					break;
 
@@ -164,17 +162,6 @@ export class MainComponent implements OnInit, OnDestroy {
 			}
 		});
 	}
-
-	// private _removeMissingCards() {
-	// 	this.deck.filter(m => !m.OracleCard).map(m => m.name)
-	// 		.forEach(name => {
-	// 			const index = this.deck.findIndex(m => m.name === name);
-	// 			if (index !== -1) {
-	// 				this.deck.splice(index, 1);
-	// 				this.messages.send(`Could not find "${name}", removed from deck.`, MessageLevel.Info);
-	// 			}
-	// 		});
-	// }
 
 	private _decklistPostProcessing() {
 		this._performGroupByMode(this.groupByMode);
@@ -735,7 +722,6 @@ export class MainComponent implements OnInit, OnDestroy {
 
 			default:
 				break;
-
 		}
 
 		this.accordionStep = panel;
