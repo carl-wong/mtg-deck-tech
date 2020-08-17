@@ -18,33 +18,33 @@ export class TagApiService extends BaseApiService {
 	}
 
 	public getTags(): Observable<Tag[]> {
-		return this.http.get<Tag[]>(this._api + '/Profiles/' + this.getSessionProfileId() + '/Tags');
+		return this.http.get<Tag[]>(this.apiUrl + '/Profiles/' + this.getSessionProfileId() + '/Tags');
 	}
 
 	public createTag(model: Tag): Observable<PostResult> {
 		model.ProfileId = parseInt(this.getSessionProfileId());
-		return this.http.post<PostResult>(this._api + '/Tags', model, this.httpOptions)
+		return this.http.post<PostResult>(this.apiUrl + '/Tags', model, this.httpOptions)
 			.pipe(
 				catchError(this.handleError<PostResult>('create Tag'))
 			);
 	}
 
 	public updateTag(model: Tag): Observable<ApiResult> {
-		return this.http.put<ApiResult>(this._api + '/Tags/' + model.id, model, this.httpOptions)
+		return this.http.put<ApiResult>(this.apiUrl + '/Tags/' + model.id, model, this.httpOptions)
 			.pipe(
 				catchError(this.handleError<ApiResult>('update Tag'))
 			);
 	}
 
 	public mergeTags(from: Tag, into: Tag): Observable<ApiResult> {
-		return this.http.get<ApiResult>(this._api + '/Tags/Merge/' + from.id + '/' + into.id)
+		return this.http.get<ApiResult>(this.apiUrl + '/Tags/Merge/' + from.id + '/' + into.id)
 			.pipe(
 				catchError(this.handleError<ApiResult>('merge Tag from ' + from.id + ' into ' + into.id))
 			);
 	}
 
 	public deleteTag(id: number): Observable<ApiResult> {
-		return this.http.delete<ApiResult>(this._api + '/Tags/' + id)
+		return this.http.delete<ApiResult>(this.apiUrl + '/Tags/' + id)
 			.pipe(
 				catchError(this.handleError<ApiResult>('delete Tag'))
 			);

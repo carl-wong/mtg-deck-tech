@@ -3,7 +3,7 @@
         "fullTemplateTypeCheck": true,
         "strictInjectionParameters": true
     },
-    "compileOnSave": false,
+    "compileOnSave": true,
     "compilerOptions": {
         "baseUrl": "src",
         "declaration": false,

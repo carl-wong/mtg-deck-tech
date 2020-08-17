@@ -1,30 +1,20 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { PostResult } from '@classes/api-result';
 import { Profile } from '@classes/profile';
 import { Observable } from 'rxjs';
-import { catchError, map } from 'rxjs/operators';
-import { BaseApiService } from './base-api.service';
-
+import { BaseRestdbApiService } from './base-restdb-api.service';
 
 @Injectable({
-	providedIn: 'root'
+    providedIn: 'root'
 })
-export class ProfileApiService extends BaseApiService {
-	constructor(
-		protected http: HttpClient,
-	) {
-		super();
-	}
+export class ProfileApiService extends BaseRestdbApiService {
+    constructor(
+        protected http: HttpClient,
+    ) {
+        super('profiles', http);
+    }
 
-	public getProfilesByAuth0(id: string): Observable<Profile[]> {
-		return this.http.get<Profile[]>(this._api + '/Profiles?auth0Id=' + id);
-	}
-
-	public createProfile(model: Profile): Observable<PostResult> {
-		return this.http.post<PostResult>(this._api + '/Profiles', model, this.httpOptions)
-			.pipe(
-				catchError(this.handleError<PostResult>('create Profile'))
-			);
-	}
+    public getByAuth0(id: string): Observable<Profile[]> {
+        return this._get(undefined, `q={"user":{"$elemMatch":{"user_id":"${id}"}}}`);
+    }
 }

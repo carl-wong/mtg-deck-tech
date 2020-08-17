@@ -17,11 +17,11 @@ export class OracleApiService extends BaseApiService {
 
 	// API: GET /OracleCards
 	public getTransform(): Observable<MinOracleCard[]> {
-		return this.http.get<MinOracleCard[]>(this._api + '/OracleCards/Transform');
+		return this.http.get<MinOracleCard[]>(this.apiUrl + '/OracleCards/Transform');
 	}
 
 	// API: POST /OracleCards
 	public postNames(names: string[]): Observable<MinOracleCard[]> {
-		return this.http.post<MinOracleCard[]>(this._api + '/OracleCards', { cards: names }, this.httpOptions);
+		return this.http.post<MinOracleCard[]>(this.apiUrl + '/OracleCards', { cards: names }, this.httpOptions);
 	}
 }

@@ -3,16 +3,16 @@ import { AuthService } from '@services/auth.service';
 
 
 @Component({
-	selector: 'app-callback',
-	templateUrl: './callback.component.html',
-	styleUrls: ['./callback.component.less']
+  selector: 'app-callback',
+  templateUrl: './callback.component.html',
+  styleUrls: ['./callback.component.less']
 })
 export class CallbackComponent implements OnInit {
 
-	constructor(private auth: AuthService) { }
+  constructor(private auth: AuthService) { }
 
-	ngOnInit() {
-		this.auth.handleAuthCallback();
-	}
+  ngOnInit() {
+    // this.auth.handleAuthCallback();
+  }
 
 }

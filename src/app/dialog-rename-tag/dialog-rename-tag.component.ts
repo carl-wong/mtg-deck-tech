@@ -6,95 +6,95 @@ import { EventType, iTagsUpdated, NotificationService } from '@services/notifica
 import { TagApiService } from '@services/tag-api.service';
 
 
-export interface iDialogRenameTag {
-	model: Tag;
-	all: Tag[];
+export interface IDialogRenameTag {
+    model: Tag;
+    all: Tag[];
 }
 
 @Component({
-	selector: 'app-dialog-rename-tag',
-	templateUrl: './dialog-rename-tag.component.html',
-	styleUrls: ['./dialog-rename-tag.component.less']
+    selector: 'app-dialog-rename-tag',
+    templateUrl: './dialog-rename-tag.component.html',
+    styleUrls: ['./dialog-rename-tag.component.less']
 })
 export class DialogRenameTagComponent implements OnInit {
-	model: Tag;
-	private _all: Tag[];
+    public model: Tag;
+    private _all: Tag[];
 
-	constructor(
-		private messages: MessagesService,
-		private service: TagApiService,
-		private notify: NotificationService,
-		private dialogRef: MatDialogRef<DialogRenameTagComponent>,
-		@Inject(MAT_DIALOG_DATA) data: iDialogRenameTag
-	) {
-		this.model = Object.assign(new Tag(), data.model);
-		this._all = data.all;
-	}
+    constructor(
+        private messages: MessagesService,
+        private service: TagApiService,
+        private notify: NotificationService,
+        private dialogRef: MatDialogRef<DialogRenameTagComponent>,
+        @Inject(MAT_DIALOG_DATA) data: IDialogRenameTag
+    ) {
+        this.model = Object.assign(new Tag(), data.model);
+        this._all = data.all;
+    }
 
-	ngOnInit() {
-	}
+    ngOnInit() {
+    }
 
-	submit() {
-		if (this.model.name && this.model.name.trim()) {
-			this.model.name = this.model.name.trim().toUpperCase();
-			const mergeInto = this._all.find(m => m.name === this.model.name && m.id !== this.model.id);
-			if (mergeInto) {
-				// request to merge tags
-				if (confirm(`Do you wish to merge this tag into [${mergeInto.name}]?`)) {
-					this.service.mergeTags(this.model, mergeInto).subscribe(mergeResult => {
-						if (mergeResult) {
-							if (!mergeResult.isSuccess) {
-								this.messages.send(`Failed to merge [${this.model.name}] into [${mergeInto.name}].`, MessageLevel.Alert);
-							} else {
-								this.messages.send(`Successfully merged [${this.model.name}] into [${mergeInto.name}].`);
-								this.service.deleteTag(this.model.id).subscribe(deleteResult => {
-									if (deleteResult) {
-										if (!deleteResult.isSuccess) {
-											this.messages.send(`Failed to remove [${this.model.name}]...`, MessageLevel.Alert);
-										} else {
-											this.messages.send(`Successfully removed [${this.model.name}].`);
-											// only send a single update notification
-											// EventType.Merge should handle EventType.Delete functionality too
-											const data: iTagsUpdated = {
-												type: EventType.Merge,
-												Tag: this.model,
-												fromId: this.model.id,
-												toId: mergeInto.id,
-											};
+    submit() {
+        if (this.model.name && this.model.name.trim()) {
+            this.model.name = this.model.name.trim().toUpperCase();
+            const mergeInto = this._all.find(m => m.name === this.model.name && m.id !== this.model.id);
+            if (mergeInto) {
+                // request to merge tags
+                if (confirm(`Do you wish to merge this tag into [${mergeInto.name}]?`)) {
+                    this.service.mergeTags(this.model, mergeInto).subscribe(mergeResult => {
+                        if (mergeResult) {
+                            if (!mergeResult.isSuccess) {
+                                this.messages.send(`Failed to merge [${this.model.name}] into [${mergeInto.name}].`, MessageLevel.Alert);
+                            } else {
+                                this.messages.send(`Successfully merged [${this.model.name}] into [${mergeInto.name}].`);
+                                this.service.deleteTag(this.model.id).subscribe(deleteResult => {
+                                    if (deleteResult) {
+                                        if (!deleteResult.isSuccess) {
+                                            this.messages.send(`Failed to remove [${this.model.name}]...`, MessageLevel.Alert);
+                                        } else {
+                                            this.messages.send(`Successfully removed [${this.model.name}].`);
+                                            // only send a single update notification
+                                            // EventType.Merge should handle EventType.Delete functionality too
+                                            const data: iTagsUpdated = {
+                                                type: EventType.Merge,
+                                                Tag: this.model,
+                                                fromId: this.model.id,
+                                                toId: mergeInto.id,
+                                            };
 
-											this.notify.tagsUpdated(data);
-											this.dialogRef.close();
-										}
-									}
-								});
-							}
-						}
-					});
-				}
-			} else {
-				this.service.updateTag(this.model).subscribe(result => {
-					if (result) {
-						if (!result.isSuccess) {
-							this.messages.send(`Failed to rename [${this.model.name}].`, MessageLevel.Alert);
-						} else {
-							const data: iTagsUpdated = {
-								type: EventType.Update,
-								Tag: this.model,
-								fromId: -1,
-								toId: -1,
-							};
-							this.notify.tagsUpdated(data);
-							this.dialogRef.close();
-						}
-					}
-				});
-			}
-		} else {
-			this.messages.send('Tag name cannot be empty!', MessageLevel.Alert);
-		}
-	}
+                                            this.notify.tagsUpdated(data);
+                                            this.dialogRef.close();
+                                        }
+                                    }
+                                });
+                            }
+                        }
+                    });
+                }
+            } else {
+                this.service.updateTag(this.model).subscribe(result => {
+                    if (result) {
+                        if (!result.isSuccess) {
+                            this.messages.send(`Failed to rename [${this.model.name}].`, MessageLevel.Alert);
+                        } else {
+                            const data: iTagsUpdated = {
+                                type: EventType.Update,
+                                Tag: this.model,
+                                fromId: -1,
+                                toId: -1,
+                            };
+                            this.notify.tagsUpdated(data);
+                            this.dialogRef.close();
+                        }
+                    }
+                });
+            }
+        } else {
+            this.messages.send('Tag name cannot be empty!', MessageLevel.Alert);
+        }
+    }
 
-	close() {
-		this.dialogRef.close();
-	}
+    close() {
+        this.dialogRef.close();
+    }
 }

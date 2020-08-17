@@ -24,28 +24,28 @@ export class CardTagLinkApiService extends BaseApiService {
 		queries.push('TagId=' + tagId.toString());
 
 		const suffix = queries.length > 0 ? '?' + queries.join('&') : '';
-		return this.http.get<CardTagLink[]>(this._api + '/Profiles/' + this.getSessionProfileId() + '/CardTagLinks' + suffix);
+		return this.http.get<CardTagLink[]>(this.apiUrl + '/Profiles/' + this.getSessionProfileId() + '/CardTagLinks' + suffix);
 	}
 
 	public getCardTagLinksByTagId(tagId: number): Observable<CardTagLink[]> {
 		const suffix = '?TagId=' + tagId;
-		return this.http.get<CardTagLink[]>(this._api + '/Profiles/' + this.getSessionProfileId() + '/CardTagLinks' + suffix);
+		return this.http.get<CardTagLink[]>(this.apiUrl + '/Profiles/' + this.getSessionProfileId() + '/CardTagLinks' + suffix);
 	}
 
 	public postCardTagLinks(oracle_ids: string[]): Observable<CardTagLink[]> {
-		return this.http.post<CardTagLink[]>(this._api + '/Profiles/' + this.getSessionProfileId() + '/CardTagLinks', { oracle_ids: oracle_ids }, this.httpOptions);
+		return this.http.post<CardTagLink[]>(this.apiUrl + '/Profiles/' + this.getSessionProfileId() + '/CardTagLinks', { oracle_ids: oracle_ids }, this.httpOptions);
 	}
 
 	public createCardTagLink(model: CardTagLink): Observable<PostResult> {
 		model.ProfileId = parseInt(this.getSessionProfileId());
-		return this.http.post<PostResult>(this._api + '/CardTagLinks', model, this.httpOptions)
+		return this.http.post<PostResult>(this.apiUrl + '/CardTagLinks', model, this.httpOptions)
 			.pipe(
 				catchError(this.handleError<PostResult>('create CardTagLink'))
 			);
 	}
 
 	public deleteCardTagLink(id: number): Observable<ApiResult> {
-		return this.http.delete<ApiResult>(this._api + '/CardTagLinks/' + id)
+		return this.http.delete<ApiResult>(this.apiUrl + '/CardTagLinks/' + id)
 			.pipe(
 				catchError(this.handleError<ApiResult>('delete CardTagLink'))
 			);

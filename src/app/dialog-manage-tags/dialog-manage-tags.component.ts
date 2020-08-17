@@ -8,7 +8,7 @@ import { MessageLevel, MessagesService } from '@services/messages.service';
 import { EventType, iTagsUpdated, NotificationService } from '@services/notification.service';
 import { TagApiService } from '@services/tag-api.service';
 import { Subscription } from 'rxjs';
-import { DialogRenameTagComponent, iDialogRenameTag } from '../dialog-rename-tag/dialog-rename-tag.component';
+import { DialogRenameTagComponent, IDialogRenameTag } from '../dialog-rename-tag/dialog-rename-tag.component';
 
 
 @Component({
@@ -131,7 +131,7 @@ export class DialogManageTagsComponent implements OnInit, OnDestroy {
 				dConfig.autoFocus = false;
 				dConfig.disableClose = false;
 
-				const data: iDialogRenameTag = {
+				const data: IDialogRenameTag = {
 					model,
 					all: this.tags,
 				};
