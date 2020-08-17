@@ -1,0 +1,42 @@
+{
+    "angularCompilerOptions": {
+        "fullTemplateTypeCheck": true,
+        "strictInjectionParameters": true
+    },
+    "compileOnSave": true,
+    "compilerOptions": {
+        "baseUrl": "src",
+        "declaration": false,
+        "downlevelIteration": true,
+        "experimentalDecorators": true,
+        "importHelpers": true,
+        "lib": [
+            "es2018",
+            "dom"
+        ],
+        "module": "es2020",
+        "moduleResolution": "node",
+        "noFallthroughCasesInSwitch": true,
+        "noImplicitAny": true,
+        "noImplicitReturns": true,
+        "noImplicitThis": true,
+        "outDir": "./dist/out-tsc",
+        "paths": {
+            "@classes/*": [
+                "app/classes/*"
+            ],
+            "@env": [
+                "environments/environment"
+            ],
+            "@services/*": [
+                "app/services/*"
+            ]
+        },
+        "sourceMap": true,
+        "strictNullChecks": true,
+        "target": "es2015",
+        "typeRoots": [
+            "node_modules/@types"
+        ]
+    }
+}
