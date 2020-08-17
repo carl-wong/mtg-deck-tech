@@ -3,7 +3,12 @@ export const environment = {
   production: false,
   defaultDecklist: '1 Alesha, Who Smiles at Death\n1 Altar of Dementia\n1 Animate Dead',
   baseHref: '/',
-  apiUrl: 'http://localhost:3000',
+  apiUrl: 'https://scry-x.com/decktech-api',
+  restdb: {
+    url: 'https://scryx-338a.restdb.io/rest',
+		mediaUrl: 'https://scryx-338a.restdb.io/media', // cannot use own domain for media archive
+		cors_key: '5f3abaf4676d4003f08c2510',
+	},
   timestamp: 'Updated: 2020-03-09 @ 16:51:10',
   version: 'LOCAL',
 };
