@@ -18,7 +18,7 @@
       </button>
     </mat-action-row>
   </mat-expansion-panel>
-  <mat-expansion-panel [expanded]="accordionStep === 'groups'" (opened)="open('groups')">
+  <!-- <mat-expansion-panel [expanded]="accordionStep === 'groups'" (opened)="open('groups')">
     <mat-expansion-panel-header>
       <mat-panel-title>
         <fa-icon [icon]="faTags"></fa-icon>
@@ -71,14 +71,14 @@
                   <mat-chip (click)="openDialogAddTag(element)" (keydown.space)="openDialogAddTag(element)" (keydown.enter)="openDialogAddTag(element)" color="accent" selected [selectable]="false">
                     <fa-icon [icon]="faPlus"></fa-icon>
                   </mat-chip>
-                  <!-- <ng-container *ngIf="element.TagNames">
+                  <ng-container *ngIf="element.TagNames">
                     <ng-container *ngFor="let tagName of getCardTags(element)">
                       <mat-chip *ngIf="!!tagName" color="warn" selected [selectable]="false" (keydown.space)="removeCardTagLink()" (keydown.enter)="removeCardTagLink(element.oracle_id, tagName)" (removed)="removeCardTagLink(element.oracle_id, tagName)">
                         {{tagName | titlecase}}
                         <mat-icon matChipRemove>cancel</mat-icon>
                       </mat-chip>
                     </ng-container>
-                  </ng-container> -->
+                  </ng-container>
                 </mat-chip-list>
               </td>
             </ng-container>
@@ -95,8 +95,8 @@
         Refresh
       </button>
     </mat-action-row>
-  </mat-expansion-panel>
-  <mat-expansion-panel [expanded]="accordionStep === 'charts'" (opened)="open('charts')">
+  </mat-expansion-panel> -->
+  <!-- <mat-expansion-panel [expanded]="accordionStep === 'charts'" (opened)="open('charts')">
     <mat-expansion-panel-header>
       <mat-panel-title>
         <fa-icon [icon]="faChartBar"></fa-icon>
@@ -135,7 +135,7 @@
     <ng-container *ngIf="!!cardsGrouped">
       <app-stats-calculator [model]="deck" #statsCalculator></app-stats-calculator>
     </ng-container>
-  </mat-expansion-panel>
+  </mat-expansion-panel> -->
 </mat-accordion>
 <ng-template #noDataWarning>
   <p>No data, please submit a decklist first.</p>

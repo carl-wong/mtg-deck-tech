@@ -10,13 +10,14 @@ import { Tag } from '@classes/tag';
 import { environment } from '@env';
 import {
   faChartBar, faComment, faList, faPlus,
-  faSquareRootAlt, faSync, faTags, faTasks
+  faSquareRootAlt, faSync, faTags, faTasks,
 } from '@fortawesome/free-solid-svg-icons';
 import { CardTagLinkApiService } from '@services/card-tag-link-api.service';
 import { OracleApiService } from '@services/oracle-api.service';
 import { SingletonService } from '@services/singleton.service';
 import { ChartDataSets } from 'chart.js';
 import { Label } from 'ng2-charts';
+import { forkJoin } from 'rxjs';
 import { first, take } from 'rxjs/operators';
 import { DialogAddTagComponent } from '../dialog-add-tag/dialog-add-tag.component';
 import { DialogCardDetailsComponent } from '../dialog-card-details/dialog-card-details.component';
@@ -31,6 +32,22 @@ const QUERY_SLEEP_MS = 50;
 
 const DECKBOX_TOKEN = 'deckbox.org/sets/';
 
+/*
+  original grouped regex:
+  /(?<_ls>[\s]+)?(?<count>[\d]+)?(?<_x>[xX]+[\s]+)?(?<_ms>[\s]+)?(?<name>.+)(?<_ts>[\s]+)?$/gm;
+  */
+const REGEX = /([\s]+)?([\d]+)?([xX]+[\s]+)?([\s]+)?(.+)([\s]+)?$/gm;
+
+const REGEX_GROUP = {
+  count: 2,
+  full: 0,
+  ls: 1,
+  ms: 4,
+  name: 5,
+  ts: 6,
+  x: 3,
+};
+
 enum FinishedStep {
   Cache = 'Cache',
   Oracle = 'Oracle Definitions',
@@ -38,7 +55,7 @@ enum FinishedStep {
   PostProcessing = 'Post Processing',
 }
 
-interface CardGrouping {
+interface ICardGrouping {
   key: string;
   cards: CardReference[];
   count: number;
@@ -47,7 +64,7 @@ interface CardGrouping {
 @Component({
   selector: 'app-main',
   templateUrl: './main.component.html',
-  styleUrls: ['./main.component.less']
+  styleUrls: ['./main.component.less'],
 })
 export class MainComponent implements OnInit {
   constructor(
@@ -57,60 +74,58 @@ export class MainComponent implements OnInit {
     private singleton: SingletonService,
   ) { }
 
-  faChartBar = faChartBar;
-  faComment = faComment;
-  faList = faList;
-  faPlus = faPlus;
-  faSquareRootAlt = faSquareRootAlt;
-  faSync = faSync;
-  faTags = faTags;
-  faTasks = faTasks;
+  public faChartBar = faChartBar;
+  public faComment = faComment;
+  public faList = faList;
+  public faPlus = faPlus;
+  public faSquareRootAlt = faSquareRootAlt;
+  public faSync = faSync;
+  public faTags = faTags;
+  public faTasks = faTasks;
 
-  @ViewChild('statsCalculator') statsCalculator: StatsCalculatorComponent;
+  @ViewChild('statsCalculator') public statsCalculator: StatsCalculatorComponent;
 
-  groupByModes = Statistics.GROUP_MODES;
-  @Input() groupByMode: string = this.groupByModes[0].toString();
+  public groupByModes = Statistics.GROUP_MODES;
+  @Input() public groupByMode: string = this.groupByModes[0].toString();
 
-  accordionStep = 'input';
-  @Input() decklist = environment.defaultDecklist;
+  public accordionStep = 'input';
+  @Input() public decklist = environment.defaultDecklist;
 
-  deck: CardReference[] = [];
+  public deck: CardReference[] = [];
 
-  totalCards = 0;
-  uniqueCards = 0;
+  public totalCards = 0;
+  public uniqueCards = 0;
 
   private profileId: string;
   private tags: Tag[];
-  private links: CardTagLink[] = [];
   private transformNameDict: { [name: string]: string } | undefined;
 
-  chartsColumns = 2;
+  public chartsColumns = 2;
 
-  cardsGrouped: CardGrouping[] = [];
+  public cardsGrouped: ICardGrouping[] = [];
 
-  isChartTagsRadar = false;
-  chartTagsRadar: iChartTags;
+  public isChartTagsRadar = false;
+  public chartTagsRadar: iChartTags;
 
-  isChartColorPie = false;
-  chartColorPie: iChartColorPie;
+  public isChartColorPie = false;
+  public chartColorPie: iChartColorPie;
 
-  isChartCMCCurve = false;
-  chartCMCCurve: iChartCmc;
+  public isChartCMCCurve = false;
+  public chartCMCCurve: iChartCmc;
 
-  private _isEverythingReady(): boolean {
+  private isEverythingReady(): boolean {
     return !!this.profileId && !!this.tags && !!this.transformNameDict;
   }
 
-  ngOnInit() {
+  public ngOnInit(): void {
     // get dictionary of transform card names
     this.oracle.getTransform()
       .pipe(take(1))
       .subscribe((cards) => {
         if (!!cards) {
           this.transformNameDict = {};
-
-          cards.filter(m => m.name && m.name.includes(' // ')).map(m => m.name.toLowerCase())
-            .forEach(name => {
+          cards.filter((m) => m.name && m.name.includes(' // ')).map((m) => m.name.toLowerCase())
+            .forEach((name) => {
               const front = name.split(' // ')[0];
               if (!!this.transformNameDict) {
                 this.transformNameDict[front] = name;
@@ -130,69 +145,8 @@ export class MainComponent implements OnInit {
       });
   }
 
-  /** updates total and unique tallies, groups cards by selected mode */
-  private decklistPostProcessing() {
-    this.performGroupByMode(this.groupByMode);
-
-    this.totalCards = this.deck.map(m => m.count).reduce((a, b) => a + b, 0);
-    this.uniqueCards = this.deck.length;
-  }
-
-  private submitDecklistHelper(lines: string[]) {
-    if (lines.length === 0) {
-      // done
-    } else {
-      if (!environment.production) { console.log(lines.length + ' lines left'); }
-      /*
-				original grouped regex:
-				/(?<_ls>[\s]+)?(?<count>[\d]+)?(?<_x>[xX]+[\s]+)?(?<_ms>[\s]+)?(?<name>.+)(?<_ts>[\s]+)?$/gm;
-				*/
-      const regex = /([\s]+)?([\d]+)?([xX]+[\s]+)?([\s]+)?(.+)([\s]+)?$/gm;
-
-      const REGEX_GROUP = {
-        full: 0,
-        ls: 1,
-        count: 2,
-        x: 3,
-        ms: 4,
-        name: 5,
-        ts: 6,
-      };
-
-      const linesList = lines.slice(0, Math.min(QUERY_BATCH_SIZE, lines.length));
-      lines.splice(0, linesList.length);
-
-      const tempCardList: CardReference[] = [];
-
-      linesList.forEach(line => {
-        regex.lastIndex = 0; // reset to look from start of each line
-        const lineRx = regex.exec(line);
-
-        if (lineRx) {
-          const cardName = (lineRx[REGEX_GROUP.name] || '').trim().toLowerCase();
-          if (cardName) {
-            const cardCount = parseInt(lineRx[REGEX_GROUP.count] || '1', 10);
-
-            const card = new CardReference();
-            card.count = cardCount;
-            card.name = this.transformNameDict?.[cardName] || cardName;
-
-            tempCardList.push(card);
-          }
-        }
-      });
-
-      this.oracle.getByNames(tempCardList.map(m => m.name)).pipe(take(1))
-        .subscribe(cards => {
-          this.mixinOracleCardResults(tempCardList, cards);
-          SleepHelper.sleep(QUERY_SLEEP_MS);
-          this.submitDecklistHelper(lines);
-        });
-    }
-  }
-
-  submitDecklist() {
-    if (this._isEverythingReady()) {
+  public submitDecklist(): void {
+    if (this.isEverythingReady()) {
       this.singleton.setIsLoading(true);
       this.singleton.notify('Processing decklist...');
 
@@ -200,38 +154,117 @@ export class MainComponent implements OnInit {
       this.deck = [];
       this.cardsGrouped = [];
 
-      this.submitDecklistHelper(this.decklist.split('\n'));
+      const remainingLines: string[] = this.decklist.split('\n');
+      if (!environment.production) { console.log(remainingLines.length + ' lines found'); }
+
+      const oracleCalls = [];
+
+      while (remainingLines.length > 0) {
+        const linesList = remainingLines.slice(0, Math.min(QUERY_BATCH_SIZE, remainingLines.length));
+        remainingLines.splice(0, linesList.length);
+
+        console.log(`remainingLines.length after splice: ${remainingLines.length}`);
+
+        // declare a temporary sublist of cards for fetching oracle data
+        const tempCardList: CardReference[] = [];
+
+        linesList.forEach((line) => {
+          REGEX.lastIndex = 0; // reset to look from start of each line
+          const lineRx = REGEX.exec(line);
+
+          if (lineRx) {
+            const cardName = (lineRx[REGEX_GROUP.name] || '').trim().toLowerCase();
+            if (cardName) {
+              const cardCount = parseInt(lineRx[REGEX_GROUP.count] || '1', 10);
+
+              const card = new CardReference();
+              card.count = cardCount;
+              card.name = this.transformNameDict?.[cardName] || cardName;
+
+              tempCardList.push(card);
+            }
+          }
+        });
+
+        const cardNames = tempCardList.map((m) => m.name);
+        if (cardNames.length > 0) {
+          oracleCalls.push(this.oracle.getByNames(cardNames).pipe(take(1)));
+          this.deck = this.deck.concat(tempCardList);
+        }
+      }
+
+      // call all oracle queries together with forkJoin and loop through results
+      forkJoin(oracleCalls).pipe(take(1)).subscribe((oracleResult) => {
+        oracleResult.forEach((oCards) => {
+          // attach oracle results to each card reference
+          oCards.forEach((oCard) => {
+            const lowerName = oCard.name.toLowerCase();
+            const dCard = this.deck.find((m) => m.name === lowerName);
+            if (!!dCard) {
+              dCard.name = oCard.name;
+              dCard.OracleCard = oCard;
+            }
+          });
+        });
+
+        // log each card that was not found
+        this.deck.filter((m) => !m.OracleCard).forEach((card) => {
+          this.singleton.notify(`No oracle result for "${card.name}", removing from deck...`);
+        });
+
+        // keep only cards with oracle definitions
+        this.deck = this.deck.filter((m) => !!m.OracleCard);
+
+        // fill in tag links
+        const linkCalls = [];
+
+        const stepSize = 20;
+        for (let i = 0; i < this.deck.length; i += stepSize) {
+          const subDeck = this.deck.slice(i, Math.min(i + stepSize, this.deck.length));
+          const oracleIds = subDeck.map((m) => m.OracleCard.oracle_id);
+          if (oracleIds.length > 0) {
+            linkCalls.push(this.cardTagLinkService.getByProfileId(this.profileId ?? '', oracleIds).pipe(take(1)));
+          }
+        }
+
+        forkJoin(linkCalls).pipe(take(1)).subscribe((linkResults) => {
+          console.log(linkResults);
+          linkResults.forEach((links) => {
+            links.forEach((link) => {
+              const dCard = this.deck.find((m) => m.OracleCard?.oracle_id === link.oracle_id);
+              if (!!dCard) {
+                if (!!dCard.links) {
+                  dCard.links.push(link);
+                } else {
+                  dCard.links = [link];
+                }
+              }
+            });
+          });
+        });
+
+        if (!environment.production) {
+          console.log('decklist:');
+          console.log(this.deck);
+        }
+
+        this.singleton.setIsLoading(false);
+      });
     } else {
       // load up the cache before (automatically) resubmitting
       this.singleton.notify('Please wait for things to warm up first...');
     }
   }
 
-  // attach oracle details to each card
-  private mixinOracleCardResults(dCards: CardReference[], oCards: MinOracleCard[]) {
-    // attach oracle results to each card reference
-    oCards.forEach(oCard => {
-      const lowerName = oCard.name.toLowerCase();
-      const dCard = dCards.find(m => m.name === lowerName);
-      if (!!dCard) {
-        dCard.name = oCard.name;
-        dCard.OracleCard = oCard;
-      }
-    });
+  /** updates total and unique tallies, groups cards by selected mode */
+  private decklistPostProcessing(): void {
+    this.performGroupByMode(this.groupByMode);
 
-    // log each card that was not found
-    dCards.filter(m => !m.OracleCard).forEach(card => {
-      this.singleton.notify(`No oracle result for "${card.name}", removing from deck...`);
-      SleepHelper.sleep(1000);
-    });
-
-    // add only the cards with oracle results to the deck
-    dCards.filter(m => !!m.OracleCard).forEach(card => {
-      this.deck.push(card);
-    });
+    this.totalCards = this.deck.map((m) => m.count).reduce((a, b) => a + b, 0);
+    this.uniqueCards = this.deck.length;
   }
 
-  private mixinTagLinksHelper(oracleIds: string[]) {
+  private mixinTagLinksHelper(oracleIds: string[]): void {
     if (oracleIds.length === 0) {
       // done
     } else {
@@ -240,13 +273,7 @@ export class MainComponent implements OnInit {
 
       this.cardTagLinkService.getByProfileId(this.profileId ?? '', idList)
         .pipe(take(1))
-        .subscribe(links => {
-          links.forEach((link) => {
-            const existing = this.links?.find(m => m._id === link._id);
-            if (!existing) {
-              this.links.push(link);
-            }
-          });
+        .subscribe((links) => {
 
           SleepHelper.sleep(QUERY_SLEEP_MS);
           this.mixinTagLinksHelper(oracleIds);
@@ -254,24 +281,24 @@ export class MainComponent implements OnInit {
     }
   }
 
-  private getCharts() {
+  private getCharts(): void {
     this.getCMCChart();
     this.getColorsPieChart();
     this.getTagsRadarChart();
   }
 
-  private getTagsRadarChart() {
+  private getTagsRadarChart(): void {
     if (this.deck && this.deck.length > 0) {
       const stats: { sets: ChartDataSets[], labels: Label[] } = Statistics.getChartTagsRadar(this.deck, this.tags, this.links);
 
       const chart: iChartTags = {
         title: 'Tags',
         data: stats.sets,
-        labels: stats.labels
+        labels: stats.labels,
       };
 
       let dataPoints = 0;
-      chart.data.forEach(set => {
+      chart.data.forEach((set) => {
         if (set.data) {
           dataPoints += set.data.length;
         }
@@ -284,7 +311,7 @@ export class MainComponent implements OnInit {
     }
   }
 
-  private getColorsPieChart() {
+  private getColorsPieChart(): void {
     if (this.deck && this.deck.length > 0) {
       const chart: iChartColorPie = {
         title: 'Color Breakdown',
@@ -298,7 +325,7 @@ export class MainComponent implements OnInit {
     }
   }
 
-  private getCMCChart() {
+  private getCMCChart(): void {
     if (this.deck && this.deck.length > 0) {
       const chart: iChartCmc = {
         title: 'CMC',
@@ -306,7 +333,7 @@ export class MainComponent implements OnInit {
         labels: [],
       };
 
-      Statistics.getCMCOptions().forEach(cmc => {
+      Statistics.getCMCOptions().forEach((cmc) => {
         chart.labels.push(cmc);
       });
 
@@ -317,19 +344,19 @@ export class MainComponent implements OnInit {
     }
   }
 
-  private groupByTypes() {
-    const result: CardGrouping[] = [];
+  private groupByTypes(): void {
+    const result: ICardGrouping[] = [];
 
-    Statistics.MAIN_TYPES.forEach(mainType => {
+    Statistics.MAIN_TYPES.forEach((mainType) => {
       result.push({ key: mainType, cards: [], count: 0 });
     });
 
-    this.deck.forEach(card => {
+    this.deck.forEach((card) => {
       if (card.OracleCard) {
         // for (let iType = 0; iType < Statistics.MAIN_TYPES.length; iType++) {
         for (const mainType of Statistics.MAIN_TYPES) {
           if (card.OracleCard.type_line.indexOf(mainType.toString()) !== -1) {
-            const grouping = result.find(m => m.key === mainType);
+            const grouping = result.find((m) => m.key === mainType);
 
             if (grouping) {
               grouping.cards.push(card);
@@ -344,28 +371,28 @@ export class MainComponent implements OnInit {
       }
     });
 
-    result.map(a => this.sortGroupContents(a));
+    result.map((a) => this.sortGroupContents(a));
 
-    this.cardsGrouped = result.filter(m => m.count > 0);
+    this.cardsGrouped = result.filter((m) => m.count > 0);
     this.accordionStep = 'groups';
   }
 
-  private sortGroupContents(group: CardGrouping) {
+  private sortGroupContents(group: ICardGrouping): void {
     group.cards = group.cards.sort(this.sortCardsByName);
   }
 
-  private groupByTags() {
-    const untagged: CardGrouping = { key: UNTAGGED_PLACEHOLDER, cards: [], count: 0 };
-    let result: CardGrouping[] = [];
+  private groupByTags(): void {
+    const untagged: ICardGrouping = { key: UNTAGGED_PLACEHOLDER, cards: [], count: 0 };
+    let result: ICardGrouping[] = [];
 
-    this.deck.forEach(card => {
+    this.deck.forEach((card) => {
       // find all tags attached to this card
       const cardTags = this.links.filter((link) => link.oracle_id === card.OracleCard?.oracle_id && link.tag?.length > 0)
-        .map(link => this.tags?.find(tag => tag._id === link.tag[0]._id));
+        .map((link) => this.tags?.find((tag) => tag._id === link.tag[0]._id));
       if (cardTags.length > 0) {
         cardTags.forEach((tag) => {
           if (!!(tag?.name)) {
-            const grouping = result.find(m => m.key === tag.name);
+            const grouping = result.find((m) => m.key === tag.name);
             if (!grouping) {
               result.push({ key: tag.name, cards: [card], count: 0 });
             } else {
@@ -380,7 +407,7 @@ export class MainComponent implements OnInit {
       }
     });
 
-    result.map(a => this.sortGroupContents(a));
+    result.map((a) => this.sortGroupContents(a));
     result = result.sort(this.sortCardGroupingsByKey);
 
     // ensure untagged cards show up at the bottom
@@ -389,21 +416,21 @@ export class MainComponent implements OnInit {
       result.push(untagged);
     }
 
-    this.cardsGrouped = result.filter(m => m.count > 0);
+    this.cardsGrouped = result.filter((m) => m.count > 0);
     this.accordionStep = 'groups';
   }
 
-  private groupByCMC() {
-    const result: CardGrouping[] = [];
+  private groupByCMC(): void {
+    const result: ICardGrouping[] = [];
 
     for (let i = 0; i < 8; i++) {
       result.push({ key: Statistics.cmcToString(i), cards: [], count: 0 });
     }
 
-    const landsGroup: CardGrouping = { key: 'Lands', cards: [], count: 0 };
+    const landsGroup: ICardGrouping = { key: 'Lands', cards: [], count: 0 };
     result.push(landsGroup);
 
-    this.deck.forEach(card => {
+    this.deck.forEach((card) => {
       const oracle = card.OracleCard;
       if (oracle) {
         if (oracle.layout &&
@@ -414,7 +441,7 @@ export class MainComponent implements OnInit {
           landsGroup.count += card.count;
         } else {
           const cmcString = Statistics.cmcToString(oracle.cmc);
-          const group = result.find(m => m.key === cmcString);
+          const group = result.find((m) => m.key === cmcString);
 
           if (group) {
             group.cards.push(card);
@@ -426,13 +453,13 @@ export class MainComponent implements OnInit {
       }
     });
 
-    result.map(a => this.sortGroupContents(a));
+    result.map((a) => this.sortGroupContents(a));
 
-    this.cardsGrouped = result.filter(m => m.count > 0);
+    this.cardsGrouped = result.filter((m) => m.count > 0);
     this.accordionStep = 'groups';
   }
 
-  private sortCardGroupingsByKey(a: CardGrouping, b: CardGrouping): number {
+  private sortCardGroupingsByKey(a: ICardGrouping, b: ICardGrouping): number {
     return (a.key > b.key) ? 1 : ((b.key > a.key) ? -1 : 0);
   }
 
@@ -444,11 +471,11 @@ export class MainComponent implements OnInit {
     return (a?.tag?.[0]?.name > b?.tag?.[0].name) ? 1 : ((b?.tag?.[0].name > a?.tag?.[0]?.name) ? -1 : 0);
   }
 
-  refreshGroups() {
+  public refreshGroups(): void {
     this.performGroupByMode(this.groupByMode);
   }
 
-  private performGroupByMode(mode: string) {
+  private performGroupByMode(mode: string): void {
     switch (mode as GroupByMode) {
       case GroupByMode.Types:
         this.groupByTypes();
@@ -467,11 +494,11 @@ export class MainComponent implements OnInit {
     }
   }
 
-  selectedMode($event: MatSelectChange) {
+  public selectedMode($event: MatSelectChange): void {
     this.performGroupByMode($event.value);
   }
 
-  openDialogCardDetails(card: CardReference) {
+  public openDialogCardDetails(card: CardReference): void {
     const dConfig = new MatDialogConfig();
 
     dConfig.disableClose = false;
@@ -482,7 +509,7 @@ export class MainComponent implements OnInit {
     this.dialog.open(DialogCardDetailsComponent, dConfig);
   }
 
-  openDialogAddTag(card: CardReference) {
+  public openDialogAddTag(card: CardReference): void {
     const dConfig = new MatDialogConfig();
 
     dConfig.disableClose = false;
@@ -491,7 +518,8 @@ export class MainComponent implements OnInit {
     const dRef = this.dialog.open(DialogAddTagComponent, dConfig);
     dRef.afterClosed().subscribe((tag: Tag) => {
       if (!!tag) {
-        const existingLink = this.links.find(m => m.oracle_id === card.OracleCard.oracle_id && m.tag?.[0]._id === tag._id);
+        const existingCard = this.deck.find((m) => m.OracleCard.oracle_id === card.OracleCard.oracle_id);
+        const existingLink = existingCard?.links?.find((m) => m.tag?.[0]._id === tag._id);
 
         if (!!existingLink) {
           // don't add the same tag twice
@@ -499,12 +527,12 @@ export class MainComponent implements OnInit {
         } else {
           const newLink: { oracle_id: string, tag: string[], profile: string[] } = {
             oracle_id: card.OracleCard.oracle_id,
+            profile: [this.profileId ?? ''],
             tag: [tag._id],
-            profile: [this.profileId ?? '']
           };
 
           this.cardTagLinkService.createCardTagLink(newLink).pipe(take(1))
-          .subscribe(result => {
+          .subscribe((result) => {
             if (!!result) {
                 this.links.push(result);
               } else {
@@ -516,13 +544,13 @@ export class MainComponent implements OnInit {
     });
   }
 
-  removeCardTagLink(linkId: string) {
-    const link = this.links?.find(m => m._id === linkId);
+  public removeCardTagLink(linkId: string): void {
+    const link = this.links?.find((m) => m._id === linkId);
     if (!!link) {
       this.cardTagLinkService.deleteCardTagLink(link._id).pipe(take(1))
       .subscribe((result) => {
         if (!!result) {
-          this.links = this.links.filter(m => m._id !== linkId);
+          this.links = this.links.filter((m) => m._id !== linkId);
         } else {
           this.singleton.notify('Could not remove link.');
         }
@@ -531,7 +559,7 @@ export class MainComponent implements OnInit {
 
   }
 
-  open(panel: string) {
+  public open(panel: string) {
     switch (panel) {
       case 'charts':
         this.getCharts();

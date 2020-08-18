@@ -5,9 +5,8 @@ import { CardTagLink } from '@classes/card-tag-link';
 import { Observable } from 'rxjs';
 import { BaseRestdbApiService } from './base-restdb-api.service';
 
-
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class CardTagLinkApiService extends BaseRestdbApiService {
   constructor(
@@ -31,7 +30,7 @@ export class CardTagLinkApiService extends BaseRestdbApiService {
       clauses.push(`{"oracle_id":"${id}"}`);
     });
 
-    return this._get(undefined, `q={"$and":[{"profile":{"$elemMatch":{"_id":"${profileId}"}}},"$or":[${clauses.join(',')}]]}`);
+    return this._get(undefined, `q={"$or":[${clauses.join(',')}]}&filter={"profile":{"$elemMatch":{"_id":"${profileId}"}}}`);
   }
 
   public createCardTagLink(model: any): Observable<CardTagLink> {
