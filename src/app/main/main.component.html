@@ -96,7 +96,7 @@
       </button>
     </mat-action-row>
   </mat-expansion-panel>
-  <!-- <mat-expansion-panel [expanded]="accordionStep === 'charts'" (opened)="open('charts')">
+  <mat-expansion-panel [expanded]="accordionStep === 'charts'" (opened)="open('charts')">
     <mat-expansion-panel-header>
       <mat-panel-title>
         <fa-icon [icon]="faChartBar"></fa-icon>
@@ -135,7 +135,7 @@
     <ng-container *ngIf="!!cardsGrouped">
       <app-stats-calculator [model]="deck" #statsCalculator></app-stats-calculator>
     </ng-container>
-  </mat-expansion-panel> -->
+  </mat-expansion-panel>
 </mat-accordion>
 <ng-template #noDataWarning>
   <p>No data, please submit a decklist first.</p>

@@ -21,13 +21,13 @@ export enum MainCardTypes {
 }
 
 export abstract class Statistics {
-  static GROUP_MODES = [
+  public static GROUP_MODES = [
     GroupByMode.Types,
     GroupByMode.Tags,
     GroupByMode.CMC,
   ];
 
-  static MAIN_TYPES = [
+  public static MAIN_TYPES = [
     MainCardTypes.Creature,
     MainCardTypes.Sorcery,
     MainCardTypes.Instant,
@@ -37,18 +37,18 @@ export abstract class Statistics {
     MainCardTypes.Land,
   ];
 
-  static COLORS = [
+  public static COLORS = [
     ['W', 'White'],
     ['U', 'Blue'],
     ['B', 'Black'],
     ['R', 'Red'],
     ['G', 'Green'],
-    ['C', 'Colorless']
+    ['C', 'Colorless'],
   ];
 
-  static MAX_CMC_BUCKET = 7; // CMCs will range from [0..6, 7+]
+  public static MAX_CMC_BUCKET = 7; // CMCs will range from [0..6, 7+]
 
-  static PALETTE_BLUE = [
+  public static PALETTE_BLUE = [
     '#a2c0c7',
     '#7da7b0',
     '#61949f',
@@ -63,7 +63,7 @@ export abstract class Statistics {
     '#1fccff',
   ];
 
-  static PALETTE_GREEN = [
+  public static PALETTE_GREEN = [
     '#b5d4a7',
     '#97c284',
     '#80b569',
@@ -78,7 +78,7 @@ export abstract class Statistics {
     '#6cff3f',
   ];
 
-  static PALETTE_ORANGE = [
+  public static PALETTE_ORANGE = [
     '#f3c89c',
     '#eeb274',
     '#eaa256',
@@ -93,7 +93,7 @@ export abstract class Statistics {
     '#ffb287',
   ];
 
-  static hexToRgbA(hex: string, alpha: number) {
+  public static hexToRgbA(hex: string, alpha: number) {
     const r = parseInt(hex.slice(1, 3), 16);
     const g = parseInt(hex.slice(3, 5), 16);
     const b = parseInt(hex.slice(5, 7), 16);
@@ -105,13 +105,12 @@ export abstract class Statistics {
     }
   }
 
-  static getChartTagsRadar(deck: CardReference[], tags: Tag[], links: CardTagLink[]): { sets: ChartDataSets[], labels: Label[] } {
+  public static getChartTagsRadar(deck: CardReference[]): { sets: ChartDataSets[], labels: Label[] } {
     const dict: { [tag: string]: number } = {};
-    deck.filter(c => c.count > 0 && links.filter(l => l.oracle_id === c.OracleCard?.oracle_id).length > 0)
-      .forEach(card => {
-        links.filter(link => link.oracle_id === card.OracleCard?.oracle_id)
-          .forEach(link => {
-            const tag = tags.find(m => m._id === link.tag[0]._id);
+    deck.filter((c) => c.count > 0)
+      .forEach((card) => {
+          card.links?.forEach((link) => {
+            const tag = link.tag?.[0];
             if (!!tag) {
               if (!dict[tag.name]) {
                 dict[tag.name] = card.count;
@@ -157,14 +156,14 @@ export abstract class Statistics {
       result.labels.push('No Tags');
 
       if (result.sets[0].data) {
-        result.sets[0].data.push(deck.map(m => m.count).reduce((a, b) => a + b, 0));
+        result.sets[0].data.push(deck.map((m) => m.count).reduce((a, b) => a + b, 0));
       }
     }
 
     return result;
   }
 
-  static cmcToString(cmc: number) {
+  public static cmcToString(cmc: number): string {
     if (typeof cmc === 'number') {
       if (cmc >= this.MAX_CMC_BUCKET) {
         return `${this.MAX_CMC_BUCKET}+ CMC`;
@@ -177,7 +176,7 @@ export abstract class Statistics {
     }
   }
 
-  static getCMCOptions(): string[] {
+  public static getCMCOptions(): string[] {
     const output = [];
 
     for (let cmc = 0; cmc <= this.MAX_CMC_BUCKET; cmc++) {
@@ -191,11 +190,11 @@ export abstract class Statistics {
     return output;
   }
 
-  static getChartCMC(deck: CardReference[]): ChartDataSets[] {
+  public static getChartCMC(deck: CardReference[]): ChartDataSets[] {
     const result: ChartDataSets = {
+      backgroundColor: this.PALETTE_BLUE[5],
       data: [],
       label: 'Curve',
-      backgroundColor: this.PALETTE_BLUE[5]
     };
 
     if (result.data) {
@@ -203,16 +202,16 @@ export abstract class Statistics {
         let filtered: CardReference[];
 
         if (i === 0) {
-          filtered = deck.filter(m => m.OracleCard && m.OracleCard.cmc === i)
-            .filter(m => !m.OracleCard.type_line.includes('Land'));
+          filtered = deck.filter((m) => m.OracleCard && m.OracleCard.cmc === i)
+            .filter((m) => !m.OracleCard.type_line.includes('Land'));
         } else if (i === this.MAX_CMC_BUCKET) {
-          filtered = deck.filter(m => m.OracleCard && m.OracleCard.cmc >= this.MAX_CMC_BUCKET);
+          filtered = deck.filter((m) => m.OracleCard && m.OracleCard.cmc >= this.MAX_CMC_BUCKET);
         } else {
-          filtered = deck.filter(m => m.OracleCard && m.OracleCard.cmc === i);
+          filtered = deck.filter((m) => m.OracleCard && m.OracleCard.cmc === i);
         }
 
         if (filtered.length > 0) {
-          result.data.push(filtered.map(m => m.count).reduce((a, b) => a + b, 0));
+          result.data.push(filtered.map((m) => m.count).reduce((a, b) => a + b, 0));
         } else {
           result.data.push(0);
         }
@@ -222,21 +221,21 @@ export abstract class Statistics {
     return [result];
   }
 
-  static getChartColorPie(deck: CardReference[]): MultiDataSet {
+  public static getChartColorPie(deck: CardReference[]): MultiDataSet {
     const cardCounts: { [color: string]: number } = {};
     const landCounts: { [color: string]: number } = {};
 
-    this.COLORS.forEach(c => {
+    this.COLORS.forEach((c) => {
       cardCounts[c[0]] = 0;
       landCounts[c[0]] = 0;
     });
 
-    deck.filter(m => m.OracleCard).forEach(card => {
+    deck.filter((m) => m.OracleCard).forEach((card) => {
       if (card.OracleCard.layout !== 'transform' &&
         card.OracleCard.type_line.includes('Land')) {
         if (card.OracleCard.color_identity) {
           card.OracleCard.color_identity.split(',')
-            .forEach(c => {
+            .forEach((c) => {
               landCounts[c] += card.count;
             });
         }
@@ -247,7 +246,7 @@ export abstract class Statistics {
       } else {
         if (card.OracleCard.colors) {
           card.OracleCard.colors.split(',')
-            .forEach(c => {
+            .forEach((c) => {
               cardCounts[c] += card.count;
             });
         } else {

@@ -1,11 +1,11 @@
 import { Component, Input, OnInit } from '@angular/core';
 import { MatSelectChange } from '@angular/material/select';
 import { CardReference } from '@classes/card-reference';
-import { GroupByMode, Statistics } from '@classes/statistics';
-import { all, create } from 'mathjs';
-import { faCalculator } from '@fortawesome/free-solid-svg-icons';
 import { CardTagLink } from '@classes/card-tag-link';
+import { GroupByMode, Statistics } from '@classes/statistics';
 import { Tag } from '@classes/tag';
+import { faCalculator } from '@fortawesome/free-solid-svg-icons';
+import { all, create } from 'mathjs';
 
 interface IHypergeometricParams {
   mode: string;
@@ -29,19 +29,19 @@ interface IHypergeometricOutputs {
 @Component({
   selector: 'app-stats-calculator',
   templateUrl: './stats-calculator.component.html',
-  styleUrls: ['./stats-calculator.component.less']
+  styleUrls: ['./stats-calculator.component.less'],
 })
 export class StatsCalculatorComponent implements OnInit {
-  faCalculator = faCalculator;
+  public faCalculator = faCalculator;
 
-  modeOptions = Statistics.GROUP_MODES;
-  modeValueOptions: string[] = [];
-  maxSampleSuccesses: number;
+  public modeOptions = Statistics.GROUP_MODES;
+  public modeValueOptions: string[] = [];
+  public maxSampleSuccesses: number;
 
-  limits = {
+  public limits = {
     sampleSuccesses: {
-      max: 0
-    }
+      max: 0,
+    },
   };
 
   private tagsDict: { [tagName: string]: number } = {};
@@ -50,11 +50,9 @@ export class StatsCalculatorComponent implements OnInit {
 
   private math: Partial<math.MathJsStatic> = create(all, {});
 
-  @Input() model: CardReference[];
-  @Input() links: CardTagLink[];
-  @Input() tags: Tag[];
+  @Input() public model: CardReference[];
 
-  @Input() params: IHypergeometricParams = {
+  @Input() public params: IHypergeometricParams = {
     mode: '',
     modeValue: '',
     populationSize: 0,
@@ -63,37 +61,37 @@ export class StatsCalculatorComponent implements OnInit {
     sampleSuccesses: 0,
   };
 
-  outputs: IHypergeometricOutputs = {
+  public outputs: IHypergeometricOutputs = {
     X_eq_x: 0,
-    X_lt_x: 0,
-    X_lte_x: 0,
     X_gt_x: 0,
     X_gte_x: 0,
+    X_lt_x: 0,
+    X_lte_x: 0,
   };
 
   constructor() { }
 
-  ngOnInit() {
+  public ngOnInit(): void {
     // set form default value
     this.params.mode = Statistics.GROUP_MODES[0].toString();
   }
 
-  updateOptions() {
+  public updateOptions(): void {
     this.params.populationSize = 0;
 
-    this.model.forEach(card => {
+    this.model.forEach((card) => {
       this.countByTypes(card);
-      this.countByTags(card, this.links);
+      this.countByTags(card);
       this.countByCMC(card);
 
       this.params.populationSize += card.count;
     });
 
-    this._selectMode(this.params.mode);
+    this.selectMode(this.params.mode);
     this._enforceLimits();
   }
 
-  private _enforceLimits() {
+  private _enforceLimits(): void {
     // hand size <= deck size
     this.params.sampleSize = Math.min(this.params.populationSize, this.params.sampleSize);
 
@@ -101,9 +99,9 @@ export class StatsCalculatorComponent implements OnInit {
     this.params.sampleSuccesses = Math.min(this.limits.sampleSuccesses.max, this.params.sampleSize, this.params.sampleSuccesses);
   }
 
-  private countByTypes(card: CardReference) {
+  private countByTypes(card: CardReference): void {
     if (card.OracleCard && card.OracleCard.type_line) {
-      Statistics.MAIN_TYPES.forEach(type => {
+      Statistics.MAIN_TYPES.forEach((type) => {
         const typeString = type.toString();
         if (card.OracleCard.type_line.indexOf(typeString) !== -1) {
           if (!this.typesDict[typeString]) {
@@ -116,11 +114,10 @@ export class StatsCalculatorComponent implements OnInit {
     }
   }
 
-  private countByTags(card: CardReference, links: CardTagLink[]) {
-    const cardLinks = links.filter(l => l.oracle_id === card.OracleCard?.oracle_id);
-    if (cardLinks.length > 0) {
-      cardLinks.forEach(link => {
-        const tag = this.tags.find(t => t._id === link.tag[0]._id);
+  private countByTags(card: CardReference): void {
+    if (card?.links?.length > 0) {
+      card.links.forEach((link) => {
+        const tag = link.tag?.[0];
         if (!!tag) {
           if (!this.tagsDict[tag.name]) {
             this.tagsDict[tag.name] = card.count;
@@ -132,7 +129,7 @@ export class StatsCalculatorComponent implements OnInit {
     }
   }
 
-  private countByCMC(card: CardReference) {
+  private countByCMC(card: CardReference): void {
     if (card.OracleCard) {
       let cmcString = null;
 
@@ -153,7 +150,7 @@ export class StatsCalculatorComponent implements OnInit {
     }
   }
 
-  private _getDictByMode(mode: GroupByMode) {
+  private getDictByMode(mode: GroupByMode): any {
     switch (mode as GroupByMode) {
       case GroupByMode.Types:
         return this.typesDict;
@@ -169,8 +166,8 @@ export class StatsCalculatorComponent implements OnInit {
     }
   }
 
-  private _selectMode(mode: string) {
-    function sort(a: string, b: string) {
+  private selectMode(mode: string): void {
+    function sort(a: string, b: string): number {
       if (a > b) {
         return 1;
       } else if (b > a) {
@@ -180,18 +177,18 @@ export class StatsCalculatorComponent implements OnInit {
       }
     }
 
-    this.modeValueOptions = Object.keys(this._getDictByMode(mode as GroupByMode)).sort(sort);
+    this.modeValueOptions = Object.keys(this.getDictByMode(mode as GroupByMode)).sort(sort);
     this.params.modeValue = this.modeValueOptions[0];
     this.selectModeValue(this.modeValueOptions[0]);
   }
 
-  onSelectMode($event: MatSelectChange) {
-    this._selectMode($event.value);
+  public onSelectMode($event: MatSelectChange): void {
+    this.selectMode($event.value);
     this._enforceLimits();
   }
 
-  private selectModeValue(value: string) {
-    const dict = this._getDictByMode(this.params.mode as GroupByMode);
+  private selectModeValue(value: string): void {
+    const dict = this.getDictByMode(this.params.mode as GroupByMode);
 
     // update params
     if (dict[this.params.modeValue]) {
@@ -203,17 +200,17 @@ export class StatsCalculatorComponent implements OnInit {
     this.limits.sampleSuccesses.max = Math.min(this.params.sampleSize, this.params.populationSuccesses);
   }
 
-  onSelectModeValue($event: MatSelectChange) {
+  public onSelectModeValue($event: MatSelectChange): void {
     this.selectModeValue($event.value);
     this._enforceLimits();
   }
 
-  onChangeSampleSize($event: MatSelectChange) {
+  public onChangeSampleSize($event: MatSelectChange): void {
     this.selectModeValue(this.params.modeValue);
     this._enforceLimits();
   }
 
-  calculate() {
+  public calculate(): void {
     const N = this.params.populationSize;
     const k = this.params.populationSuccesses;
     const n = this.params.sampleSize;
@@ -221,10 +218,10 @@ export class StatsCalculatorComponent implements OnInit {
 
     const results: IHypergeometricOutputs = {
       X_eq_x: 0,
-      X_lt_x: 0,
-      X_lte_x: 0,
       X_gt_x: 0,
       X_gte_x: 0,
+      X_lt_x: 0,
+      X_lte_x: 0,
     };
 
     for (let iX = 0; iX <= n && iX <= k; iX++) {
@@ -247,7 +244,7 @@ export class StatsCalculatorComponent implements OnInit {
       }
     }
 
-    Object.keys(results).forEach(key => {
+    Object.keys(results).forEach((key) => {
       results[key] = Math.round(results[key] * 10000) / 100;
     });
 

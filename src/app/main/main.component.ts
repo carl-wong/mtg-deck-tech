@@ -97,7 +97,6 @@ export class MainComponent implements OnInit {
   public uniqueCards = 0;
 
   private profileId: string;
-  private tags: Tag[];
   private transformNameDict: { [name: string]: string } | undefined;
 
   public chartsColumns = 2;
@@ -114,7 +113,7 @@ export class MainComponent implements OnInit {
   public chartCMCCurve: iChartCmc;
 
   private isEverythingReady(): boolean {
-    return !!this.profileId && !!this.tags && !!this.transformNameDict;
+    return !!this.profileId && !!this.transformNameDict;
   }
 
   public ngOnInit(): void {
@@ -141,10 +140,6 @@ export class MainComponent implements OnInit {
     this.singleton.profile$.pipe(first((m) => !!m))
       .subscribe((profile) => {
         this.profileId = profile?._id ?? '';
-      });
-
-    this.singleton.tags$.subscribe((tags) => {
-        this.tags = tags;
       });
   }
 
@@ -278,12 +273,12 @@ export class MainComponent implements OnInit {
 
   private getTagsRadarChart(): void {
     if (this.deck && this.deck.length > 0) {
-      const stats: { sets: ChartDataSets[], labels: Label[] } = Statistics.getChartTagsRadar(this.deck, this.tags, this.links);
+      const stats: { sets: ChartDataSets[], labels: Label[] } = Statistics.getChartTagsRadar(this.deck);
 
       const chart: iChartTags = {
-        title: 'Tags',
         data: stats.sets,
         labels: stats.labels,
+        title: 'Tags',
       };
 
       let dataPoints = 0;
@@ -303,8 +298,8 @@ export class MainComponent implements OnInit {
   private getColorsPieChart(): void {
     if (this.deck && this.deck.length > 0) {
       const chart: iChartColorPie = {
-        title: 'Color Breakdown',
         data: Statistics.getChartColorPie(this.deck),
+        title: 'Color Breakdown',
       };
 
       this.chartColorPie = chart;
@@ -317,9 +312,9 @@ export class MainComponent implements OnInit {
   private getCMCChart(): void {
     if (this.deck && this.deck.length > 0) {
       const chart: iChartCmc = {
-        title: 'CMC',
         data: Statistics.getChartCMC(this.deck),
         labels: [],
+        title: 'CMC',
       };
 
       Statistics.getCMCOptions().forEach((cmc) => {
