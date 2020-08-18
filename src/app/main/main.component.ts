@@ -245,7 +245,7 @@ export class MainComponent implements OnInit {
           });
 
           // sort each card's tag links list
-          this.deck.forEach((card) => {
+          this.deck.filter((c) => !!c.links).forEach((card) => {
             card.links = card.links.sort(this.sortCardTagLinksByName);
           });
 
