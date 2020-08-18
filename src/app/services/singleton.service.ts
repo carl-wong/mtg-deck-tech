@@ -1,10 +1,8 @@
 import { Injectable } from '@angular/core';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { Profile } from '@classes/profile';
-import { Tag } from '@classes/tag';
 import { environment } from '@env';
 import { ProfileApiService } from '@services/profile-api.service';
-import { TagApiService } from '@services/tag-api.service';
 import { BehaviorSubject } from 'rxjs';
 import { take } from 'rxjs/operators';
 
@@ -16,7 +14,6 @@ export class SingletonService {
   constructor(
     private snackBar: MatSnackBar,
     private servProfiles: ProfileApiService,
-    private servTags: TagApiService,
   ) { }
 
   private isLoadingSubject = new BehaviorSubject<boolean>(false);
@@ -28,15 +25,15 @@ export class SingletonService {
   private profileSubject = new BehaviorSubject<Profile | undefined>(undefined);
   public profile$ = this.profileSubject.asObservable();
 
-  private tagsSubject = new BehaviorSubject<Tag[]>([]);
-  public tags$ = this.tagsSubject.asObservable();
+  private requireReloadDeckSubject = new BehaviorSubject<boolean>(false);
+  public requireReloadDeck$ = this.requireReloadDeckSubject.asObservable();
+
+  public setRequireReloadDeck(model: boolean): void {
+    this.requireReloadDeckSubject.next(model);
+  }
 
   public setProfile(model: Profile): void {
     this.profileSubject.next(model);
-  }
-
-  public setTags(model: Tag[]): void {
-    this.tagsSubject.next(model);
   }
 
   public setIsLoading(value: boolean): void {
@@ -52,20 +49,7 @@ export class SingletonService {
         console.log(profiles);
       }
 
-      this.setProfile(profiles?.[0].user?.[0]);
-
-      // get tags of the profile
-      if (!!profiles?.[0]) {
-        this.servTags.getTags(profiles[0]._id).pipe(take(1))
-        .subscribe((tags) => {
-          if (!environment.production) {
-            console.log('fetched profile tags by auth0');
-            console.log(tags);
-          }
-
-          this.setTags(tags);
-        });
-      }
+      this.setProfile(profiles?.[0]);
     });
 
     this.auth0Subject.next(auth0);
@@ -73,7 +57,7 @@ export class SingletonService {
 
   public notify(message: string, action: string = 'Dismiss'): void {
       this.snackBar.open(message, action, {
-        duration: 3000
+        duration: 3000,
       });
   }
 }

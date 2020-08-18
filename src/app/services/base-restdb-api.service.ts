@@ -62,8 +62,8 @@ export abstract class BaseRestdbApiService {
   }
 
   /** POST a new object */
-  protected _post(model: any): Observable<any> {
-    return this.http.post<any>(this.url, model, this.httpOptions)
+  protected _post(model?: any, models?: any[]): Observable<any> {
+    return this.http.post<any>(this.url, model ?? models, this.httpOptions)
       .pipe(
         catchError(this.handleError<any>()),
       );

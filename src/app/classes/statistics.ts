@@ -1,5 +1,3 @@
-import { CardTagLink } from '@classes/card-tag-link';
-import { Tag } from '@classes/tag';
 import { ChartDataSets } from 'chart.js';
 import { Label, MultiDataSet } from 'ng2-charts';
 import { CardReference } from './card-reference';

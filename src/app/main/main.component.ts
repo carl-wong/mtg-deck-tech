@@ -133,6 +133,12 @@ export class MainComponent implements OnInit {
       .subscribe((profile) => {
         this.profileId = profile?._id ?? '';
       });
+
+    this.singleton.requireReloadDeck$.subscribe((isReload) => {
+        if (!!isReload && this.deck?.length > 0) {
+          this.submitDecklist();
+        }
+      });
   }
 
   public submitDecklist(): void {

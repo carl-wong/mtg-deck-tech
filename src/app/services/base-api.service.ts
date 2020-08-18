@@ -4,15 +4,15 @@ import { environment } from '@env';
 import { Observable, of } from 'rxjs';
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export abstract class BaseApiService {
   protected apiUrl = environment.apiUrl;
 
-  httpOptions = {
+  public httpOptions = {
     headers: new HttpHeaders({
       'Content-Type': 'application/json',
-    })
+    }),
   };
 
   constructor() { }

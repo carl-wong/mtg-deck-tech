@@ -1,9 +1,9 @@
-import { Tag } from '@classes/tag';
 import { Profile } from '@classes/profile';
+import { Tag } from '@classes/tag';
 
 export class CardTagLink {
-  _id: string;
-  oracle_id: string;
-  profile: Profile[];
-  tag: Tag[];
+  public _id: string;
+  public oracle_id: string;
+  public profile: Profile[];
+  public tag: Tag[];
 }

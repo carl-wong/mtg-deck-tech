@@ -8,13 +8,13 @@ import { CardTagLinkApiService } from '@services/card-tag-link-api.service';
 import { SingletonService } from '@services/singleton.service';
 import { TagApiService } from '@services/tag-api.service';
 import { Subscription } from 'rxjs';
-import { take } from 'rxjs/operators';
+import { first, take } from 'rxjs/operators';
 import { DialogRenameTagComponent, IDialogRenameTag } from '../dialog-rename-tag/dialog-rename-tag.component';
 
 @Component({
   selector: 'app-dialog-manage-tags',
+  styleUrls: ['./dialog-manage-tags.component.less'],
   templateUrl: './dialog-manage-tags.component.html',
-  styleUrls: ['./dialog-manage-tags.component.less']
 })
 export class DialogManageTagsComponent implements OnInit, OnDestroy {
 
@@ -23,33 +23,45 @@ export class DialogManageTagsComponent implements OnInit, OnDestroy {
     private cardTagLinkService: CardTagLinkApiService,
     private dialog: MatDialog,
     private singleton: SingletonService,
-    private dialogRef: MatDialogRef<DialogManageTagsComponent>
+    private dialogRef: MatDialogRef<DialogManageTagsComponent>,
   ) { }
   private sub: Subscription;
 
-  tags: Tag[] = [];
-  displayColumns = ['name', 'count', 'actions'];
-  dataSource: MatTableDataSource<Tag>;
+  private profileId: string;
+  private tags: Tag[] = [];
+  public displayColumns = [
+    'name',
+    // 'count',
+    'actions',
+  ];
+  public dataSource: MatTableDataSource<Tag>;
 
-  @ViewChild(MatPaginator) paginator: MatPaginator;
+  @ViewChild(MatPaginator) public paginator: MatPaginator;
 
-  ngOnInit() {
-    this.sub = this.singleton.tags$.subscribe((tags) => {
-      this.tags = tags;
-      this._refreshTable();
+  public ngOnInit(): void {
+    this.singleton.setIsLoading(true);
+
+    this.singleton.profile$.pipe(first((m) => !!m)).subscribe((profile) => {
+      this.profileId = profile?._id ?? '';
+      this.tagService.getTags(this.profileId).pipe(take(1))
+        .subscribe((tags) => {
+          this.tags = tags;
+          this.refreshTable();
+          this.singleton.setIsLoading(false);
+        });
     });
   }
 
-  ngOnDestroy() {
+  public ngOnDestroy(): void {
     this.sub.unsubscribe();
   }
 
-  private _refreshTable() {
+  private refreshTable(): void {
     this.dataSource = new MatTableDataSource(this.tags);
     this.dataSource.paginator = this.paginator;
   }
 
-  selectedAction($event: MatSelectChange, model: Tag) {
+  public selectedAction($event: MatSelectChange, model: Tag): void {
     switch ($event.value) {
       case 'rename': {
         const dConfig = new MatDialogConfig();
@@ -58,12 +70,23 @@ export class DialogManageTagsComponent implements OnInit, OnDestroy {
         dConfig.disableClose = false;
 
         const data: IDialogRenameTag = {
-          model
+          model,
         };
 
         dConfig.data = data;
 
-        this.dialog.open(DialogRenameTagComponent, dConfig);
+        this.dialog.open(DialogRenameTagComponent, dConfig).afterClosed()
+        .subscribe((isChanged) => {
+            if (!!isChanged) {
+              this.singleton.setIsLoading(true);
+              this.tagService.getTags(this.profileId).pipe(take(1))
+                .subscribe((tags) => {
+                  this.tags = tags;
+                  this.refreshTable();
+                  this.singleton.setIsLoading(false);
+                });
+            }
+        });
         break;
       }
 
@@ -80,15 +103,17 @@ export class DialogManageTagsComponent implements OnInit, OnDestroy {
 
             if (confirm(confirmMsg)) {
               this.tagService.deleteTag(model._id).pipe(take(1))
-                .subscribe(result => {
+                .subscribe((result) => {
                   if (!!result) {
                     if (links?.length > 0) {
-                      this.cardTagLinkService.deleteCardTagLinks(links.map(m => m._id))
+                      this.cardTagLinkService.deleteCardTagLinks(links.map((m) => m._id))
                         .pipe(take(1))
-                        .subscribe();
+                        .subscribe((deletedLinks) => {
+                          if (!!deletedLinks) {
+                            this.singleton.setRequireReloadDeck(true);
+                          }
+                        });
                     }
-
-                    this.singleton.setTags(this.tags.filter(m => m._id !== model._id));
                   } else {
                     this.singleton.notify(`Could not remove [${model.name}].`);
                   }
@@ -102,7 +127,7 @@ export class DialogManageTagsComponent implements OnInit, OnDestroy {
     $event.source.writeValue(null);
   }
 
-  close() {
+  public close(): void {
     this.dialogRef.close();
   }
 }

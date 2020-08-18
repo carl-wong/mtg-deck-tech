@@ -1,6 +1,5 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { ApiResult } from '@classes/api-result';
 import { CardTagLink } from '@classes/card-tag-link';
 import { Observable } from 'rxjs';
 import { BaseRestdbApiService } from './base-restdb-api.service';
@@ -35,6 +34,10 @@ export class CardTagLinkApiService extends BaseRestdbApiService {
 
   public createCardTagLink(model: any): Observable<CardTagLink> {
     return this._post(model);
+  }
+
+  public createCardTagLinks(model: any[]): Observable<CardTagLink[]> {
+    return this._post(undefined, model);
   }
 
   public deleteCardTagLink(id: string): Observable<any> {

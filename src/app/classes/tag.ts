@@ -1,5 +1,5 @@
 export class Tag {
-  _id: string;
-  name: string;
-  profile: any[];
+  public _id: string;
+  public name: string;
+  public profile: any[];
 }

@@ -1,83 +1,84 @@
 import { Component, Inject, OnInit, ViewChild } from '@angular/core';
 import { FormControl } from '@angular/forms';
-import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { MatAutocomplete } from '@angular/material/autocomplete';
+import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { Tag } from '@classes/tag';
+import { faSave, faTimes } from '@fortawesome/free-solid-svg-icons';
 import { SingletonService } from '@services/singleton.service';
 import { TagApiService } from '@services/tag-api.service';
 import { Observable } from 'rxjs';
 import { map, startWith } from 'rxjs/operators';
-import { faTimes, faSave } from '@fortawesome/free-solid-svg-icons';
-import { take } from 'rxjs/operators';
-
+import { first, take } from 'rxjs/operators';
 
 @Component({
   selector: 'app-dialog-add-tag',
+  styleUrls: ['./dialog-add-tag.component.less'],
   templateUrl: './dialog-add-tag.component.html',
-  styleUrls: ['./dialog-add-tag.component.less']
 })
 export class DialogAddTagComponent implements OnInit {
-  faTimes = faTimes;
-  faSave = faSave;
+  public faTimes = faTimes;
+  public faSave = faSave;
 
-  private profileId: string | undefined;
+  private profileId: string;
   private tags: Tag[];
-  options: string[] = [];
-  filteredOptions: Observable<string[]>;
-  tagInput = new FormControl();
+  public options: string[] = [];
+  public filteredOptions: Observable<string[]>;
+  public tagInput = new FormControl();
 
   private tagName = '';
 
-  @ViewChild(MatAutocomplete) autoComplete: MatAutocomplete;
+  @ViewChild(MatAutocomplete) public autoComplete: MatAutocomplete;
 
   constructor(
-    private service: TagApiService,
+    private tagService: TagApiService,
     private dialogRef: MatDialogRef<DialogAddTagComponent>,
     private singleton: SingletonService,
   ) {
   }
 
-  ngOnInit() {
-    this.singleton.profile$.pipe(take(1)).subscribe((profile) => this.profileId = profile?._id);
-
-    this.singleton.tags$.pipe(take(1)).subscribe((tags) => {
-      this.tags = tags;
-      this.options = this.tags.map(a => a.name).sort();
+  public ngOnInit(): void {
+    this.singleton.setIsLoading(true);
+    this.singleton.profile$.pipe(first((m) => !!m)).subscribe((profile) => {
+      this.profileId = profile?._id ?? '';
+      this.tagService.getTags(this.profileId).pipe(take(1)).subscribe((tags) => {
+        this.tags = tags;
+        this.options = this.tags.map((a) => a.name).sort();
+        this.singleton.setIsLoading(false);
+      });
     });
 
     this.filteredOptions = this.tagInput.valueChanges
       .pipe(
         startWith(''),
-        map(value => this._filter(value))
+        map((value) => this._filter(value)),
       );
   }
 
   private _filter(value: string): string[] {
     const filterValue = value.toLowerCase();
-    return this.options.filter(option => option.toLowerCase().startsWith(filterValue));
+    return this.options.filter((option) => option.toLowerCase().startsWith(filterValue));
   }
 
-  onKeyEnter() {
+  public onKeyEnter(): void {
     if (!this.autoComplete.isOpen) {
       this.close(true);
     }
   }
 
-  close(isAccept: boolean = false) {
+  public close(isAccept: boolean = false): void {
     if (isAccept) {
       if (!this.tagName) {
         this.tagName = this.tagInput.value.trim().toUpperCase();
       }
 
       if (this.tagName) {
-        const tag = this.tags.find(m => m.name === this.tagName);
+        const tag = this.tags.find((m) => m.name === this.tagName);
         if (!!tag) {
           this.dialogRef.close(tag);
         } else {
-          this.service.createTag({ name: this.tagName, profile: [this.profileId] })
+          this.tagService.createTag({ name: this.tagName, profile: [this.profileId] })
             .pipe(take(1)).subscribe((result) => {
               if (!!result) {
-                this.singleton.setTags(this.tags.concat(result));
                 this.dialogRef.close(result);
               } else {
                 this.singleton.notify('Failed to add tag');

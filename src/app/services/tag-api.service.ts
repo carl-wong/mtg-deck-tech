@@ -4,9 +4,8 @@ import { Tag } from '@classes/tag';
 import { Observable } from 'rxjs';
 import { BaseRestdbApiService } from './base-restdb-api.service';
 
-
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class TagApiService extends BaseRestdbApiService {
   constructor(
