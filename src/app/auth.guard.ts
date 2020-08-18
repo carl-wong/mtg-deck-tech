@@ -5,22 +5,22 @@ import { tap } from 'rxjs/operators';
 import { AuthService } from './services/auth.service';
 
 @Injectable({
-	providedIn: 'root'
+	providedIn: 'root',
 })
 export class AuthGuard implements CanActivate {
 
 	constructor(private auth: AuthService) { }
 
-	canActivate(
+	public canActivate(
 		next: ActivatedRouteSnapshot,
-		state: RouterStateSnapshot
+		state: RouterStateSnapshot,
 	): Observable<boolean> | Promise<boolean | UrlTree> | boolean {
 		return this.auth.isAuthenticated$.pipe(
-			tap(loggedIn => {
+			tap((loggedIn) => {
 				if (!loggedIn) {
 					this.auth.login(state.url);
 				}
-			})
+			}),
 		);
 	}
 }

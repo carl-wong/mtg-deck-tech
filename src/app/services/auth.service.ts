@@ -86,7 +86,7 @@ export class AuthService {
       // Call method to log in
       client.loginWithRedirect({
         appState: { target: redirectPath },
-        redirect_uri: `${window.location.origin}`,
+        redirect_uri: `${window.location.origin}${environment.baseHref}`,
       });
     });
   }
@@ -125,7 +125,7 @@ export class AuthService {
       // Call method to log out
       client.logout({
         client_id: environment.auth0.client_id,
-        returnTo: `${window.location.origin}`,
+        returnTo: `${window.location.origin}${environment.baseHref}`,
       });
     });
   }

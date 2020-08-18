@@ -1,4 +1,4 @@
-import { HttpClientModule, HTTP_INTERCEPTORS } from '@angular/common/http';
+import { HTTP_INTERCEPTORS, HttpClientModule } from '@angular/common/http';
 import { NgModule } from '@angular/core';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { MatAutocompleteModule } from '@angular/material/autocomplete';
@@ -25,7 +25,6 @@ import { MDBBootstrapModule } from 'angular-bootstrap-md';
 import { ChartsModule } from 'ng2-charts';
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
-import { CallbackComponent } from './callback/callback.component';
 import { DialogAddTagComponent } from './dialog-add-tag/dialog-add-tag.component';
 import { DialogCardDetailsComponent } from './dialog-card-details/dialog-card-details.component';
 import { DialogManageTagsComponent } from './dialog-manage-tags/dialog-manage-tags.component';
@@ -42,7 +41,6 @@ import { StatsCalculatorComponent } from './main/stats-calculator/stats-calculat
 @NgModule({
   declarations: [
     AppComponent,
-    CallbackComponent,
     ChartCmcComponent,
     ChartColorPieComponent,
     ChartTagsComponent,
@@ -95,6 +93,6 @@ import { StatsCalculatorComponent } from './main/stats-calculator/stats-calculat
   providers: [
     { provide: HTTP_INTERCEPTORS, useClass: RestDbApiKeyInterceptor, multi: true },
   ],
-  bootstrap: [AppComponent]
+  bootstrap: [AppComponent],
 })
 export class AppModule { }
