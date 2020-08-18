@@ -3,15 +3,10 @@ import { MatDialog, MatDialogConfig } from '@angular/material/dialog';
 import { MatSelectChange } from '@angular/material/select';
 import { CardReference } from '@classes/card-reference';
 import { CardTagLink } from '@classes/card-tag-link';
-import { MinOracleCard } from '@classes/min-oracle-card';
-import { SleepHelper } from '@classes/sleep-helper';
 import { GroupByMode, MainCardTypes, Statistics } from '@classes/statistics';
 import { Tag } from '@classes/tag';
 import { environment } from '@env';
-import {
-  faChartBar, faComment, faList, faPlus,
-  faSquareRootAlt, faSync, faTags, faTasks,
-} from '@fortawesome/free-solid-svg-icons';
+import { faChartBar, faComment, faList, faPlus, faSquareRootAlt, faSync, faTags, faTasks } from '@fortawesome/free-solid-svg-icons';
 import { CardTagLinkApiService } from '@services/card-tag-link-api.service';
 import { OracleApiService } from '@services/oracle-api.service';
 import { SingletonService } from '@services/singleton.service';
@@ -28,9 +23,6 @@ import { StatsCalculatorComponent } from './stats-calculator/stats-calculator.co
 
 const UNTAGGED_PLACEHOLDER = 'UNTAGGED';
 const QUERY_BATCH_SIZE = 10;
-const QUERY_SLEEP_MS = 50;
-
-const DECKBOX_TOKEN = 'deckbox.org/sets/';
 
 /*
   original grouped regex:
@@ -63,8 +55,8 @@ interface ICardGrouping {
 
 @Component({
   selector: 'app-main',
-  templateUrl: './main.component.html',
   styleUrls: ['./main.component.less'],
+  templateUrl: './main.component.html',
 })
 export class MainComponent implements OnInit {
   constructor(
@@ -237,6 +229,11 @@ export class MainComponent implements OnInit {
                 }
               }
             });
+          });
+
+          // sort each card's tag links list
+          this.deck.forEach((card) => {
+            card.links = card.links.sort(this.sortCardTagLinksByName);
           });
 
           if (!environment.production) {
@@ -526,6 +523,7 @@ export class MainComponent implements OnInit {
             if (!!result) {
               if (!!card.links) {
                 card.links.push(result);
+                card.links = card.links.sort(this.sortCardTagLinksByName);
               } else {
                 card.links = [result];
               }
