@@ -2,6 +2,7 @@ import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { CardTagLink } from '@classes/card-tag-link';
 import { Observable } from 'rxjs';
+import { map } from 'rxjs/operators';
 import { BaseRestdbApiService } from './base-restdb-api.service';
 
 @Injectable({
@@ -12,10 +13,6 @@ export class CardTagLinkApiService extends BaseRestdbApiService {
     protected http: HttpClient,
   ) {
     super('links', http);
-  }
-
-  public getCardTagLink(oracleId: string, tagId: string): Observable<CardTagLink[]> {
-    return this._get(undefined, `q={"$and":[{"oracle_id":"${oracleId}"},{"tag":{"$elemMatch":{"_id":"${tagId}"}}}]}`);
   }
 
   public getByTagId(tagId: string): Observable<CardTagLink[]> {
@@ -29,7 +26,10 @@ export class CardTagLinkApiService extends BaseRestdbApiService {
       clauses.push(`{"oracle_id":"${id}"}`);
     });
 
-    return this._get(undefined, `q={"$or":[${clauses.join(',')}]}&filter={"profile":{"$elemMatch":{"_id":"${profileId}"}}}`);
+    return this._get(undefined, `q={"$or":[${clauses.join(',')}]}`)
+      .pipe(map((results: CardTagLink[]) => {
+        return results.filter((m) => m.profile?.length > 0 && m.profile[0]._id === profileId);
+      }));
   }
 
   public createCardTagLink(model: any): Observable<CardTagLink> {

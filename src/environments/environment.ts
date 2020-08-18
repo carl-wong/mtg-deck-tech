@@ -5,7 +5,7 @@ export const environment = {
     client_id: '2RcQEkaXq2y2FrNcwMJY8YV5igue98hA',
     domain: 'johnnysasaki.auth0.com',
   },
-  baseHref: '/',
+  baseHref: '',
   defaultDecklist: '1 Alesha, Who Smiles at Death\n1 Altar of Dementia\n1 Animate Dead',
   production: false,
   restdb: {
@@ -13,6 +13,6 @@ export const environment = {
     mediaUrl: 'https://scryx-338a.restdb.io/media', // cannot use own domain for media archive
     url: 'https://scryx-338a.restdb.io/rest',
   },
-  timestamp: 'Updated: 2020-08-18 @ 15:45:21',
+  timestamp: 'Updated: 2020-08-18 @ 17:53:24',
   version: 'LOCAL',
 };
