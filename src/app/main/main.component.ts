@@ -118,6 +118,8 @@ export class MainComponent implements OnInit {
   }
 
   public ngOnInit(): void {
+    this.singleton.setIsLoading(true);
+
     // get dictionary of transform card names
     this.oracle.getTransform()
       .pipe(take(1))
@@ -131,6 +133,7 @@ export class MainComponent implements OnInit {
                 this.transformNameDict[front] = name;
               }
             });
+          this.singleton.setIsLoading(false);
         }
       });
 
@@ -228,9 +231,8 @@ export class MainComponent implements OnInit {
         }
 
         forkJoin(linkCalls).pipe(take(1)).subscribe((linkResults) => {
-          console.log(linkResults);
-          linkResults.forEach((links) => {
-            links.forEach((link) => {
+          linkResults?.forEach((links) => {
+            links?.forEach((link) => {
               const dCard = this.deck.find((m) => m.OracleCard?.oracle_id === link.oracle_id);
               if (!!dCard) {
                 if (!!dCard.links) {
@@ -241,43 +243,30 @@ export class MainComponent implements OnInit {
               }
             });
           });
+
+          if (!environment.production) {
+            console.log('decklist:');
+            console.log(this.deck);
+          }
+
+          this.performGroupByMode(this.groupByMode);
+          if (!environment.production) {
+            console.log('cardGroup:');
+            console.log(this.cardsGrouped);
+          }
+
+          this.totalCards = this.deck.map((m) => m.count).reduce((a, b) => a + b, 0);
+          this.uniqueCards = this.deck.length;
+
+          // expand the next panel
+          this.accordionStep = 'groups';
+
+          this.singleton.setIsLoading(false);
         });
-
-        if (!environment.production) {
-          console.log('decklist:');
-          console.log(this.deck);
-        }
-
-        this.singleton.setIsLoading(false);
       });
     } else {
       // load up the cache before (automatically) resubmitting
       this.singleton.notify('Please wait for things to warm up first...');
-    }
-  }
-
-  /** updates total and unique tallies, groups cards by selected mode */
-  private decklistPostProcessing(): void {
-    this.performGroupByMode(this.groupByMode);
-
-    this.totalCards = this.deck.map((m) => m.count).reduce((a, b) => a + b, 0);
-    this.uniqueCards = this.deck.length;
-  }
-
-  private mixinTagLinksHelper(oracleIds: string[]): void {
-    if (oracleIds.length === 0) {
-      // done
-    } else {
-      const idList = oracleIds.slice(0, Math.min(QUERY_BATCH_SIZE, oracleIds.length));
-      oracleIds.splice(0, idList.length);
-
-      this.cardTagLinkService.getByProfileId(this.profileId ?? '', idList)
-        .pipe(take(1))
-        .subscribe((links) => {
-
-          SleepHelper.sleep(QUERY_SLEEP_MS);
-          this.mixinTagLinksHelper(oracleIds);
-      });
     }
   }
 
@@ -372,9 +361,7 @@ export class MainComponent implements OnInit {
     });
 
     result.map((a) => this.sortGroupContents(a));
-
     this.cardsGrouped = result.filter((m) => m.count > 0);
-    this.accordionStep = 'groups';
   }
 
   private sortGroupContents(group: ICardGrouping): void {
@@ -386,15 +373,19 @@ export class MainComponent implements OnInit {
     let result: ICardGrouping[] = [];
 
     this.deck.forEach((card) => {
+
       // find all tags attached to this card
-      const cardTags = this.links.filter((link) => link.oracle_id === card.OracleCard?.oracle_id && link.tag?.length > 0)
-        .map((link) => this.tags?.find((tag) => tag._id === link.tag[0]._id));
+      const cardLinks = card?.links?.filter((l) => l.tag?.length > 0);
+      const cardTags: Tag[] = [];
+
+      cardLinks.forEach((link) => link.tag.forEach((tag) => cardTags.push(tag)));
+
       if (cardTags.length > 0) {
         cardTags.forEach((tag) => {
-          if (!!(tag?.name)) {
+          if (!!tag.name) {
             const grouping = result.find((m) => m.key === tag.name);
             if (!grouping) {
-              result.push({ key: tag.name, cards: [card], count: 0 });
+              result.push({ key: tag.name, cards: [card], count: card.count });
             } else {
               grouping.cards.push(card);
               grouping.count += card.count;
@@ -416,8 +407,13 @@ export class MainComponent implements OnInit {
       result.push(untagged);
     }
 
+    console.log('cardsGrouped pre filter');
+    console.log(result);
+
     this.cardsGrouped = result.filter((m) => m.count > 0);
-    this.accordionStep = 'groups';
+
+    console.log('cardsGrouped');
+    console.log(this.cardsGrouped);
   }
 
   private groupByCMC(): void {
@@ -456,7 +452,6 @@ export class MainComponent implements OnInit {
     result.map((a) => this.sortGroupContents(a));
 
     this.cardsGrouped = result.filter((m) => m.count > 0);
-    this.accordionStep = 'groups';
   }
 
   private sortCardGroupingsByKey(a: ICardGrouping, b: ICardGrouping): number {
@@ -534,23 +529,27 @@ export class MainComponent implements OnInit {
           this.cardTagLinkService.createCardTagLink(newLink).pipe(take(1))
           .subscribe((result) => {
             if (!!result) {
-                this.links.push(result);
+              if (!!card.links) {
+                card.links.push(result);
               } else {
-                this.singleton.notify(`Could not attach [${tag.name}] to "${card.name}."`);
+                card.links = [result];
               }
+            } else {
+              this.singleton.notify(`Could not attach [${tag.name}] to "${card.name}."`);
+            }
           });
         }
       }
     });
   }
 
-  public removeCardTagLink(linkId: string): void {
-    const link = this.links?.find((m) => m._id === linkId);
+  public removeCardTagLink(card: CardReference, linkId: string): void {
+    const link = card?.links?.find((m) => m._id === linkId);
     if (!!link) {
       this.cardTagLinkService.deleteCardTagLink(link._id).pipe(take(1))
       .subscribe((result) => {
         if (!!result) {
-          this.links = this.links.filter((m) => m._id !== linkId);
+          card.links = card.links.filter((m) => m._id !== linkId);
         } else {
           this.singleton.notify('Could not remove link.');
         }
@@ -559,7 +558,7 @@ export class MainComponent implements OnInit {
 
   }
 
-  public open(panel: string) {
+  public open(panel: string): void {
     switch (panel) {
       case 'charts':
         this.getCharts();

@@ -18,7 +18,7 @@
       </button>
     </mat-action-row>
   </mat-expansion-panel>
-  <!-- <mat-expansion-panel [expanded]="accordionStep === 'groups'" (opened)="open('groups')">
+  <mat-expansion-panel [expanded]="accordionStep === 'groups'" (opened)="open('groups')">
     <mat-expansion-panel-header>
       <mat-panel-title>
         <fa-icon [icon]="faTags"></fa-icon>
@@ -71,10 +71,10 @@
                   <mat-chip (click)="openDialogAddTag(element)" (keydown.space)="openDialogAddTag(element)" (keydown.enter)="openDialogAddTag(element)" color="accent" selected [selectable]="false">
                     <fa-icon [icon]="faPlus"></fa-icon>
                   </mat-chip>
-                  <ng-container *ngIf="element.TagNames">
-                    <ng-container *ngFor="let tagName of getCardTags(element)">
-                      <mat-chip *ngIf="!!tagName" color="warn" selected [selectable]="false" (keydown.space)="removeCardTagLink()" (keydown.enter)="removeCardTagLink(element.oracle_id, tagName)" (removed)="removeCardTagLink(element.oracle_id, tagName)">
-                        {{tagName | titlecase}}
+                  <ng-container *ngIf="element.links">
+                    <ng-container *ngFor="let link of element.links">
+                      <mat-chip *ngIf="!!link" color="warn" selected [selectable]="false" (keydown.space)="removeCardTagLink(element, link._id)" (keydown.enter)="removeCardTagLink(element, link._id)" (removed)="removeCardTagLink(element, link._id)">
+                        {{link.tag[0].name | titlecase}}
                         <mat-icon matChipRemove>cancel</mat-icon>
                       </mat-chip>
                     </ng-container>
@@ -95,7 +95,7 @@
         Refresh
       </button>
     </mat-action-row>
-  </mat-expansion-panel> -->
+  </mat-expansion-panel>
   <!-- <mat-expansion-panel [expanded]="accordionStep === 'charts'" (opened)="open('charts')">
     <mat-expansion-panel-header>
       <mat-panel-title>
