@@ -6,22 +6,22 @@ import { BaseApiService } from './base-api.service';
 
 
 @Injectable({
-	providedIn: 'root'
+  providedIn: 'root'
 })
 export class OracleApiService extends BaseApiService {
-	constructor(
-		private http: HttpClient,
-	) {
-		super();
-	}
+  constructor(
+    private http: HttpClient,
+  ) {
+    super();
+  }
 
-	// API: GET /OracleCards
-	public getTransform(): Observable<MinOracleCard[]> {
-		return this.http.get<MinOracleCard[]>(this.apiUrl + '/OracleCards/Transform');
-	}
+  // API: GET /OracleCards
+  public getTransform(): Observable<MinOracleCard[]> {
+    return this.http.get<MinOracleCard[]>(this.apiUrl + '/OracleCards/Transform');
+  }
 
-	// API: POST /OracleCards
-	public postNames(names: string[]): Observable<MinOracleCard[]> {
-		return this.http.post<MinOracleCard[]>(this.apiUrl + '/OracleCards', { cards: names }, this.httpOptions);
-	}
+  // API: POST /OracleCards
+  public getByNames(names: string[]): Observable<MinOracleCard[]> {
+    return this.http.post<MinOracleCard[]>(this.apiUrl + '/OracleCards', { cards: names }, this.httpOptions);
+  }
 }

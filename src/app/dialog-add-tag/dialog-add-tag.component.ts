@@ -3,97 +3,90 @@ import { FormControl } from '@angular/forms';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { MatAutocomplete } from '@angular/material/autocomplete';
 import { Tag } from '@classes/tag';
-import { EventType, iTagsUpdated, NotificationService } from '@services/notification.service';
+import { SingletonService } from '@services/singleton.service';
 import { TagApiService } from '@services/tag-api.service';
 import { Observable } from 'rxjs';
 import { map, startWith } from 'rxjs/operators';
 import { faTimes, faSave } from '@fortawesome/free-solid-svg-icons';
+import { take } from 'rxjs/operators';
 
 
 @Component({
-	selector: 'app-dialog-add-tag',
-	templateUrl: './dialog-add-tag.component.html',
-	styleUrls: ['./dialog-add-tag.component.less']
+  selector: 'app-dialog-add-tag',
+  templateUrl: './dialog-add-tag.component.html',
+  styleUrls: ['./dialog-add-tag.component.less']
 })
 export class DialogAddTagComponent implements OnInit {
-	faTimes = faTimes;
-	faSave = faSave;
+  faTimes = faTimes;
+  faSave = faSave;
 
-	private _tags: Tag[];
-	options: string[] = [];
-	filteredOptions: Observable<string[]>;
-	tagInput = new FormControl();
+  private profileId: string | undefined;
+  private tags: Tag[];
+  options: string[] = [];
+  filteredOptions: Observable<string[]>;
+  tagInput = new FormControl();
 
-	private tagName = '';
+  private tagName = '';
 
-	@ViewChild(MatAutocomplete) autoComplete: MatAutocomplete;
+  @ViewChild(MatAutocomplete) autoComplete: MatAutocomplete;
 
-	constructor(
-		private service: TagApiService,
-		private dialogRef: MatDialogRef<DialogAddTagComponent>,
-		private notify: NotificationService,
-		@Inject(MAT_DIALOG_DATA) data: { tags: Tag[] },
-	) {
-		this._tags = data.tags;
-	}
+  constructor(
+    private service: TagApiService,
+    private dialogRef: MatDialogRef<DialogAddTagComponent>,
+    private singleton: SingletonService,
+  ) {
+  }
 
-	ngOnInit() {
-		this.options = this._tags.map(a => a.name).sort();
-		this.filteredOptions = this.tagInput.valueChanges
-			.pipe(
-				startWith(''),
-				map(value => this._filter(value))
-			);
-	}
+  ngOnInit() {
+    this.singleton.profile$.pipe(take(1)).subscribe((profile) => this.profileId = profile?._id);
 
-	private _filter(value: string): string[] {
-		const filterValue = value.toLowerCase();
-		return this.options.filter(option => option.toLowerCase().startsWith(filterValue));
-	}
+    this.singleton.tags$.pipe(take(1)).subscribe((tags) => {
+      this.tags = tags;
+      this.options = this.tags.map(a => a.name).sort();
+    });
 
-	onKeyEnter() {
-		if (!this.autoComplete.isOpen) {
-			this.close(true);
-		}
-	}
+    this.filteredOptions = this.tagInput.valueChanges
+      .pipe(
+        startWith(''),
+        map(value => this._filter(value))
+      );
+  }
 
-	close(isAccept: boolean = false) {
-		if (isAccept) {
-			if (!this.tagName) {
-				this.tagName = this.tagInput.value.trim().toUpperCase();
-			}
+  private _filter(value: string): string[] {
+    const filterValue = value.toLowerCase();
+    return this.options.filter(option => option.toLowerCase().startsWith(filterValue));
+  }
 
-			if (this.tagName) {
-				let tag = this._tags.find(m => m.name === this.tagName);
-				if (tag) {
-					this.dialogRef.close(tag);
-				} else {
-					tag = new Tag();
-					tag.name = this.tagName;
+  onKeyEnter() {
+    if (!this.autoComplete.isOpen) {
+      this.close(true);
+    }
+  }
 
-					this.service.createTag(tag).subscribe(result => {
-						if (tag && result) {
-							if (result.id) {
-								tag.id = result.id;
-								tag.ProfileId = this.notify.getProfileId();
+  close(isAccept: boolean = false) {
+    if (isAccept) {
+      if (!this.tagName) {
+        this.tagName = this.tagInput.value.trim().toUpperCase();
+      }
 
-								const data: iTagsUpdated = {
-									type: EventType.Insert,
-									Tag: tag,
-									fromId: -1,
-									toId: -1
-								};
-
-								this.notify.tagsUpdated(data);
-							}
-
-							this.dialogRef.close(tag);
-						}
-					});
-				}
-			}
-		} else {
-			this.dialogRef.close();
-		}
-	}
+      if (this.tagName) {
+        const tag = this.tags.find(m => m.name === this.tagName);
+        if (!!tag) {
+          this.dialogRef.close(tag);
+        } else {
+          this.service.createTag({ name: this.tagName, profile: [this.profileId] })
+            .pipe(take(1)).subscribe((result) => {
+              if (!!result) {
+                this.singleton.setTags(this.tags.concat(result));
+                this.dialogRef.close(result);
+              } else {
+                this.singleton.notify('Failed to add tag');
+              }
+            });
+        }
+      }
+    } else {
+      this.dialogRef.close();
+    }
+  }
 }

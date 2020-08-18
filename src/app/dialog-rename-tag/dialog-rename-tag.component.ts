@@ -1,14 +1,12 @@
 import { Component, Inject, OnInit } from '@angular/core';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { Tag } from '@classes/tag';
-import { MessageLevel, MessagesService } from '@services/messages.service';
-import { EventType, iTagsUpdated, NotificationService } from '@services/notification.service';
 import { TagApiService } from '@services/tag-api.service';
-
+import { take } from 'rxjs/operators';
+import { SingletonService } from '@services/singleton.service';
 
 export interface IDialogRenameTag {
     model: Tag;
-    all: Tag[];
 }
 
 @Component({
@@ -18,79 +16,48 @@ export interface IDialogRenameTag {
 })
 export class DialogRenameTagComponent implements OnInit {
     public model: Tag;
-    private _all: Tag[];
+    private tags: Tag[];
 
     constructor(
-        private messages: MessagesService,
-        private service: TagApiService,
-        private notify: NotificationService,
-        private dialogRef: MatDialogRef<DialogRenameTagComponent>,
-        @Inject(MAT_DIALOG_DATA) data: IDialogRenameTag
+      private singleton: SingletonService,
+      private service: TagApiService,
+      private dialogRef: MatDialogRef<DialogRenameTagComponent>,
+      @Inject(MAT_DIALOG_DATA) data: IDialogRenameTag
     ) {
         this.model = Object.assign(new Tag(), data.model);
-        this._all = data.all;
     }
 
     ngOnInit() {
+      this.singleton.tags$.pipe(take(1)).subscribe((tags) => {
+        this.tags = tags;
+      });
     }
 
     submit() {
         if (this.model.name && this.model.name.trim()) {
             this.model.name = this.model.name.trim().toUpperCase();
-            const mergeInto = this._all.find(m => m.name === this.model.name && m.id !== this.model.id);
-            if (mergeInto) {
+            const mergeInto = this.tags.find(m => m.name === this.model.name && m._id !== this.model._id);
+            if (!!mergeInto) {
                 // request to merge tags
                 if (confirm(`Do you wish to merge this tag into [${mergeInto.name}]?`)) {
-                    this.service.mergeTags(this.model, mergeInto).subscribe(mergeResult => {
-                        if (mergeResult) {
-                            if (!mergeResult.isSuccess) {
-                                this.messages.send(`Failed to merge [${this.model.name}] into [${mergeInto.name}].`, MessageLevel.Alert);
-                            } else {
-                                this.messages.send(`Successfully merged [${this.model.name}] into [${mergeInto.name}].`);
-                                this.service.deleteTag(this.model.id).subscribe(deleteResult => {
-                                    if (deleteResult) {
-                                        if (!deleteResult.isSuccess) {
-                                            this.messages.send(`Failed to remove [${this.model.name}]...`, MessageLevel.Alert);
-                                        } else {
-                                            this.messages.send(`Successfully removed [${this.model.name}].`);
-                                            // only send a single update notification
-                                            // EventType.Merge should handle EventType.Delete functionality too
-                                            const data: iTagsUpdated = {
-                                                type: EventType.Merge,
-                                                Tag: this.model,
-                                                fromId: this.model.id,
-                                                toId: mergeInto.id,
-                                            };
-
-                                            this.notify.tagsUpdated(data);
-                                            this.dialogRef.close();
-                                        }
-                                    }
-                                });
-                            }
-                        }
-                    });
+                  // TODO: create new links for each oracle_id with mergeInto._id
+                  // TODO: delete all links for original tag
+                  this.dialogRef.close();
                 }
             } else {
                 this.service.updateTag(this.model).subscribe(result => {
                     if (result) {
-                        if (!result.isSuccess) {
-                            this.messages.send(`Failed to rename [${this.model.name}].`, MessageLevel.Alert);
+                        if (!!result) {
+                          this.singleton.setTags(this.tags.filter(m => m._id !== this.model._id));
+                          this.dialogRef.close();
                         } else {
-                            const data: iTagsUpdated = {
-                                type: EventType.Update,
-                                Tag: this.model,
-                                fromId: -1,
-                                toId: -1,
-                            };
-                            this.notify.tagsUpdated(data);
-                            this.dialogRef.close();
+                          this.singleton.notify(`Failed to rename [${this.model.name}].`);
                         }
                     }
                 });
             }
         } else {
-            this.messages.send('Tag name cannot be empty!', MessageLevel.Alert);
+            this.singleton.notify('Tag name cannot be empty!');
         }
     }
 

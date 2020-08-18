@@ -17,10 +17,6 @@ export abstract class BaseApiService {
 
   constructor() { }
 
-  protected getSessionProfileId(): string {
-    return sessionStorage.getItem('ProfileId') || '-1';
-  }
-
   protected handleError<T>(operation = 'operation', result?: T) {
     return (error: any): Observable<T> => {
 

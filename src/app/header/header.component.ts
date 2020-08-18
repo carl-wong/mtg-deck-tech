@@ -7,36 +7,36 @@ import { faTags, faUserCircle, faSignOutAlt } from '@fortawesome/free-solid-svg-
 
 
 @Component({
-	selector: 'app-header',
-	templateUrl: './header.component.html',
-	styleUrls: ['./header.component.less']
+  selector: 'app-header',
+  templateUrl: './header.component.html',
+  styleUrls: ['./header.component.less']
 })
 export class HeaderComponent implements OnInit {
-	faTags = faTags;
-	faUserCircle = faUserCircle;
-	faSignOutAlt = faSignOutAlt;
+  faTags = faTags;
+  faUserCircle = faUserCircle;
+  faSignOutAlt = faSignOutAlt;
 
-	lastUpdated = '';
-	buildVersion = '';
+  lastUpdated = '';
+  buildVersion = '';
 
-	constructor(
-		public auth: AuthService,
-		private dialog: MatDialog,
-	) { }
+  constructor(
+    public auth: AuthService,
+    private dialog: MatDialog,
+  ) { }
 
-	ngOnInit() {
-		this.lastUpdated = environment.timestamp;
-		this.buildVersion = environment.version;
-	}
+  ngOnInit() {
+    this.lastUpdated = environment.timestamp;
+    this.buildVersion = environment.version;
+  }
 
-	openDialogManageTags() {
-		const dConfig = new MatDialogConfig();
+  openDialogManageTags() {
+    const dConfig = new MatDialogConfig();
 
-		dConfig.autoFocus = false;
-		dConfig.disableClose = false;
+    dConfig.autoFocus = false;
+    dConfig.disableClose = false;
 
-		dConfig.minWidth = '80vw';
+    dConfig.minWidth = '80vw';
 
-		this.dialog.open(DialogManageTagsComponent, dConfig);
-	}
+    this.dialog.open(DialogManageTagsComponent, dConfig);
+  }
 }

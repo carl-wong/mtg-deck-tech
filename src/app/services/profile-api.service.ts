@@ -14,7 +14,7 @@ export class ProfileApiService extends BaseRestdbApiService {
         super('profiles', http);
     }
 
-    public getByAuth0(id: string): Observable<Profile[]> {
-        return this._get(undefined, `q={"user":{"$elemMatch":{"user_id":"${id}"}}}`);
+    public getByAuth0(user_id: string): Observable<Profile[]> {
+        return this._get(undefined, `q={"user":{"$elemMatch":{"user_id":"${user_id}"}}}`);
     }
 }

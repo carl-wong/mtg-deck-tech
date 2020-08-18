@@ -4,180 +4,105 @@ import { MatPaginator } from '@angular/material/paginator';
 import { MatSelectChange } from '@angular/material/select';
 import { MatTableDataSource } from '@angular/material/table';
 import { Tag } from '@classes/tag';
-import { MessageLevel, MessagesService } from '@services/messages.service';
-import { EventType, iTagsUpdated, NotificationService } from '@services/notification.service';
+import { CardTagLinkApiService } from '@services/card-tag-link-api.service';
+import { SingletonService } from '@services/singleton.service';
 import { TagApiService } from '@services/tag-api.service';
 import { Subscription } from 'rxjs';
+import { take } from 'rxjs/operators';
 import { DialogRenameTagComponent, IDialogRenameTag } from '../dialog-rename-tag/dialog-rename-tag.component';
 
-
 @Component({
-	selector: 'app-dialog-manage-tags',
-	templateUrl: './dialog-manage-tags.component.html',
-	styleUrls: ['./dialog-manage-tags.component.less']
+  selector: 'app-dialog-manage-tags',
+  templateUrl: './dialog-manage-tags.component.html',
+  styleUrls: ['./dialog-manage-tags.component.less']
 })
 export class DialogManageTagsComponent implements OnInit, OnDestroy {
-	private _tagsUpdatedSub: Subscription;
 
-	tags: Tag[] = [];
-	displayColumns = ['name', 'count', 'actions'];
-	dataSource: MatTableDataSource<Tag>;
+  constructor(
+    private tagService: TagApiService,
+    private cardTagLinkService: CardTagLinkApiService,
+    private dialog: MatDialog,
+    private singleton: SingletonService,
+    private dialogRef: MatDialogRef<DialogManageTagsComponent>
+  ) { }
+  private sub: Subscription;
 
-	@ViewChild(MatPaginator) paginator: MatPaginator;
+  tags: Tag[] = [];
+  displayColumns = ['name', 'count', 'actions'];
+  dataSource: MatTableDataSource<Tag>;
 
-	constructor(
-		private service: TagApiService,
-		private messages: MessagesService,
-		private dialog: MatDialog,
-		private notify: NotificationService,
-		private dialogRef: MatDialogRef<DialogManageTagsComponent>
-	) { }
+  @ViewChild(MatPaginator) paginator: MatPaginator;
 
-	ngOnInit() {
-		this._tagsUpdatedSub = this.notify.isTagsUpdated$.subscribe((event: iTagsUpdated) => {
-			switch (event.type) {
-				case EventType.Init:
-					// do nothing
-					break;
+  ngOnInit() {
+    this.sub = this.singleton.tags$.subscribe((tags) => {
+      this.tags = tags;
+      this._refreshTable();
+    });
+  }
 
-				case EventType.Update: {
-					if (event.Tag) {
-						const tagId = event.Tag.id;
-						const tag = this.tags.find(m => m.id === tagId);
-						if (tag) {
-							tag.name = event.Tag.name;
-						}
-					}
-					break;
-				}
+  ngOnDestroy() {
+    this.sub.unsubscribe();
+  }
 
-				case EventType.Insert: {
-					if (event.Tag) {
-						this.tags.push(event.Tag);
-					}
-					break;
-				}
+  private _refreshTable() {
+    this.dataSource = new MatTableDataSource(this.tags);
+    this.dataSource.paginator = this.paginator;
+  }
 
-				case EventType.Delete: {
-					if (event.Tag) {
-						const tagId = event.Tag.id;
-						const tagIndex = this.tags.findIndex(m => m.id === tagId);
-						if (tagIndex !== -1) {
-							this.tags.splice(tagIndex, 1);
-						}
-					}
-					break;
-				}
+  selectedAction($event: MatSelectChange, model: Tag) {
+    switch ($event.value) {
+      case 'rename': {
+        const dConfig = new MatDialogConfig();
 
-				case EventType.Merge: {
-					// update the count of links for the merged to Tag
-					const fromTag = this.tags.find(m => m.id === event.fromId);
-					if (fromTag && fromTag.CardTagLinksCount > 0) {
-						const toTag = this.tags.find(m => m.id === event.toId);
-						if (toTag) {
-							toTag.CardTagLinksCount += fromTag.CardTagLinksCount;
-						}
-					}
+        dConfig.autoFocus = false;
+        dConfig.disableClose = false;
 
-					// remove the merged tag
-					const tagIndex = this.tags.findIndex(m => m.id == event.fromId);
-					if (tagIndex !== -1) {
-						this.tags.splice(tagIndex, 1);
-					}
-					break;
-				}
+        const data: IDialogRenameTag = {
+          model
+        };
 
-				default:
-					this.messages.send('DialogManageTags received unexpected EventType: ' + event.type, MessageLevel.Alert);
-					break;
-			}
+        dConfig.data = data;
 
-			this._refreshTable();
-		});
+        this.dialog.open(DialogRenameTagComponent, dConfig);
+        break;
+      }
 
-		this._loadTags();
-	}
+      case 'delete': {
+        let confirmMsg = `Are you sure you want to delete [${model.name}]?`;
 
-	ngOnDestroy() {
-		this._tagsUpdatedSub.unsubscribe();
-	}
+        this.cardTagLinkService.getByTagId(model._id).pipe(take(1))
+          .subscribe((links) => {
+            if (links?.length > 0) {
+              confirmMsg = `There are ${links.length} cards linked to this tag.` +
+                'These links will also be removed if you proceed.\n' +
+                confirmMsg;
+            }
 
-	private _refreshTable() {
-		this.dataSource = new MatTableDataSource(this.tags);
-		this.dataSource.paginator = this.paginator;
-	}
+            if (confirm(confirmMsg)) {
+              this.tagService.deleteTag(model._id).pipe(take(1))
+                .subscribe(result => {
+                  if (!!result) {
+                    if (links?.length > 0) {
+                      this.cardTagLinkService.deleteCardTagLinks(links.map(m => m._id))
+                        .pipe(take(1))
+                        .subscribe();
+                    }
 
-	private _loadTags() {
-		this.service.getTags().subscribe(tags => {
-			this.tags = tags.sort((a, b) => {
-				if (a.name > b.name) {
-					return 1;
-				} else if (b.name > a.name) {
-					return -1;
-				} else {
-					return 0;
-				}
-			});
+                    this.singleton.setTags(this.tags.filter(m => m._id !== model._id));
+                  } else {
+                    this.singleton.notify(`Could not remove [${model.name}].`);
+                  }
+                });
+            }
+          });
+        break;
+      }
+    }
 
-			this._refreshTable();
-		});
-	}
+    $event.source.writeValue(null);
+  }
 
-	selectedAction($event: MatSelectChange, model: Tag) {
-		switch ($event.value) {
-			case 'rename': {
-				const dConfig = new MatDialogConfig();
-
-				dConfig.autoFocus = false;
-				dConfig.disableClose = false;
-
-				const data: IDialogRenameTag = {
-					model,
-					all: this.tags,
-				};
-
-				dConfig.data = data;
-
-				this.dialog.open(DialogRenameTagComponent, dConfig);
-				break;
-			}
-
-			case 'delete': {
-				let confirmMsg = `Are you sure you want to delete [${model.name}]?`;
-
-				if (model.CardTagLinksCount > 0) {
-					confirmMsg = `There are ${model.CardTagLinksCount} cards linked to this tag. These links will also be removed if you proceed.\n` + confirmMsg;
-				}
-
-				if (confirm(confirmMsg)) {
-					this.service.deleteTag(model.id).subscribe(result => {
-						if (result) {
-							if (!result.isSuccess) {
-								this.messages.send(`Could not remove [${model.name}].`, MessageLevel.Alert);
-							} else {
-								const data: iTagsUpdated = {
-									type: EventType.Delete,
-									Tag: model,
-									toId: -1,
-									fromId: -1,
-								};
-
-								this.notify.tagsUpdated(data);
-							}
-						}
-					});
-				}
-				break;
-			}
-
-			default:
-				break;
-		}
-
-		$event.source.writeValue(null);
-	}
-
-	close() {
-		this.dialogRef.close();
-	}
+  close() {
+    this.dialogRef.close();
+  }
 }

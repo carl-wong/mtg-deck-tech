@@ -32,12 +32,12 @@ import { DialogManageTagsComponent } from './dialog-manage-tags/dialog-manage-ta
 import { DialogRenameTagComponent } from './dialog-rename-tag/dialog-rename-tag.component';
 import { HeaderComponent } from './header/header.component';
 import { RestDbApiKeyInterceptor } from './interceptors/rest-db-api-key.interceptor';
+import { LoadingOverlayComponent } from './loading-overlay/loading-overlay.component';
 import { ChartCmcComponent } from './main/chart-cmc/chart-cmc.component';
 import { ChartColorPieComponent } from './main/chart-color-pie/chart-color-pie.component';
 import { ChartTagsComponent } from './main/chart-tags/chart-tags.component';
 import { MainComponent } from './main/main.component';
 import { StatsCalculatorComponent } from './main/stats-calculator/stats-calculator.component';
-import { MessagesComponent } from './messages/messages.component';
 
 @NgModule({
   declarations: [
@@ -52,8 +52,8 @@ import { MessagesComponent } from './messages/messages.component';
     DialogRenameTagComponent,
     HeaderComponent,
     MainComponent,
-    MessagesComponent,
     StatsCalculatorComponent,
+    LoadingOverlayComponent,
   ],
   entryComponents: [
     DialogAddTagComponent,

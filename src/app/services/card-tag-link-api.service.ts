@@ -1,53 +1,48 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { ApiResult, PostResult } from '@classes/api-result';
+import { ApiResult } from '@classes/api-result';
 import { CardTagLink } from '@classes/card-tag-link';
 import { Observable } from 'rxjs';
-import { catchError } from 'rxjs/operators';
-import { BaseApiService } from './base-api.service';
+import { BaseRestdbApiService } from './base-restdb-api.service';
 
 
 @Injectable({
-	providedIn: 'root'
+  providedIn: 'root'
 })
-export class CardTagLinkApiService extends BaseApiService {
-	constructor(
-		protected http: HttpClient,
-	) {
-		super();
-	}
+export class CardTagLinkApiService extends BaseRestdbApiService {
+  constructor(
+    protected http: HttpClient,
+  ) {
+    super('links', http);
+  }
 
-	public getCardTagLink(oracle_id: string, tagId: number): Observable<CardTagLink[]> {
-		const queries: string[] = [];
+  public getCardTagLink(oracleId: string, tagId: string): Observable<CardTagLink[]> {
+    return this._get(undefined, `q={"$and":[{"oracle_id":"${oracleId}"},{"tag":{"$elemMatch":{"_id":"${tagId}"}}}]}`);
+  }
 
-		queries.push('oracle_id=' + oracle_id);
-		queries.push('TagId=' + tagId.toString());
+  public getByTagId(tagId: string): Observable<CardTagLink[]> {
+      return this._get(undefined, `q={"tag":{"$elemMatch":{"_id":"${tagId}"}}}`);
+  }
 
-		const suffix = queries.length > 0 ? '?' + queries.join('&') : '';
-		return this.http.get<CardTagLink[]>(this.apiUrl + '/Profiles/' + this.getSessionProfileId() + '/CardTagLinks' + suffix);
-	}
+  public getByProfileId(profileId: string, oracleId: string[]): Observable<CardTagLink[]> {
+    const clauses: string[] = [];
 
-	public getCardTagLinksByTagId(tagId: number): Observable<CardTagLink[]> {
-		const suffix = '?TagId=' + tagId;
-		return this.http.get<CardTagLink[]>(this.apiUrl + '/Profiles/' + this.getSessionProfileId() + '/CardTagLinks' + suffix);
-	}
+    oracleId.forEach((id) => {
+      clauses.push(`{"oracle_id":"${id}"}`);
+    });
 
-	public postCardTagLinks(oracle_ids: string[]): Observable<CardTagLink[]> {
-		return this.http.post<CardTagLink[]>(this.apiUrl + '/Profiles/' + this.getSessionProfileId() + '/CardTagLinks', { oracle_ids: oracle_ids }, this.httpOptions);
-	}
+    return this._get(undefined, `q={"$and":[{"profile":{"$elemMatch":{"_id":"${profileId}"}}},"$or":[${clauses.join(',')}]]}`);
+  }
 
-	public createCardTagLink(model: CardTagLink): Observable<PostResult> {
-		model.ProfileId = parseInt(this.getSessionProfileId());
-		return this.http.post<PostResult>(this.apiUrl + '/CardTagLinks', model, this.httpOptions)
-			.pipe(
-				catchError(this.handleError<PostResult>('create CardTagLink'))
-			);
-	}
+  public createCardTagLink(model: any): Observable<CardTagLink> {
+    return this._post(model);
+  }
 
-	public deleteCardTagLink(id: number): Observable<ApiResult> {
-		return this.http.delete<ApiResult>(this.apiUrl + '/CardTagLinks/' + id)
-			.pipe(
-				catchError(this.handleError<ApiResult>('delete CardTagLink'))
-			);
-	}
+  public deleteCardTagLink(id: string): Observable<any> {
+    return this._delete(id);
+  }
+
+  public deleteCardTagLinks(idArray: string[]): Observable<any> {
+    return this._delete(undefined, idArray);
+  }
 }

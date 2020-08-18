@@ -57,7 +57,7 @@ export abstract class BaseRestdbApiService {
     if (!!params) { url += `?` + params; }
     return this.http.get<any>(url, this.httpOptions)
       .pipe(
-      catchError(this.handleError<any>()),
+        catchError(this.handleError<any>()),
       );
   }
 
@@ -65,7 +65,7 @@ export abstract class BaseRestdbApiService {
   protected _post(model: any): Observable<any> {
     return this.http.post<any>(this.url, model, this.httpOptions)
       .pipe(
-      catchError(this.handleError<any>()),
+        catchError(this.handleError<any>()),
       );
   }
 
@@ -73,7 +73,7 @@ export abstract class BaseRestdbApiService {
   protected _put(id: string, model: any): Observable<any> {
     return this.http.put<any>(`${this.url}/${id}`, model, this.httpOptions)
       .pipe(
-      catchError(this.handleError<any>()),
+        catchError(this.handleError<any>()),
       );
   }
 
@@ -81,15 +81,28 @@ export abstract class BaseRestdbApiService {
   protected _patch(id: string, model: any): Observable<any> {
     return this.http.patch<any>(`${this.url}/${id}`, model, this.httpOptions)
       .pipe(
-      catchError(this.handleError<any>()),
+        catchError(this.handleError<any>()),
       );
   }
 
   /** DELETE object */
-  protected _delete(id: string): Observable<any> {
-    return this.http.delete<any>(`${this.url}/${id}`, this.httpOptions)
-      .pipe(
-      catchError(this.handleError<any>()),
-      );
+  protected _delete(id?: string, idArray?: string[]): Observable<any> {
+    if (!!id) {
+      return this.http.delete<any>(`${this.url}/${id}`, this.httpOptions)
+        .pipe(
+          catchError(this.handleError<any>()),
+        );
+    } else {
+      return this.http.request<any>('delete', this.url, {
+        headers: new HttpHeaders({
+          'cache-control': 'no-cache',
+          'Content-Type': 'application/json',
+        }),
+        body: idArray,
+      })
+        .pipe(
+          catchError(this.handleError<any>()),
+        );
+    }
   }
 }

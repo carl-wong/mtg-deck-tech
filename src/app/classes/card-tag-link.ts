@@ -1,14 +1,9 @@
-import { Tag } from './tag';
+import { Tag } from '@classes/tag';
+import { Profile } from '@classes/profile';
 
 export class CardTagLink {
-	id: number;
-	oracle_id: string;
-	ProfileId: number;
-	TagId: number;
-
-	TagName: string; // Tag.name from Tag attached to this link
-
-	constructor(values: Object = {}) {
-		Object.assign(this, values);
-	}
+  _id: string;
+  oracle_id: string;
+  profile: Profile[];
+  tag: Tag[];
 }

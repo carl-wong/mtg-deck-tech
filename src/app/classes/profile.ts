@@ -1,4 +1,4 @@
 export class Profile {
-  public _id: number;
+  public _id: string;
   public user: any[];
 }

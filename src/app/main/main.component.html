@@ -1,8 +1,3 @@
-<ng-container *ngIf="isProgressSpinnerActive">
-  <div class="spinner-wrapper">
-    <fa-icon [icon]="faSpinner" [fixedWidth]="true" [pulse]="true"></fa-icon>
-  </div>
-</ng-container>
 <mat-accordion>
   <mat-expansion-panel [expanded]="accordionStep === 'input'" (opened)="open('input')">
     <mat-expansion-panel-header>
@@ -47,10 +42,10 @@
         <fa-icon [icon]="faSync"></fa-icon>
       </button>
     </div>
-    <ng-container *ngIf="!isDecklistReady || cardsGrouped.length === 0">
+    <ng-container *ngIf="!cardsGrouped || cardsGrouped.length === 0">
       <ng-container *ngTemplateOutlet="noDataWarning;"></ng-container>
     </ng-container>
-    <ng-container *ngIf="isDecklistReady && cardsGrouped.length > 0">
+    <ng-container *ngIf="!!cardsGrouped && cardsGrouped.length > 0">
       <mat-accordion multi="true">
         <mat-expansion-panel *ngFor="let group of cardsGrouped; first as isFirst;" [expanded]="isFirst">
           <mat-expansion-panel-header>
@@ -76,14 +71,14 @@
                   <mat-chip (click)="openDialogAddTag(element)" (keydown.space)="openDialogAddTag(element)" (keydown.enter)="openDialogAddTag(element)" color="accent" selected [selectable]="false">
                     <fa-icon [icon]="faPlus"></fa-icon>
                   </mat-chip>
-                  <ng-container *ngIf="element.CardTagLinks">
-                    <ng-container *ngFor="let link of element.CardTagLinks">
-                      <mat-chip *ngIf="link && link.TagName" color="warn" selected [selectable]="false" (keydown.space)="removeCardTagLink(link)" (keydown.enter)="removeCardTagLink(link)" (removed)="removeCardTagLink(link)">
-                        {{link.TagName | titlecase}}
+                  <!-- <ng-container *ngIf="element.TagNames">
+                    <ng-container *ngFor="let tagName of getCardTags(element)">
+                      <mat-chip *ngIf="!!tagName" color="warn" selected [selectable]="false" (keydown.space)="removeCardTagLink()" (keydown.enter)="removeCardTagLink(element.oracle_id, tagName)" (removed)="removeCardTagLink(element.oracle_id, tagName)">
+                        {{tagName | titlecase}}
                         <mat-icon matChipRemove>cancel</mat-icon>
                       </mat-chip>
                     </ng-container>
-                  </ng-container>
+                  </ng-container> -->
                 </mat-chip-list>
               </td>
             </ng-container>
@@ -134,22 +129,12 @@
         Statistics
       </mat-panel-title>
     </mat-expansion-panel-header>
-    <ng-container *ngIf="!isDecklistReady || cardsGrouped.length === 0">
+    <ng-container *ngIf="!cardsGrouped || cardsGrouped.length === 0">
       <ng-container *ngTemplateOutlet="noDataWarning;"></ng-container>
     </ng-container>
-    <ng-container *ngIf="isDecklistReady">
+    <ng-container *ngIf="!!cardsGrouped">
       <app-stats-calculator [model]="deck" #statsCalculator></app-stats-calculator>
     </ng-container>
-  </mat-expansion-panel>
-  <mat-expansion-panel [expanded]="accordionStep === 'messages'" (opened)="open('messages')">
-    <mat-expansion-panel-header>
-      <mat-panel-title>
-        <fa-icon [icon]="faComment"></fa-icon>
-        &nbsp;
-        Log Messages
-      </mat-panel-title>
-    </mat-expansion-panel-header>
-    <app-messages></app-messages>
   </mat-expansion-panel>
 </mat-accordion>
 <ng-template #noDataWarning>

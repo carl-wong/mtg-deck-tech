@@ -4,245 +4,253 @@ import { CardReference } from '@classes/card-reference';
 import { GroupByMode, Statistics } from '@classes/statistics';
 import { all, create } from 'mathjs';
 import { faCalculator } from '@fortawesome/free-solid-svg-icons';
+import { CardTagLink } from '@classes/card-tag-link';
+import { Tag } from '@classes/tag';
 
-interface iHypergeometricParams {
-	mode: string;
-	modeValue: string;
-	populationSize: number;			// N
-	populationSuccesses: number;	// k
-	sampleSize: number;				// n
-	sampleSuccesses: number;		// x
+interface IHypergeometricParams {
+  mode: string;
+  modeValue: string;
+  populationSize: number;			// N
+  populationSuccesses: number;	// k
+  sampleSize: number;				// n
+  sampleSuccesses: number;		// x
 }
 
-interface iHypergeometricOutputs {
-	[key: string]: any;
+interface IHypergeometricOutputs {
+  [key: string]: any;
 
-	X_eq_x: number;
-	X_lt_x: number;
-	X_lte_x: number;
-	X_gt_x: number;
-	X_gte_x: number;
+  X_eq_x: number;
+  X_lt_x: number;
+  X_lte_x: number;
+  X_gt_x: number;
+  X_gte_x: number;
 }
 
 @Component({
-	selector: 'app-stats-calculator',
-	templateUrl: './stats-calculator.component.html',
-	styleUrls: ['./stats-calculator.component.less']
+  selector: 'app-stats-calculator',
+  templateUrl: './stats-calculator.component.html',
+  styleUrls: ['./stats-calculator.component.less']
 })
 export class StatsCalculatorComponent implements OnInit {
-	faCalculator = faCalculator;
-	
-	modeOptions = Statistics.GROUP_MODES;
-	modeValueOptions: string[] = [];
-	maxSampleSuccesses: number;
+  faCalculator = faCalculator;
 
-	limits = {
-		sampleSuccesses: {
-			max: 0
-		}
-	};
+  modeOptions = Statistics.GROUP_MODES;
+  modeValueOptions: string[] = [];
+  maxSampleSuccesses: number;
 
-	private _tagsDict: { [tagName: string]: number } = {};
-	private _typesDict: { [typeName: string]: number } = {};
-	private _cmcDict: { [cmcString: string]: number } = {};
+  limits = {
+    sampleSuccesses: {
+      max: 0
+    }
+  };
 
-	private _math: Partial<math.MathJsStatic> = create(all, {});
+  private tagsDict: { [tagName: string]: number } = {};
+  private typesDict: { [typeName: string]: number } = {};
+  private cmcDict: { [cmcString: string]: number } = {};
 
-	@Input() model: CardReference[];
+  private math: Partial<math.MathJsStatic> = create(all, {});
 
-	@Input() params: iHypergeometricParams = {
-		mode: '',
-		modeValue: '',
-		populationSize: 0,
-		populationSuccesses: 0,
-		sampleSize: 7,
-		sampleSuccesses: 0,
-	};
+  @Input() model: CardReference[];
+  @Input() links: CardTagLink[];
+  @Input() tags: Tag[];
 
-	outputs: iHypergeometricOutputs = {
-		X_eq_x: 0,
-		X_lt_x: 0,
-		X_lte_x: 0,
-		X_gt_x: 0,
-		X_gte_x: 0,
-	};
+  @Input() params: IHypergeometricParams = {
+    mode: '',
+    modeValue: '',
+    populationSize: 0,
+    populationSuccesses: 0,
+    sampleSize: 7,
+    sampleSuccesses: 0,
+  };
 
-	constructor() { }
+  outputs: IHypergeometricOutputs = {
+    X_eq_x: 0,
+    X_lt_x: 0,
+    X_lte_x: 0,
+    X_gt_x: 0,
+    X_gte_x: 0,
+  };
 
-	ngOnInit() {
-		// set form default value
-		this.params.mode = Statistics.GROUP_MODES[0].toString();
-	}
+  constructor() { }
 
-	updateOptions() {
-		this.params.populationSize = 0;
+  ngOnInit() {
+    // set form default value
+    this.params.mode = Statistics.GROUP_MODES[0].toString();
+  }
 
-		this.model.forEach(card => {
-			this._countByTypes(card);
-			this._countByTags(card);
-			this._countByCMC(card);
+  updateOptions() {
+    this.params.populationSize = 0;
 
-			this.params.populationSize += card.count;
-		});
+    this.model.forEach(card => {
+      this.countByTypes(card);
+      this.countByTags(card, this.links);
+      this.countByCMC(card);
 
-		this._selectMode(this.params.mode);
-		this._enforceLimits();
-	}
+      this.params.populationSize += card.count;
+    });
 
-	private _enforceLimits() {
-		// hand size <= deck size
-		this.params.sampleSize = Math.min(this.params.populationSize, this.params.sampleSize);
+    this._selectMode(this.params.mode);
+    this._enforceLimits();
+  }
 
-		// hits <= hand size
-		this.params.sampleSuccesses = Math.min(this.limits.sampleSuccesses.max, this.params.sampleSize, this.params.sampleSuccesses);
-	}
+  private _enforceLimits() {
+    // hand size <= deck size
+    this.params.sampleSize = Math.min(this.params.populationSize, this.params.sampleSize);
 
-	private _countByTypes(card: CardReference) {
-		if (card.OracleCard && card.OracleCard.type_line) {
-			Statistics.MAIN_TYPES.forEach(type => {
-				const typeString = type.toString();
-				if (card.OracleCard.type_line.indexOf(typeString) !== -1) {
-					if (!this._typesDict[typeString]) {
-						this._typesDict[typeString] = card.count;
-					} else {
-						this._typesDict[typeString] += card.count;
-					}
-				}
-			});
-		}
-	}
+    // hits <= hand size
+    this.params.sampleSuccesses = Math.min(this.limits.sampleSuccesses.max, this.params.sampleSize, this.params.sampleSuccesses);
+  }
 
-	private _countByTags(card: CardReference) {
-		if (card.CardTagLinks) {
-			card.CardTagLinks.forEach(link => {
-				if (!this._tagsDict[link.TagName]) {
-					this._tagsDict[link.TagName] = card.count;
-				} else {
-					this._tagsDict[link.TagName] += card.count;
-				}
-			});
-		}
-	}
+  private countByTypes(card: CardReference) {
+    if (card.OracleCard && card.OracleCard.type_line) {
+      Statistics.MAIN_TYPES.forEach(type => {
+        const typeString = type.toString();
+        if (card.OracleCard.type_line.indexOf(typeString) !== -1) {
+          if (!this.typesDict[typeString]) {
+            this.typesDict[typeString] = card.count;
+          } else {
+            this.typesDict[typeString] += card.count;
+          }
+        }
+      });
+    }
+  }
 
-	private _countByCMC(card: CardReference) {
-		if (card.OracleCard) {
-			let cmcString = null;
+  private countByTags(card: CardReference, links: CardTagLink[]) {
+    const cardLinks = links.filter(l => l.oracle_id === card.OracleCard?.oracle_id);
+    if (cardLinks.length > 0) {
+      cardLinks.forEach(link => {
+        const tag = this.tags.find(t => t._id === link.tag[0]._id);
+        if (!!tag) {
+          if (!this.tagsDict[tag.name]) {
+            this.tagsDict[tag.name] = card.count;
+          } else {
+            this.tagsDict[tag.name] += card.count;
+          }
+        }
+      });
+    }
+  }
 
-			if (typeof card.OracleCard.cmc === 'number') {
-				cmcString = Statistics.cmcToString(card.OracleCard.cmc);
-			} else if (card.OracleCard.type_line &&
-				card.OracleCard.type_line.includes('Land')) {
-				cmcString = 'Land';
-			} else {
-				cmcString = Statistics.cmcToString(0);
-			}
+  private countByCMC(card: CardReference) {
+    if (card.OracleCard) {
+      let cmcString = null;
 
-			if (!this._cmcDict[cmcString]) {
-				this._cmcDict[cmcString] = card.count;
-			} else {
-				this._cmcDict[cmcString] += card.count;
-			}
-		}
-	}
+      if (typeof card.OracleCard.cmc === 'number') {
+        cmcString = Statistics.cmcToString(card.OracleCard.cmc);
+      } else if (card.OracleCard.type_line &&
+        card.OracleCard.type_line.includes('Land')) {
+        cmcString = 'Land';
+      } else {
+        cmcString = Statistics.cmcToString(0);
+      }
 
-	private _getDictByMode(mode: GroupByMode) {
-		switch (mode as GroupByMode) {
-			case GroupByMode.Types:
-				return this._typesDict;
+      if (!this.cmcDict[cmcString]) {
+        this.cmcDict[cmcString] = card.count;
+      } else {
+        this.cmcDict[cmcString] += card.count;
+      }
+    }
+  }
 
-			case GroupByMode.Tags:
-				return this._tagsDict;
+  private _getDictByMode(mode: GroupByMode) {
+    switch (mode as GroupByMode) {
+      case GroupByMode.Types:
+        return this.typesDict;
 
-			case GroupByMode.CMC:
-				return this._cmcDict;
+      case GroupByMode.Tags:
+        return this.tagsDict;
 
-			default:
-				return {};
-		}
-	}
+      case GroupByMode.CMC:
+        return this.cmcDict;
 
-	private _selectMode(mode: string) {
-		function sort(a: string, b: string) {
-			if (a > b) {
-				return 1;
-			} else if (b > a) {
-				return -1;
-			} else {
-				return 0;
-			}
-		}
+      default:
+        return {};
+    }
+  }
 
-		this.modeValueOptions = Object.keys(this._getDictByMode(mode as GroupByMode)).sort(sort);
-		this.params.modeValue = this.modeValueOptions[0];
-		this._selectModeValue(this.modeValueOptions[0]);
-	}
+  private _selectMode(mode: string) {
+    function sort(a: string, b: string) {
+      if (a > b) {
+        return 1;
+      } else if (b > a) {
+        return -1;
+      } else {
+        return 0;
+      }
+    }
 
-	onSelectMode($event: MatSelectChange) {
-		this._selectMode($event.value);
-		this._enforceLimits();
-	}
+    this.modeValueOptions = Object.keys(this._getDictByMode(mode as GroupByMode)).sort(sort);
+    this.params.modeValue = this.modeValueOptions[0];
+    this.selectModeValue(this.modeValueOptions[0]);
+  }
 
-	private _selectModeValue(value: string) {
-		const dict = this._getDictByMode(this.params.mode as GroupByMode);
+  onSelectMode($event: MatSelectChange) {
+    this._selectMode($event.value);
+    this._enforceLimits();
+  }
 
-		// update params
-		if (dict[this.params.modeValue]) {
-			this.params.populationSuccesses = dict[this.params.modeValue];
-		} else {
-			this.params.populationSuccesses = 0;
-		}
+  private selectModeValue(value: string) {
+    const dict = this._getDictByMode(this.params.mode as GroupByMode);
 
-		this.limits.sampleSuccesses.max = Math.min(this.params.sampleSize, this.params.populationSuccesses);
-	}
+    // update params
+    if (dict[this.params.modeValue]) {
+      this.params.populationSuccesses = dict[this.params.modeValue];
+    } else {
+      this.params.populationSuccesses = 0;
+    }
 
-	onSelectModeValue($event: MatSelectChange) {
-		this._selectModeValue($event.value);
-		this._enforceLimits();
-	}
+    this.limits.sampleSuccesses.max = Math.min(this.params.sampleSize, this.params.populationSuccesses);
+  }
 
-	onChangeSampleSize($event: MatSelectChange) {
-		this._selectModeValue(this.params.modeValue);
-		this._enforceLimits();
-	}
+  onSelectModeValue($event: MatSelectChange) {
+    this.selectModeValue($event.value);
+    this._enforceLimits();
+  }
 
-	calculate() {
-		const _N = this.params.populationSize;
-		const _k = this.params.populationSuccesses;
-		const _n = this.params.sampleSize;
-		const _x = this.params.sampleSuccesses;
+  onChangeSampleSize($event: MatSelectChange) {
+    this.selectModeValue(this.params.modeValue);
+    this._enforceLimits();
+  }
 
-		const results: iHypergeometricOutputs = {
-			X_eq_x: 0,
-			X_lt_x: 0,
-			X_lte_x: 0,
-			X_gt_x: 0,
-			X_gte_x: 0,
-		};
+  calculate() {
+    const N = this.params.populationSize;
+    const k = this.params.populationSuccesses;
+    const n = this.params.sampleSize;
+    const x = this.params.sampleSuccesses;
 
-		for (let iX = 0; iX <= _n && iX <= _k; iX++) {
-			if (this._math.combinations) {
-				const prob = (this._math.combinations(_k, iX) as number) *
-					(this._math.combinations(_N - _k, _n - iX) as number) /
-					(this._math.combinations(_N, _n) as number);
+    const results: IHypergeometricOutputs = {
+      X_eq_x: 0,
+      X_lt_x: 0,
+      X_lte_x: 0,
+      X_gt_x: 0,
+      X_gte_x: 0,
+    };
 
-				if (iX < _x) {
-					results.X_lt_x += prob;
-					results.X_lte_x += prob;
-				} else if (iX === _x) {
-					results.X_lte_x += prob;
-					results.X_eq_x = prob;
-					results.X_gte_x += prob;
-				} else if (iX > _x) {
-					results.X_gte_x += prob;
-					results.X_gt_x += prob;
-				}
-			}
-		}
+    for (let iX = 0; iX <= n && iX <= k; iX++) {
+      if (this.math.combinations) {
+        const prob = (this.math.combinations(k, iX) as number) *
+          (this.math.combinations(N - k, n - iX) as number) /
+          (this.math.combinations(N, n) as number);
 
-		Object.keys(results).forEach(key => {
-			results[key] = Math.round(results[key] * 10000) / 100;
-		});
+        if (iX < x) {
+          results.X_lt_x += prob;
+          results.X_lte_x += prob;
+        } else if (iX === x) {
+          results.X_lte_x += prob;
+          results.X_eq_x = prob;
+          results.X_gte_x += prob;
+        } else if (iX > x) {
+          results.X_gte_x += prob;
+          results.X_gt_x += prob;
+        }
+      }
+    }
 
-		this.outputs = results;
-	}
+    Object.keys(results).forEach(key => {
+      results[key] = Math.round(results[key] * 10000) / 100;
+    });
+
+    this.outputs = results;
+  }
 }
