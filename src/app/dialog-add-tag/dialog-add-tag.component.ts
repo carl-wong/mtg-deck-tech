@@ -37,13 +37,12 @@ export class DialogAddTagComponent implements OnInit {
   }
 
   public ngOnInit(): void {
-    this.singleton.setIsLoading(true);
     this.singleton.profile$.pipe(first((m) => !!m)).subscribe((profile) => {
       this.profileId = profile?._id ?? '';
       this.tagService.getTags(this.profileId).pipe(take(1)).subscribe((tags) => {
         this.tags = tags;
         this.options = this.tags.map((a) => a.name).sort();
-        this.singleton.setIsLoading(false);
+        this.singleton.notify('Tags loaded...');
       });
     });
 

@@ -124,7 +124,10 @@ export class MainComponent implements OnInit {
                 this.transformNameDict[front] = name;
               }
             });
-          this.singleton.setIsLoading(false);
+
+          if (!!this.profileId) {
+            this.singleton.setIsLoading(false);
+          }
         }
       });
 
@@ -132,19 +135,23 @@ export class MainComponent implements OnInit {
     this.singleton.profile$.pipe(first((m) => !!m))
       .subscribe((profile) => {
         this.profileId = profile?._id ?? '';
+
+        if (!!this.transformNameDict) {
+          this.singleton.setIsLoading(false);
+        }
       });
 
     this.singleton.requireReloadDeck$.subscribe((isReload) => {
-        if (!!isReload && this.deck?.length > 0) {
-          this.submitDecklist();
-        }
-      });
+      if (!!isReload && this.deck?.length > 0) {
+        this.submitDecklist();
+      }
+    });
   }
 
   public submitDecklist(): void {
     if (this.isEverythingReady()) {
-      this.singleton.setIsLoading(true);
       this.singleton.notify('Processing decklist...');
+      this.singleton.setIsLoading(true);
 
       // reset output containers
       this.deck = [];
@@ -159,7 +166,7 @@ export class MainComponent implements OnInit {
         const linesList = remainingLines.slice(0, Math.min(QUERY_BATCH_SIZE, remainingLines.length));
         remainingLines.splice(0, linesList.length);
 
-        console.log(`remainingLines.length after splice: ${remainingLines.length}`);
+        if (!environment.production) { console.log(`remainingLines.length after splice: ${remainingLines.length}`); }
 
         // declare a temporary sublist of cards for fetching oracle data
         const tempCardList: CardReference[] = [];
@@ -525,18 +532,18 @@ export class MainComponent implements OnInit {
           };
 
           this.cardTagLinkService.createCardTagLink(newLink).pipe(take(1))
-          .subscribe((result) => {
-            if (!!result) {
-              if (!!card.links) {
-                card.links.push(result);
-                card.links = card.links.sort(this.sortCardTagLinksByName);
+            .subscribe((result) => {
+              if (!!result) {
+                if (!!card.links) {
+                  card.links.push(result);
+                  card.links = card.links.sort(this.sortCardTagLinksByName);
+                } else {
+                  card.links = [result];
+                }
               } else {
-                card.links = [result];
+                this.singleton.notify(`Could not attach [${tag.name}] to "${card.name}."`);
               }
-            } else {
-              this.singleton.notify(`Could not attach [${tag.name}] to "${card.name}."`);
-            }
-          });
+            });
         }
       }
     });
@@ -546,13 +553,13 @@ export class MainComponent implements OnInit {
     const link = card?.links?.find((m) => m._id === linkId);
     if (!!link) {
       this.cardTagLinkService.deleteCardTagLink(link._id).pipe(take(1))
-      .subscribe((result) => {
-        if (!!result) {
-          card.links = card.links.filter((m) => m._id !== linkId);
-        } else {
-          this.singleton.notify('Could not remove link.');
-        }
-      });
+        .subscribe((result) => {
+          if (!!result) {
+            card.links = card.links.filter((m) => m._id !== linkId);
+          } else {
+            this.singleton.notify('Could not remove link.');
+          }
+        });
     }
 
   }

@@ -25,7 +25,6 @@ export class DialogManageTagsComponent implements OnInit, OnDestroy {
     private singleton: SingletonService,
     private dialogRef: MatDialogRef<DialogManageTagsComponent>,
   ) { }
-  private sub: Subscription;
 
   private profileId: string;
   private tags: Tag[] = [];
@@ -36,24 +35,25 @@ export class DialogManageTagsComponent implements OnInit, OnDestroy {
   ];
   public dataSource: MatTableDataSource<Tag>;
 
+  private isChanged = false;
+
   @ViewChild(MatPaginator) public paginator: MatPaginator;
 
   public ngOnInit(): void {
-    this.singleton.setIsLoading(true);
-
     this.singleton.profile$.pipe(first((m) => !!m)).subscribe((profile) => {
       this.profileId = profile?._id ?? '';
       this.tagService.getTags(this.profileId).pipe(take(1))
         .subscribe((tags) => {
           this.tags = tags;
           this.refreshTable();
-          this.singleton.setIsLoading(false);
+          this.singleton.notify('Table loaded...');
         });
     });
   }
 
   public ngOnDestroy(): void {
-    this.sub.unsubscribe();
+    console.log('destroying, isChanged: ' + this.isChanged);
+    if (this.isChanged) { this.singleton.setRequireReloadDeck(true); }
   }
 
   private refreshTable(): void {
@@ -78,12 +78,12 @@ export class DialogManageTagsComponent implements OnInit, OnDestroy {
         this.dialog.open(DialogRenameTagComponent, dConfig).afterClosed()
         .subscribe((isChanged) => {
             if (!!isChanged) {
-              this.singleton.setIsLoading(true);
+              this.isChanged = true;
               this.tagService.getTags(this.profileId).pipe(take(1))
                 .subscribe((tags) => {
                   this.tags = tags;
                   this.refreshTable();
-                  this.singleton.setIsLoading(false);
+                  this.singleton.notify('Table updated...');
                 });
             }
         });
@@ -110,7 +110,7 @@ export class DialogManageTagsComponent implements OnInit, OnDestroy {
                         .pipe(take(1))
                         .subscribe((deletedLinks) => {
                           if (!!deletedLinks) {
-                            this.singleton.setRequireReloadDeck(true);
+                            this.isChanged = true;
                           }
                         });
                     }

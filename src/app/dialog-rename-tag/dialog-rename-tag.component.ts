@@ -33,12 +33,10 @@ export class DialogRenameTagComponent implements OnInit {
   }
 
   public ngOnInit(): void {
-    this.singleton.setIsLoading(true);
     this.singleton.profile$.pipe(first((m) => !!m)).subscribe((profile) => {
       this.profileId = profile?._id ?? '';
       this.tagService.getTags(this.profileId).pipe(take(1)).subscribe((tags) => {
         this.tags = tags;
-        this.singleton.setIsLoading(false);
       });
     });
   }
@@ -72,7 +70,6 @@ export class DialogRenameTagComponent implements OnInit {
                         this.tagService.deleteTag(this.model._id).pipe(take(1)).subscribe((deletedTag) => {
                           if (!!deletedTag) {
                             this.tags = this.tags.filter((m) => m._id !== this.model._id);
-                            this.singleton.setRequireReloadDeck(true);
                             this.dialogRef.close(true);
                           } else {
                             this.singleton.notify('Failed to delete old tag');
@@ -93,7 +90,6 @@ export class DialogRenameTagComponent implements OnInit {
         this.service.updateTag(this.model).subscribe((result) => {
           if (result) {
             if (!!result) {
-              this.singleton.setRequireReloadDeck(true);
               this.dialogRef.close(true);
             } else {
               this.singleton.notify(`Failed to rename [${this.model.name}].`);
