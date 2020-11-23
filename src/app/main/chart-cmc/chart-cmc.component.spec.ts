@@ -1,4 +1,4 @@
-import { async, ComponentFixture, TestBed } from '@angular/core/testing';
+import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 
 import { ChartCmcComponent } from './chart-cmc.component';
 
@@ -6,7 +6,7 @@ describe('ChartCmcComponent', () => {
   let component: ChartCmcComponent;
   let fixture: ComponentFixture<ChartCmcComponent>;
 
-  beforeEach(async(() => {
+  beforeEach(waitForAsync(() => {
 	TestBed.configureTestingModule({
 		declarations: [ ChartCmcComponent ]
 	})
