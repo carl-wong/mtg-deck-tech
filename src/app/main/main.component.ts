@@ -4,6 +4,8 @@ import { MatSelectChange } from '@angular/material/select';
 import { AuthService } from '@auth0/auth0-angular';
 import { CardReference } from '@classes/card-reference';
 import { CardTagLink } from '@classes/card-tag-link';
+import { MinOracleCard } from '@classes/min-oracle-card';
+import { Profile } from '@classes/profile';
 import { GroupByMode, MainCardTypes, Statistics } from '@classes/statistics';
 import { Tag } from '@classes/tag';
 import { environment } from '@env';
@@ -105,39 +107,44 @@ export class MainComponent implements OnInit {
 
   public ngOnInit(): void {
     this.singleton.setIsLoading(true);
-
     this.auth.user$.pipe(first((m) => !!m)).subscribe(
       (user) => {
-        this.singleton.setAuth0(user.sub);
+        if (!!user.sub) {
+          this.singleton.setAuth0(user.sub);
+          const tasks = [
+            this.singleton.profile$.pipe(first((m) => !!m)),
+            this.oracle.getTransform().pipe(take(1)),
+          ];
 
-        // get and record profile._id for use in other REST calls
-        this.singleton.profile$.pipe(first((m) => !!m))
-          .subscribe((profile) => {
-            this.profileId = profile ?._id ?? '';
-
-            if (!!this.transformNameDict) {
-              this.singleton.setIsLoading(false);
-            }
-          });
-      });
-
-    // get dictionary of transform card names
-    this.oracle.getTransform()
-      .pipe(take(1))
-      .subscribe((cards) => {
-        if (!!cards) {
-          this.transformNameDict = {};
-          cards.filter((m) => m.name && m.name.includes(' // ')).map((m) => m.name.toLowerCase())
-            .forEach((name) => {
-              const front = name.split(' // ')[0];
-              if (!!this.transformNameDict) {
-                this.transformNameDict[front] = name;
+          forkJoin(tasks).pipe(take(1)).subscribe(
+            (results) => {
+              const profile = results[0] as Profile;
+              if (!!profile) {
+                this.profileId = profile ?._id ?? '';
+              } else {
+                alert('Profile could not be loaded, please contact support');
               }
-            });
 
-          if (!!this.profileId) {
-            this.singleton.setIsLoading(false);
-          }
+              const cards = results[1] as MinOracleCard[];
+              if (!!cards) {
+                this.transformNameDict = {};
+                cards.filter((m) => m.name && m.name.includes(' // ')).map((m) => m.name.toLowerCase())
+                  .forEach((name) => {
+                    const front = name.split(' // ')[0];
+                    if (!!this.transformNameDict) {
+                      this.transformNameDict[front] = name;
+                    }
+                  });
+
+              } else {
+                alert('Transform cards could not be loaded, please contact support');
+              }
+
+              this.singleton.setIsLoading(false);
+            });
+        } else {
+          alert('No auth0 sub value, please contact support');
+          this.singleton.setIsLoading(false);
         }
       });
 
