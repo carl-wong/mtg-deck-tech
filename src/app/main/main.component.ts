@@ -16,7 +16,7 @@ import { SingletonService } from '@services/singleton.service';
 import { ChartDataSets } from 'chart.js';
 import { Label } from 'ng2-charts';
 import { forkJoin } from 'rxjs';
-import { filter, first, take } from 'rxjs/operators';
+import { first, take } from 'rxjs/operators';
 import { DialogAddTagComponent } from '../dialog-add-tag/dialog-add-tag.component';
 import { DialogCardDetailsComponent } from '../dialog-card-details/dialog-card-details.component';
 import { iChartCmc } from './chart-cmc/chart-cmc.component';
