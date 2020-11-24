@@ -1,7 +1,7 @@
 const path = require('path');
 const fs = require('fs');
 
-const ROOT_DIR = './update-db';
+const ROOT_DIR = './databases';
 const INPUT_DIR = 'input';
 const OUTPUT_DIR = 'output';
 

@@ -9,7 +9,7 @@
     "build-prod": "npm version patch --force && node ./build-version.js && node ./timestamp.js && ng build --prod && rm -f dist/mtg-deck-tech-*.zip && node ./deploy-archiver.js",
     "upload-prod": "scp -r dist/mtg-deck-tech-*.zip root@scry-x.com:/root/mtg-decktech/",
     "deploy-prod": "npm run build-prod && npm run upload-prod && git commit -a -m 'prod build uploaded' && git push",
-    "trim-oracle-db": "node ./update-db/main.js",
+    "trim-oracle-db": "node ./update-db.js",
     "test": "ng test",
     "lint": "ng lint",
     "e2e": "ng e2e"
