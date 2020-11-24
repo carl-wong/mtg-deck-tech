@@ -26,6 +26,7 @@
     "@angular/platform-browser": "~11.0.2",
     "@angular/platform-browser-dynamic": "~11.0.2",
     "@angular/router": "~11.0.2",
+    "@auth0/auth0-angular": "^1.2.0",
     "@auth0/auth0-spa-js": "^1.11.0",
     "@fortawesome/angular-fontawesome": "^0.6.0",
     "@fortawesome/fontawesome-svg-core": "^1.2.27",

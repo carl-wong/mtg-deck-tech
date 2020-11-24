@@ -1,7 +1,6 @@
 import { Injectable } from '@angular/core';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { Profile } from '@classes/profile';
-import { environment } from '@env';
 import { ProfileApiService } from '@services/profile-api.service';
 import { BehaviorSubject } from 'rxjs';
 import { take } from 'rxjs/operators';
@@ -43,21 +42,21 @@ export class SingletonService {
   public setAuth0(auth0: string): void {
     // update profile by auth0 user_id
     this.servProfiles.getByAuth0(auth0).pipe(take(1))
-    .subscribe((profiles) => {
-      if (!environment.production) {
-        console.log('fetched profile by auth0');
-        console.log(profiles);
-      }
-
-      this.setProfile(profiles?.[0]);
-    });
+      .subscribe((profile) => {
+        if (!!profile) {
+          this.setProfile(profile);
+        } else {
+          this.setProfile(undefined);
+          alert('Profile could not be found, please contact support');
+        }
+      });
 
     this.auth0Subject.next(auth0);
   }
 
   public notify(message: string, action: string = 'Dismiss'): void {
-      this.snackBar.open(message, action, {
-        duration: 3000,
-      });
+    this.snackBar.open(message, action, {
+      duration: 3000,
+    });
   }
 }

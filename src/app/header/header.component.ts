@@ -1,35 +1,38 @@
 import { Component, OnInit } from '@angular/core';
 import { MatDialog, MatDialogConfig } from '@angular/material/dialog';
+import { AuthService } from '@auth0/auth0-angular';
 import { environment } from '@env';
-import { AuthService } from '@services/auth.service';
+import { faSignOutAlt, faTags, faUserCircle } from '@fortawesome/free-solid-svg-icons';
 import { DialogManageTagsComponent } from '../dialog-manage-tags/dialog-manage-tags.component';
-import { faTags, faUserCircle, faSignOutAlt } from '@fortawesome/free-solid-svg-icons';
-
 
 @Component({
   selector: 'app-header',
   templateUrl: './header.component.html',
-  styleUrls: ['./header.component.less']
+  styleUrls: ['./header.component.less'],
 })
 export class HeaderComponent implements OnInit {
-  faTags = faTags;
-  faUserCircle = faUserCircle;
-  faSignOutAlt = faSignOutAlt;
+  public faTags = faTags;
+  public faUserCircle = faUserCircle;
+  public faSignOutAlt = faSignOutAlt;
 
-  lastUpdated = '';
-  buildVersion = '';
+  public lastUpdated = '';
+  public buildVersion = '';
 
   constructor(
     public auth: AuthService,
     private dialog: MatDialog,
   ) { }
 
-  ngOnInit() {
+  public ngOnInit(): void {
     this.lastUpdated = environment.timestamp;
     this.buildVersion = environment.version;
   }
 
-  openDialogManageTags() {
+  public logout(): void {
+    this.auth.logout({ returnTo: document.location.origin });
+  }
+
+  public openDialogManageTags(): void {
     const dConfig = new MatDialogConfig();
 
     dConfig.autoFocus = false;

@@ -20,10 +20,13 @@ import { MatToolbarModule } from '@angular/material/toolbar';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { BrowserModule } from '@angular/platform-browser';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
+import { RouterModule } from '@angular/router';
+import { AuthModule } from '@auth0/auth0-angular';
+import { environment } from '@env';
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
 import { MDBBootstrapModule } from 'angular-bootstrap-md';
 import { ChartsModule } from 'ng2-charts';
-import { AppRoutingModule } from './app-routing.module';
+import { AppRoutes } from './app-routes';
 import { AppComponent } from './app.component';
 import { DialogAddTagComponent } from './dialog-add-tag/dialog-add-tag.component';
 import { DialogCardDetailsComponent } from './dialog-card-details/dialog-card-details.component';
@@ -39,6 +42,7 @@ import { MainComponent } from './main/main.component';
 import { StatsCalculatorComponent } from './main/stats-calculator/stats-calculator.component';
 
 @NgModule({
+  bootstrap: [AppComponent],
   declarations: [
     AppComponent,
     ChartCmcComponent,
@@ -62,9 +66,14 @@ import { StatsCalculatorComponent } from './main/stats-calculator/stats-calculat
   imports: [
     MDBBootstrapModule.forRoot(),
 
-    AppRoutingModule,
     BrowserAnimationsModule,
     BrowserModule,
+    AuthModule.forRoot({
+      clientId: environment.auth0.client_id,
+      domain: environment.auth0.domain,
+    }),
+
+    RouterModule.forRoot(AppRoutes),
     FormsModule,
     HttpClientModule,
     ReactiveFormsModule,
@@ -93,6 +102,5 @@ import { StatsCalculatorComponent } from './main/stats-calculator/stats-calculat
   providers: [
     { provide: HTTP_INTERCEPTORS, useClass: RestDbApiKeyInterceptor, multi: true },
   ],
-  bootstrap: [AppComponent],
 })
 export class AppModule { }

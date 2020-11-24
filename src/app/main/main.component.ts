@@ -1,6 +1,7 @@
 import { Component, Input, OnInit, ViewChild } from '@angular/core';
 import { MatDialog, MatDialogConfig } from '@angular/material/dialog';
 import { MatSelectChange } from '@angular/material/select';
+import { AuthService } from '@auth0/auth0-angular';
 import { CardReference } from '@classes/card-reference';
 import { CardTagLink } from '@classes/card-tag-link';
 import { GroupByMode, MainCardTypes, Statistics } from '@classes/statistics';
@@ -13,7 +14,7 @@ import { SingletonService } from '@services/singleton.service';
 import { ChartDataSets } from 'chart.js';
 import { Label } from 'ng2-charts';
 import { forkJoin } from 'rxjs';
-import { first, take } from 'rxjs/operators';
+import { filter, first, take } from 'rxjs/operators';
 import { DialogAddTagComponent } from '../dialog-add-tag/dialog-add-tag.component';
 import { DialogCardDetailsComponent } from '../dialog-card-details/dialog-card-details.component';
 import { iChartCmc } from './chart-cmc/chart-cmc.component';
@@ -40,13 +41,6 @@ const REGEX_GROUP = {
   x: 3,
 };
 
-enum FinishedStep {
-  Cache = 'Cache',
-  Oracle = 'Oracle Definitions',
-  CardTagLinks = 'CardTagLinks',
-  PostProcessing = 'Post Processing',
-}
-
 interface ICardGrouping {
   key: string;
   cards: CardReference[];
@@ -60,6 +54,7 @@ interface ICardGrouping {
 })
 export class MainComponent implements OnInit {
   constructor(
+    private auth: AuthService,
     private oracle: OracleApiService,
     private cardTagLinkService: CardTagLinkApiService,
     private dialog: MatDialog,
@@ -111,6 +106,21 @@ export class MainComponent implements OnInit {
   public ngOnInit(): void {
     this.singleton.setIsLoading(true);
 
+    this.auth.user$.pipe(first((m) => !!m)).subscribe(
+      (user) => {
+        this.singleton.setAuth0(user.sub);
+
+        // get and record profile._id for use in other REST calls
+        this.singleton.profile$.pipe(first((m) => !!m))
+          .subscribe((profile) => {
+            this.profileId = profile ?._id ?? '';
+
+            if (!!this.transformNameDict) {
+              this.singleton.setIsLoading(false);
+            }
+          });
+      });
+
     // get dictionary of transform card names
     this.oracle.getTransform()
       .pipe(take(1))
@@ -131,18 +141,8 @@ export class MainComponent implements OnInit {
         }
       });
 
-    // get and record profile._id for use in other REST calls
-    this.singleton.profile$.pipe(first((m) => !!m))
-      .subscribe((profile) => {
-        this.profileId = profile?._id ?? '';
-
-        if (!!this.transformNameDict) {
-          this.singleton.setIsLoading(false);
-        }
-      });
-
     this.singleton.requireReloadDeck$.subscribe((isReload) => {
-      if (!!isReload && this.deck?.length > 0) {
+      if (!!isReload && this.deck ?.length > 0) {
         this.submitDecklist();
       }
     });
@@ -182,7 +182,7 @@ export class MainComponent implements OnInit {
 
               const card = new CardReference();
               card.count = cardCount;
-              card.name = this.transformNameDict?.[cardName] || cardName;
+              card.name = this.transformNameDict ?.[cardName] || cardName;
 
               tempCardList.push(card);
             }
@@ -231,9 +231,9 @@ export class MainComponent implements OnInit {
         }
 
         forkJoin(linkCalls).pipe(take(1)).subscribe((linkResults) => {
-          linkResults?.forEach((links) => {
-            links?.forEach((link) => {
-              const dCard = this.deck.find((m) => m.OracleCard?.oracle_id === link.oracle_id);
+          linkResults ?.forEach((links) => {
+            links ?.forEach((link) => {
+              const dCard = this.deck.find((m) => m.OracleCard ?.oracle_id === link.oracle_id);
               if (!!dCard) {
                 if (!!dCard.links) {
                   dCard.links.push(link);
@@ -380,7 +380,7 @@ export class MainComponent implements OnInit {
     this.deck.forEach((card) => {
 
       // find all tags attached to this card
-      const cardLinks = card?.links?.filter((l) => l.tag?.length > 0);
+      const cardLinks = card ?.links ?.filter((l) => l.tag ?.length > 0);
       const cardTags: Tag[] = [];
 
       cardLinks.forEach((link) => link.tag.forEach((tag) => cardTags.push(tag)));
@@ -468,7 +468,7 @@ export class MainComponent implements OnInit {
   }
 
   private sortCardTagLinksByName(a: CardTagLink, b: CardTagLink): number {
-    return (a?.tag?.[0]?.name > b?.tag?.[0].name) ? 1 : ((b?.tag?.[0].name > a?.tag?.[0]?.name) ? -1 : 0);
+    return (a ?.tag ?.[0] ?.name > b ?.tag ?.[0].name) ? 1 : ((b ?.tag ?.[0].name > a ?.tag ?.[0] ?.name) ? -1 : 0);
   }
 
   public refreshGroups(): void {
@@ -519,7 +519,7 @@ export class MainComponent implements OnInit {
     dRef.afterClosed().subscribe((tag: Tag) => {
       if (!!tag) {
         const existingCard = this.deck.find((m) => m.OracleCard.oracle_id === card.OracleCard.oracle_id);
-        const existingLink = existingCard?.links?.find((m) => m.tag?.[0]._id === tag._id);
+        const existingLink = existingCard ?.links ?.find((m) => m.tag ?.[0]._id === tag._id);
 
         if (!!existingLink) {
           // don't add the same tag twice
@@ -550,7 +550,7 @@ export class MainComponent implements OnInit {
   }
 
   public removeCardTagLink(card: CardReference, linkId: string): void {
-    const link = card?.links?.find((m) => m._id === linkId);
+    const link = card ?.links ?.find((m) => m._id === linkId);
     if (!!link) {
       this.cardTagLinkService.deleteCardTagLink(link._id).pipe(take(1))
         .subscribe((result) => {
