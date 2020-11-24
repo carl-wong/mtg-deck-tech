@@ -3,20 +3,31 @@ import { Router } from '@angular/router';
 import createAuth0Client, { GetUserOptions } from '@auth0/auth0-spa-js';
 import Auth0Client from '@auth0/auth0-spa-js/dist/typings/Auth0Client';
 import { environment } from '@env';
-import { SingletonService } from '@services/singleton.service';
 import { BehaviorSubject, combineLatest, from, Observable, of, throwError } from 'rxjs';
 import { catchError, concatMap, shareReplay, tap } from 'rxjs/operators';
+import { SingletonService } from './singleton.service';
 
 @Injectable({
   providedIn: 'root',
 })
 export class AuthService {
+  constructor(
+    private router: Router,
+    private singleton: SingletonService,
+  ) {
+    // On initial load, check authentication state with authorization server
+    // Set up local auth streams if user is already authenticated
+    this.localAuthSetup();
+    // Handle redirect from Auth0 login
+    this.handleAuthCallback();
+  }
+
   // Create an observable of Auth0 instance of client
   public auth0Client$ = (from(
     createAuth0Client({
       client_id: environment.auth0.client_id,
       domain: environment.auth0.domain,
-      redirect_uri: `${window.location.origin}${environment.baseHref}`,
+      redirect_uri: `${window.location.origin}`,
     }),
   ) as Observable<Auth0Client>).pipe(
     shareReplay(1), // Every subscription receives the same shared value
@@ -37,15 +48,7 @@ export class AuthService {
   private userProfileSubject$ = new BehaviorSubject<any>(null);
   public userProfile$ = this.userProfileSubject$.asObservable();
   // Create a local property for login status
-  public loggedIn = false;
-
-  constructor(private router: Router, private singleton: SingletonService) {
-    // On initial load, check authentication state with authorization server
-    // Set up local auth streams if user is already authenticated
-    this.localAuthSetup();
-    // Handle redirect from Auth0 login
-    this.handleAuthCallback();
-  }
+  public loggedIn: boolean | null = null;
 
   // When calling, options can be passed if desired
   // https://auth0.github.io/auth0-spa-js/classes/auth0client.html#getuser
@@ -86,7 +89,7 @@ export class AuthService {
       // Call method to log in
       client.loginWithRedirect({
         appState: { target: redirectPath },
-        redirect_uri: `${window.location.origin}${environment.baseHref}`,
+        redirect_uri: `${window.location.origin}`,
       });
     });
   }
@@ -125,7 +128,7 @@ export class AuthService {
       // Call method to log out
       client.logout({
         client_id: environment.auth0.client_id,
-        returnTo: `${window.location.origin}${environment.baseHref}`,
+        returnTo: `${window.location.origin}`,
       });
     });
   }

@@ -1,11 +1,10 @@
 // intended for use with local express instance
 export const environment = {
-  apiUrl: 'https://scry-x.com/decktech-api',
+  apiUrl: 'https://scry-x.com/server',
   auth0: {
     client_id: '2RcQEkaXq2y2FrNcwMJY8YV5igue98hA',
     domain: 'johnnysasaki.auth0.com',
   },
-  baseHref: '',
   defaultDecklist: '1 Alesha, Who Smiles at Death\n1 Altar of Dementia\n1 Animate Dead',
   production: false,
   restdb: {

@@ -1,10 +1,9 @@
 export const environment = {
-  apiUrl: 'https://scry-x.com/decktech-api',
+  apiUrl: 'https://scry-x.com/server',
   auth0: {
     client_id: '2RcQEkaXq2y2FrNcwMJY8YV5igue98hA',
     domain: 'johnnysasaki.auth0.com',
   },
-  baseHref: '/decktech/',
   defaultDecklist: '1 Plains\n1 Island\n1 Swamp\n1 Mountain\n1 Forest\n1 Wastes',
   production: false,
   restdb: {
