@@ -30,7 +30,7 @@
     "@fortawesome/fontawesome-svg-core": "^1.2.27",
     "@fortawesome/free-solid-svg-icons": "^5.12.1",
     "@types/mathjs": "^6.0.4",
-    "angular-bootstrap-md": "^8.10.0",
+    "angular-bootstrap-md": "^10.0.1",
     "chart.js": "^2.9.3",
     "mathjs": "^6.6.0",
     "ng2-charts": "^2.3.0",
