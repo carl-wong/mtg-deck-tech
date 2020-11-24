@@ -11,6 +11,6 @@ export const environment = {
 		mediaUrl: 'https://scryx-338a.restdb.io/media', // cannot use own domain for media archive
     url: 'https://scryx-338a.restdb.io/rest',
 	},
-  timestamp: 'Updated: 2020-11-23 @ 19:01:01',
-  version: 'v1.0.27',
+  timestamp: 'Updated: 2020-11-24 @ 06:54:20',
+  version: 'v1.0.28',
 };
