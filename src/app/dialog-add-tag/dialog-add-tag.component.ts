@@ -3,12 +3,13 @@ import { FormControl } from '@angular/forms';
 import { MatAutocomplete } from '@angular/material/autocomplete';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { Tag } from '@classes/tag';
+import { Profile } from '@classes/profile';
 import { faSave, faTimes } from '@fortawesome/free-solid-svg-icons';
 import { SingletonService } from '@services/singleton.service';
 import { TagApiService } from '@services/tag-api.service';
 import { Observable } from 'rxjs';
-import { map, startWith } from 'rxjs/operators';
-import { first, take } from 'rxjs/operators';
+import { map, startWith, first, take } from 'rxjs/operators';
+import { forkJoin } from 'rxjs';
 
 @Component({
   selector: 'app-dialog-add-tag',
@@ -37,20 +38,31 @@ export class DialogAddTagComponent implements OnInit {
   }
 
   public ngOnInit(): void {
-    this.singleton.profile$.pipe(first((m) => !!m)).subscribe((profile) => {
-      this.profileId = profile?._id ?? '';
-      this.tagService.getTags(this.profileId).pipe(take(1)).subscribe((tags) => {
+    forkJoin([
+      this.singleton.profile$.pipe(first(m => !!m)),
+      this.singleton.tags$.pipe(take(1)),
+    ]).subscribe((results) => {
+      const profile: Profile = results[0] as Profile;
+      this.profileId = profile ?._id ?? '';
+
+      const tags: Tag[] = results[1] as Tag[];
+      if (!!tags) {
         this.tags = tags;
-        this.options = this.tags.map((a) => a.name).sort();
-        this.singleton.notify('Tags loaded...');
-      });
+      } else {
+        this.tagService.getTags(this.profileId).pipe(take(1))
+          .subscribe((loaded) => {
+            this.tags = loaded;
+            this.options = this.tags.map((a) => a.name).sort();
+            this.singleton.notify('Tags loaded...');
+          });
+      }
     });
 
     this.filteredOptions = this.tagInput.valueChanges
       .pipe(
         startWith(''),
         map((value) => this._filter(value)),
-      );
+    );
   }
 
   private _filter(value: string): string[] {

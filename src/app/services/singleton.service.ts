@@ -24,6 +24,9 @@ export class SingletonService {
   private profileSubject = new BehaviorSubject<Profile | undefined>(undefined);
   public profile$ = this.profileSubject.asObservable();
 
+  private tagsSubject = new BehaviorSubject<any>(undefined);
+  public tags$ = this.tagsSubject.asObservable();
+
   private requireReloadDeckSubject = new BehaviorSubject<boolean>(false);
   public requireReloadDeck$ = this.requireReloadDeckSubject.asObservable();
 
