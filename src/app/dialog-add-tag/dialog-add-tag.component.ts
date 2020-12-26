@@ -47,6 +47,8 @@ export class DialogAddTagComponent implements OnInit {
       const tags: Tag[] = results[1] as Tag[];
       if (!!tags) {
         this.tags = tags;
+
+        this.options = this.tags.map((a) => a.name).sort();
       } else {
         this.tagService.getTags(this.profileId).pipe(take(1))
           .subscribe((loaded) => {
