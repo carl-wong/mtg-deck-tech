@@ -34,10 +34,11 @@ export class DialogRenameTagComponent implements OnInit {
 
   public ngOnInit(): void {
     this.singleton.profile$.pipe(first((m) => !!m)).subscribe((profile) => {
-      this.profileId = profile?._id ?? '';
-      this.tagService.getTags(this.profileId).pipe(take(1)).subscribe((tags) => {
-        this.tags = tags;
-      });
+      this.profileId = profile ?._id ?? '';
+    });
+
+    this.singleton.tags$.pipe(take(1)).subscribe((tags) => {
+      this.tags = tags;
     });
   }
 

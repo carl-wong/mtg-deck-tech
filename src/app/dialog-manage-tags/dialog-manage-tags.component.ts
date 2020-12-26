@@ -41,10 +41,12 @@ export class DialogManageTagsComponent implements OnInit, OnDestroy {
 
   public ngOnInit(): void {
     this.singleton.profile$.pipe(first((m) => !!m)).subscribe((profile) => {
-      this.profileId = profile?._id ?? '';
+      this.profileId = profile ?._id ?? '';
       this.tagService.getTags(this.profileId).pipe(take(1))
         .subscribe((tags) => {
           this.tags = tags;
+          this.singleton.setTags(tags);
+
           this.refreshTable();
           this.singleton.notify('Table loaded...');
         });
@@ -76,17 +78,19 @@ export class DialogManageTagsComponent implements OnInit, OnDestroy {
         dConfig.data = data;
 
         this.dialog.open(DialogRenameTagComponent, dConfig).afterClosed()
-        .subscribe((isChanged) => {
+          .subscribe((isChanged) => {
             if (!!isChanged) {
               this.isChanged = true;
               this.tagService.getTags(this.profileId).pipe(take(1))
                 .subscribe((tags) => {
                   this.tags = tags;
+                  this.singleton.setTags(tags);
+
                   this.refreshTable();
                   this.singleton.notify('Table updated...');
                 });
             }
-        });
+          });
         break;
       }
 
@@ -95,7 +99,7 @@ export class DialogManageTagsComponent implements OnInit, OnDestroy {
 
         this.cardTagLinkService.getByTagId(model._id).pipe(take(1))
           .subscribe((links) => {
-            if (links?.length > 0) {
+            if (links ?.length > 0) {
               confirmMsg = `There are ${links.length} cards linked to this tag.` +
                 'These links will also be removed if you proceed.\n' +
                 confirmMsg;
@@ -105,7 +109,7 @@ export class DialogManageTagsComponent implements OnInit, OnDestroy {
               this.tagService.deleteTag(model._id).pipe(take(1))
                 .subscribe((result) => {
                   if (!!result) {
-                    if (links?.length > 0) {
+                    if (links ?.length > 0) {
                       this.cardTagLinkService.deleteCardTagLinks(links.map((m) => m._id))
                         .pipe(take(1))
                         .subscribe((deletedLinks) => {

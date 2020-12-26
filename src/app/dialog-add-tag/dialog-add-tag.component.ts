@@ -1,15 +1,14 @@
-import { Component, Inject, OnInit, ViewChild } from '@angular/core';
+import { Component, OnInit, ViewChild } from '@angular/core';
 import { FormControl } from '@angular/forms';
 import { MatAutocomplete } from '@angular/material/autocomplete';
-import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
-import { Tag } from '@classes/tag';
+import { MatDialogRef } from '@angular/material/dialog';
 import { Profile } from '@classes/profile';
+import { Tag } from '@classes/tag';
 import { faSave, faTimes } from '@fortawesome/free-solid-svg-icons';
 import { SingletonService } from '@services/singleton.service';
 import { TagApiService } from '@services/tag-api.service';
-import { Observable } from 'rxjs';
-import { map, startWith, first, take } from 'rxjs/operators';
-import { forkJoin } from 'rxjs';
+import { forkJoin, Observable } from 'rxjs';
+import { first, map, startWith, take } from 'rxjs/operators';
 
 @Component({
   selector: 'app-dialog-add-tag',
@@ -52,6 +51,8 @@ export class DialogAddTagComponent implements OnInit {
         this.tagService.getTags(this.profileId).pipe(take(1))
           .subscribe((loaded) => {
             this.tags = loaded;
+            this.singleton.setTags(loaded);
+
             this.options = this.tags.map((a) => a.name).sort();
             this.singleton.notify('Tags loaded...');
           });
@@ -90,6 +91,8 @@ export class DialogAddTagComponent implements OnInit {
           this.tagService.createTag({ name: this.tagName, profile: [this.profileId] })
             .pipe(take(1)).subscribe((result) => {
               if (!!result) {
+                // add tag to session
+                this.singleton.addTag(result);
                 this.dialogRef.close(result);
               } else {
                 this.singleton.notify('Failed to add tag');

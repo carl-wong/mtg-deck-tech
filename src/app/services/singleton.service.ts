@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { Profile } from '@classes/profile';
+import { Tag } from '@classes/tag';
 import { ProfileApiService } from '@services/profile-api.service';
 import { BehaviorSubject } from 'rxjs';
 import { take } from 'rxjs/operators';
@@ -36,6 +37,17 @@ export class SingletonService {
 
   public setProfile(model: Profile): void {
     this.profileSubject.next(model);
+  }
+
+  public setTags(model: Tag[]): void {
+    this.tagsSubject.next(model);
+  }
+
+  public addTag(model: Tag): void {
+    const current = this.tagsSubject.value;
+    current.push(model);
+
+    this.tagsSubject.next(current);
   }
 
   public setIsLoading(value: boolean): void {
